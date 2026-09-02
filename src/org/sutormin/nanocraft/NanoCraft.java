@@ -128,6 +128,13 @@ public class NanoCraft {
         glCullFace(GL_BACK);
         glClearColor(0.623f, 0.734f, 0.785f, 1.0f);
 
+        int[] framebufferWidth = new int[1];
+        int[] framebufferHeight = new int[1];
+        
+        glfwGetFramebufferSize(window, framebufferWidth, framebufferHeight);
+
+        glViewport(0, 0, framebufferWidth[0], framebufferHeight[0]);
+
         texture = new Texture("res/atlas.png");
 
         shader = new Shader(VERTEX_SHADER, FRAGMENT_SHADER);
