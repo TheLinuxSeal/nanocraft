@@ -4,6 +4,7 @@ import org.sutormin.nanocraft.registries.block.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Chunk {
     public static final int ATLAS_SIZE = 8;
@@ -20,6 +21,8 @@ public class Chunk {
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
 
+        Random rand = new Random();
+
         for (int x = 0; x < SIZE_X; x++) {
             for (int z = 0; z < SIZE_Z; z++) {
                 int height = 16;
@@ -29,7 +32,29 @@ public class Chunk {
                 for (int y = height - 4; y < height; y++) {
                     blocks[getId(x,y,z)] = BlockTypes.DIRT;
                 }
-                blocks[getId(x,height,z)] = BlockTypes.GRASS;
+                List a = List.of(
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.AIR,
+                        BlockTypes.DIRT,
+                        BlockTypes.GRASS,
+                        BlockTypes.STONE,
+                        BlockTypes.OAK_LOG,
+                        BlockTypes.OAK_LEAVES,
+                        BlockTypes.OAK_PLANKS,
+                        BlockTypes.IRON_ORE,
+                        BlockTypes.COPPER_ORE,
+                        BlockTypes.GOLD_ORE,
+                        BlockTypes.REDSTONE_ORE,
+                        BlockTypes.DIAMOND_ORE
+
+                );
+                blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
             }
         }
     }
@@ -73,8 +98,22 @@ public class Chunk {
 
     private boolean isAir(int x, int y, int z) {
         if (y < 0 || y >= SIZE_Y) return true;
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_Z) return NanoCraft.world.getBlockAt(x,y,z) == BlockTypes.AIR;
+
+        if (x < 0) return getBlockFromOffsetChunk(-1,0,SIZE_X+x,y,z)==BlockTypes.AIR;
+        if (x >= SIZE_Z)  return getBlockFromOffsetChunk(1,0,x%SIZE_X,y,z)==BlockTypes.AIR;
+        if (z < 0) return getBlockFromOffsetChunk(0,-1,x,y,SIZE_Z+z)==BlockTypes.AIR;
+        if (z >= SIZE_Z)  return getBlockFromOffsetChunk(0,1,x,y,z%SIZE_Z)==BlockTypes.AIR;
+        //if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_Z) {
+        //
+        //}
+        // return NanoCraft.world.getBlockAt(x,y,z) == BlockTypes.AIR;
         return blocks[getId(x,y,z)] == BlockTypes.AIR;
+    }
+
+    public short getBlockFromOffsetChunk(int cx, int cz, int x, int y, int z) {
+        Chunk chunk = NanoCraft.world.getChunk(new ChunkPos(worldPos.x()+cx, worldPos.z()+cz));
+        if (chunk == null) return -1;
+        return chunk.getBlock(x,y,z);
     }
 
     private void addFace(List<Float> v, List<Integer> idx, float x, float y, float z, int face, int block) {
@@ -90,46 +129,14 @@ public class Chunk {
             default -> throw new IllegalArgumentException();
         };
 
-        int tileX = block & 0xFF;
-        int tileY = (block >>> 8) & 0xFF;
-        /*if (block == 1) {
-            tileX = 0; tileY = 0;
-        } else if (block == 2) {
-            if (face == 0) {
-                tileX = 2; tileY = 0;
-            } else if (face == 1) {
-                tileX = 0; tileY = 0;
-            } else {
-                tileX = 1; tileY = 0;
-            }
-        } else if (block == 3) {
-            if (face == 0 || face == 1) {
-                tileX = 3; tileY = 0;
-            } else {
-                tileX = 4; tileY = 0;
-            }
-        } else if (block == 4) {
-            tileX = 5; tileY = 0;
-        } else if (block == 5) {
-            tileX = 6; tileY = 0;
-        } else if (block == 6) {
-            tileX = 7; tileY = 0;
-        } else if (block == 7) {
-            tileX = 0; tileY = 1;
-        } else if (block == 8) {
-            tileX = 1; tileY = 1;
-        } else if (block == 9) {
-            tileX = 2; tileY = 1;
-        } else if (block == 10) {
-            tileX = 3; tileY = 1;
-        } else if (block == 11) {
-            tileX = 4; tileY = 1;
-        }*/
+        int tileX = block & 0xFFFF;
+        int tileY = (block >>> 16) & 0xFFFF;
 
         float uMin = tileX * TILE_SIZE;
         float uMax = uMin + TILE_SIZE;
         float vMin = 1.0f - ((tileY + 1) * TILE_SIZE);
         float vMax = 1.0f - (tileY * TILE_SIZE);
+
 
         float[][] uvs = {
                 {uMin, vMin},
