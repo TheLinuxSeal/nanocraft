@@ -44,12 +44,12 @@ public class Chunk {
             blocks[x][y][z] = 1; // dirt
           } else if (y == height) {
             if (height <= SEA_LEVEL + 1) {
-              blocks[x][y][z] = 0; // sand (unimp)
+              blocks[x][y][z] = 9; // sand (unimp)
             } else {
               blocks[x][y][z] = 2; // grass
             }
           } else if (y <= SEA_LEVEL) {
-            blocks[x][y][z] = 0; // water (unimp)
+            blocks[x][y][z] = 11; // water (unimp)
           }
         }
 
@@ -138,19 +138,19 @@ public class Chunk {
     for (int x = 0; x < SIZE_X; x++) {
       for (int y = 0; y < SIZE_Y; y++) {
         for (int z = 0; z < SIZE_Z; z++) {
-          byte block = blocks[x][y][z];
-          if (block == 0) continue;
+          byte b = blocks[x][y][z];
+          if (b == 0) continue;
 
           float wx = worldOffsetX + x;
           float wy = y;
           float wz = worldOffsetZ + z;
 
-          if (isTransparent(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block); // top
-          if (isTransparent(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block); // bottom
-          if (isTransparent(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block); // front
-          if (isTransparent(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block); // back
-          if (isTransparent(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block); // left
-          if (isTransparent(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block); // right
+          if (shouldAddFace(x, y + 1, z, b)) addFace(vertices, indices, wx, wy, wz, 0, b); // top
+          if (shouldAddFace(x, y - 1, z, b)) addFace(vertices, indices, wx, wy, wz, 1, b); // bottom
+          if (shouldAddFace(x, y, z + 1, b)) addFace(vertices, indices, wx, wy, wz, 2, b); // front
+          if (shouldAddFace(x, y, z - 1, b)) addFace(vertices, indices, wx, wy, wz, 3, b); // back
+          if (shouldAddFace(x - 1, y, z, b)) addFace(vertices, indices, wx, wy, wz, 4, b); // left
+          if (shouldAddFace(x + 1, y, z, b)) addFace(vertices, indices, wx, wy, wz, 5, b); // right
         }
       }
     }
@@ -165,10 +165,10 @@ public class Chunk {
     mesh = new Mesh(vArray, iArray);
   }
 
-  private boolean isTransparent(int x, int y, int z) {
+  private boolean shouldAddFace(int x, int y, int z, byte cb) {
     if (x < 0 || x >= SIZE_X || y < 0 || y >= SIZE_Y || z < 0 || z >= SIZE_Z) return true;
     byte b = blocks[x][y][z];
-    return b == 0 || b == 4;
+    return b == 0 || (b == 4 && cb != 4);
   }
 
   private void addFace(List<Float> v, List<Integer> idx, float x, float y, float z, int face, byte block) {
