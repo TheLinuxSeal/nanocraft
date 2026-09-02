@@ -63,6 +63,7 @@ public class NanoCraft {
 
     void main() {
         vec4 texColor = texture(uTexture, TexCoord);
+        
         //if (texColor.a < 0.1) discard; // Prevent blending clear cut outlines
 
         // Distance from camera in view space

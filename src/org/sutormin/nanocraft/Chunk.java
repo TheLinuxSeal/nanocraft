@@ -4,7 +4,6 @@ import org.sutormin.nanocraft.registries.block.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Chunk {
     public static final int ATLAS_SIZE = 8;
@@ -102,7 +101,7 @@ public class Chunk {
     private void generateTree(int cx, int startY, int cz) {
         int trunkHeight = 4;
         for (int y = startY; y < startY + trunkHeight && y < SIZE_Y; y++) {
-            blocks[getId(cx,y,cz)] = BlockTypes.OAK_LOG;
+            blocks[getId(cx, y, cz)] = BlockTypes.OAK_LOG;
         }
         int leafStart = startY + trunkHeight - 2;
         for (int lx = -1; lx <= 1; lx++) {
@@ -111,8 +110,8 @@ public class Chunk {
                     int bx = cx + lx;
                     int bz = cz + lz;
                     if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
-                        if (blocks[getId(bx,ly,bz)] == BlockTypes.AIR) {
-                            blocks[getId(bx,ly,bz)] = BlockTypes.OAK_LEAVES; // leaves
+                        if (blocks[getId(bx, ly, bz)] == BlockTypes.AIR) {
+                            blocks[getId(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
                         }
                     }
                 }
@@ -184,12 +183,12 @@ public class Chunk {
                     float wy = y;
                     float wz = worldOffsetZ + z;
 
-                    if (isAir(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
-                    if (isAir(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
-                    if (isAir(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block.getTexture(2)); // front
-                    if (isAir(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block.getTexture(3)); // back
-                    if (isAir(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block.getTexture(4)); // left
-                    if (isAir(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block.getTexture(5)); // right
+                    if (isTransparent(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
+                    if (isTransparent(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
+                    if (isTransparent(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block.getTexture(2)); // front
+                    if (isTransparent(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block.getTexture(3)); // back
+                    if (isTransparent(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block.getTexture(4)); // left
+                    if (isTransparent(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block.getTexture(5)); // right
                 }
             }
         }
@@ -204,7 +203,7 @@ public class Chunk {
         mesh = new Mesh(vArray, iArray);
     }
 
-    private boolean isAir(int x, int y, int z) {
+    private boolean isTransparent(int x, int y, int z) {
         if (y < 0 || y >= SIZE_Y) return true;
 
         if (x < 0) return getBlockFromOffsetChunk(-1,0,SIZE_X+x,y,z)==BlockTypes.AIR;
