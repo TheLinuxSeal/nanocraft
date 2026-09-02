@@ -13,6 +13,8 @@ public class Chunk {
     public static final int SIZE_Y = 32;
     public static final int SIZE_Z = 16;
 
+    public static final int SEA_LEVEL = 10;
+
     private final ChunkPos worldPos;
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
     private final short[] blocks = new short[SIZE_X * SIZE_Y * SIZE_Z];
@@ -20,8 +22,8 @@ public class Chunk {
 
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
-
-        Random rand = new Random();
+        generateTerrain();
+        /*Random rand = new Random();
 
         for (int x = 0; x < SIZE_X; x++) {
             for (int z = 0; z < SIZE_Z; z++) {
@@ -56,7 +58,113 @@ public class Chunk {
                 );
                 blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
             }
+        }*/
+    }
+
+    private void generateTerrain() {
+        int worldOffsetX = worldPos.x() * SIZE_X;
+        int worldOffsetZ = worldPos.z() * SIZE_Z;
+
+        for (int x = 0; x < SIZE_X; x++) {
+            for (int z = 0; z < SIZE_Z; z++) {
+                int wx = worldOffsetX + x;
+                int wz = worldOffsetZ + z;
+
+                float baseNoise = sampleNoise2D(wx * 0.02f, wz * 0.02f);
+                float detailNoise = sampleNoise2D(wx * 0.08f, wz * 0.08f);
+
+                int height = (int) (14 + (baseNoise * 8.0f) + (detailNoise * 3.0f));
+                height = Math.max(1, Math.min(SIZE_Y - 1, height));
+
+                for (int y = 0; y < SIZE_Y; y++) {
+                    if (y < height - 4) {
+                        blocks[getId(x,y,z)] = BlockTypes.STONE; // stone
+                    } else if (y < height) {
+                        blocks[getId(x,y,z)] = BlockTypes.DIRT; // dirt
+                    } else if (y == height) {
+                        if (height <= SEA_LEVEL + 1) {
+                            blocks[getId(x,y,z)] = BlockTypes.GOLD_ORE; // sand (unimp)
+                        } else {
+                            blocks[getId(x,y,z)] = BlockTypes.GRASS; // grass
+                        }
+                    } else if (y <= SEA_LEVEL) {
+                        blocks[getId(x,y,z)] = BlockTypes.DIAMOND_ORE; // water (unimp)
+                    }
+                }
+
+                if (height > SEA_LEVEL + 1 && hash(wx, wz) % 100 == 0 && x > 1 && z > 1 && x < SIZE_X - 1 && z < SIZE_Z - 1) {
+                    generateTree(x, height + 1, z);
+                }
+            }
         }
+    }
+
+    private void generateTree(int cx, int startY, int cz) {
+        int trunkHeight = 4;
+        for (int y = startY; y < startY + trunkHeight && y < SIZE_Y; y++) {
+            blocks[getId(cx,y,cz)] = BlockTypes.OAK_LOG;
+        }
+        int leafStart = startY + trunkHeight - 2;
+        for (int lx = -1; lx <= 1; lx++) {
+            for (int lz = -1; lz <= 1; lz++) {
+                for (int ly = leafStart; ly <= leafStart + 2; ly++) {
+                    int bx = cx + lx;
+                    int bz = cz + lz;
+                    if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
+                        if (blocks[getId(bx,ly,bz)] == BlockTypes.AIR) {
+                            blocks[getId(bx,ly,bz)] = BlockTypes.OAK_LEAVES; // leaves
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private int hash(int x, int z) {
+        int h = x * 374761393 ^ z * 668265263;
+        h = (h ^ (h >>> 13)) * 1274126177;
+        return Math.abs(h ^ (h >>> 16));
+    }
+
+    private int hash(int x, int y, int z) {
+        int h = x * 374761393 ^ y * 668265263 ^ z * 83492791;
+        h = (h ^ (h >>> 13)) * 1274126177;
+        return (h ^ (h >>> 16)) & 0x7FFFFFFF;
+    }
+
+    private float sampleNoise2D(float x, float z) {
+        int xi = (int) Math.floor(x);
+        int zi = (int) Math.floor(z);
+
+        float xf = x - (float) Math.floor(x);
+        float zf = z - (float) Math.floor(z);
+
+        float u = xf * xf * (3 - 2 * xf);
+        float v = zf * zf * (3 - 2 * zf);
+
+        int g00 = hash(xi, zi) % 4;
+        int g10 = hash(xi + 1, zi) % 4;
+        int g01 = hash(xi, zi + 1) % 4;
+        int g11 = hash(xi + 1, zi + 1) % 4;
+
+        float n00 = grad(g00, xf, zf);
+        float n10 = grad(g10, xf - 1, zf);
+        float n01 = grad(g01, xf, zf - 1);
+        float n11 = grad(g11, xf - 1, zf - 1);
+
+        float x1 = n00 + u * (n10 - n00);
+        float x2 = n01 + u * (n11 - n01);
+
+        return x1 + v * (x2 - x1);
+    }
+
+    private float grad(int hash, float x, float z) {
+        return switch (hash & 3) {
+            case 0 -> x + z;
+            case 1 -> -x + z;
+            case 2 -> x - z;
+            default -> -x - z;
+        };
     }
 
     public void buildMesh() {
@@ -103,21 +211,17 @@ public class Chunk {
         if (x >= SIZE_Z)  return getBlockFromOffsetChunk(1,0,x%SIZE_X,y,z)==BlockTypes.AIR;
         if (z < 0) return getBlockFromOffsetChunk(0,-1,x,y,SIZE_Z+z)==BlockTypes.AIR;
         if (z >= SIZE_Z)  return getBlockFromOffsetChunk(0,1,x,y,z%SIZE_Z)==BlockTypes.AIR;
-        //if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_Z) {
-        //
-        //}
-        // return NanoCraft.world.getBlockAt(x,y,z) == BlockTypes.AIR;
         return blocks[getId(x,y,z)] == BlockTypes.AIR;
     }
 
     public short getBlockFromOffsetChunk(int cx, int cz, int x, int y, int z) {
-        Chunk chunk = NanoCraft.world.getChunk(new ChunkPos(worldPos.x()+cx, worldPos.z()+cz));
+        Chunk chunk = NanoCraft.world.getChunk(worldPos.offset(cx,cz));
         if (chunk == null) return -1;
         return chunk.getBlock(x,y,z);
     }
 
     private void addFace(List<Float> v, List<Integer> idx, float x, float y, float z, int face, int block) {
-        int startIndex = v.size() / 5;
+        int startIndex = v.size() / 6;
 
         float[][] pos = switch (face) {
             case 0 -> new float[][]{{0,1,1}, {1,1,1}, {1,1,0}, {0,1,0}}; // top
@@ -169,6 +273,7 @@ public class Chunk {
 
             v.add(uvs[uvIndex][0]);
             v.add(uvs[uvIndex][1]);
+            v.add(0f);
         }
 
         idx.add(startIndex);

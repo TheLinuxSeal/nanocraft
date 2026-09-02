@@ -34,9 +34,9 @@ public class NanoCraft {
     private static final String VERTEX_SHADER = """
     #version 330 core
     layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec2 aTexCoord;
+    layout (location = 1) in vec3 aTexCoord;
 
-    out vec2 TexCoord;
+    out vec3 TexCoord;
     out vec3 FragPosView;
 
     uniform mat4 uProjection;
@@ -52,11 +52,11 @@ public class NanoCraft {
 
     private static final String FRAGMENT_SHADER = """
     #version 330 core
-    in vec2 TexCoord;
+    in vec3 TexCoord;
     in vec3 FragPosView;
     out vec4 FragColor;
 
-    uniform sampler2D uTexture;
+    uniform sampler2DArray uTexture;
     //uniform vec3 uFogColor;
     //uniform float uFogNear;
     //uniform float uFogFar;
