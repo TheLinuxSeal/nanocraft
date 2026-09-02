@@ -11,25 +11,121 @@ public class Chunk {
   public static final int SIZE_Y = 32;
   public static final int SIZE_Z = 16;
 
+  public static final int SEA_LEVEL = 10;
+
   private final ChunkPos worldPos;
   private final byte[][][] blocks = new byte[SIZE_X][SIZE_Y][SIZE_Z];
   private Mesh mesh;
 
   public Chunk(ChunkPos worldPos) {
     this.worldPos = worldPos;
+    generateTerrain();
+  }
+
+  private void generateTerrain() {
+    int worldOffsetX = worldPos.x() * SIZE_X;
+    int worldOffsetZ = worldPos.z() * SIZE_Z;
 
     for (int x = 0; x < SIZE_X; x++) {
       for (int z = 0; z < SIZE_Z; z++) {
-        int height = 16;
-        for (int y = 0; y < height - 4; y++) {
-          blocks[x][y][z] = 6;
+        int wx = worldOffsetX + x;
+        int wz = worldOffsetZ + z;
+
+        float baseNoise = sampleNoise2D(wx * 0.02f, wz * 0.02f);
+        float detailNoise = sampleNoise2D(wx * 0.08f, wz * 0.08f);
+        
+        int height = (int) (14 + (baseNoise * 8.0f) + (detailNoise * 3.0f));
+        height = Math.max(1, Math.min(SIZE_Y - 1, height));
+
+        for (int y = 0; y < SIZE_Y; y++) {
+          if (y < height - 4) {
+            blocks[x][y][z] = 6; // stone
+          } else if (y < height) {
+            blocks[x][y][z] = 1; // dirt
+          } else if (y == height) {
+            if (height <= SEA_LEVEL + 1) {
+              blocks[x][y][z] = 0; // sand (unimp)
+            } else {
+              blocks[x][y][z] = 2; // grass
+            }
+          } else if (y <= SEA_LEVEL) {
+            blocks[x][y][z] = 0; // water (unimp)
+          }
         }
-        for (int y = height - 4; y < height; y++) {
-          blocks[x][y][z] = 1;
+
+        if (height > SEA_LEVEL + 1 && hash(wx, wz) % 100 == 0 && x > 1 && z > 1 && x < SIZE_X - 1 && z < SIZE_Z - 1) {
+          generateTree(x, height + 1, z);
         }
-        blocks[x][height][z] = 2;
       }
     }
+  }
+
+  private void generateTree(int cx, int startY, int cz) {
+    int trunkHeight = 4;
+    for (int y = startY; y < startY + trunkHeight && y < SIZE_Y; y++) {
+      blocks[cx][y][cz] = 3;
+    }
+    int leafStart = startY + trunkHeight - 2;
+    for (int lx = -1; lx <= 1; lx++) {
+      for (int lz = -1; lz <= 1; lz++) {
+        for (int ly = leafStart; ly <= leafStart + 2; ly++) {
+          int bx = cx + lx;
+          int bz = cz + lz;
+          if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
+            if (blocks[bx][ly][bz] == 0) {
+              blocks[bx][ly][bz] = 4; // leaves
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private int hash(int x, int z) {
+    int h = x * 374761393 ^ z * 668265263;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return Math.abs(h ^ (h >>> 16));
+  }
+
+  private int hash(int x, int y, int z) {
+    int h = x * 374761393 ^ y * 668265263 ^ z * 83492791;
+    h = (h ^ (h >>> 13)) * 1274126177;
+    return (h ^ (h >>> 16)) & 0x7FFFFFFF;
+  }
+
+  private float sampleNoise2D(float x, float z) {
+    int xi = (int) Math.floor(x);
+    int zi = (int) Math.floor(z);
+    
+    float xf = x - (float) Math.floor(x);
+    float zf = z - (float) Math.floor(z);
+
+    float u = xf * xf * (3 - 2 * xf);
+    float v = zf * zf * (3 - 2 * zf);
+
+    int g00 = hash(xi, zi) % 4;
+    int g10 = hash(xi + 1, zi) % 4;
+    int g01 = hash(xi, zi + 1) % 4;
+    int g11 = hash(xi + 1, zi + 1) % 4;
+
+    float n00 = grad(g00, xf, zf);
+    float n10 = grad(g10, xf - 1, zf);
+    float n01 = grad(g01, xf, zf - 1);
+    float n11 = grad(g11, xf - 1, zf - 1);
+
+    float x1 = n00 + u * (n10 - n00);
+    float x2 = n01 + u * (n11 - n01);
+
+    return x1 + v * (x2 - x1);
+  }
+
+  private float grad(int hash, float x, float z) {
+    return switch (hash & 3) {
+      case 0 -> x + z;
+      case 1 -> -x + z;
+      case 2 -> x - z;
+      default -> -x - z;
+    };
   }
 
   public void buildMesh() {
@@ -49,12 +145,12 @@ public class Chunk {
           float wy = y;
           float wz = worldOffsetZ + z;
 
-          if (isAir(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block); // top
-          if (isAir(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block); // bottom
-          if (isAir(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block); // front
-          if (isAir(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block); // back
-          if (isAir(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block); // left
-          if (isAir(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block); // right
+          if (isTransparent(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block); // top
+          if (isTransparent(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block); // bottom
+          if (isTransparent(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block); // front
+          if (isTransparent(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block); // back
+          if (isTransparent(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block); // left
+          if (isTransparent(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block); // right
         }
       }
     }
@@ -69,9 +165,10 @@ public class Chunk {
     mesh = new Mesh(vArray, iArray);
   }
 
-  private boolean isAir(int x, int y, int z) {
+  private boolean isTransparent(int x, int y, int z) {
     if (x < 0 || x >= SIZE_X || y < 0 || y >= SIZE_Y || z < 0 || z >= SIZE_Z) return true;
-    return blocks[x][y][z] == 0;
+    byte b = blocks[x][y][z];
+    return b == 0 || b == 4;
   }
 
   private void addFace(List<Float> v, List<Integer> idx, float x, float y, float z, int face, byte block) {
@@ -140,14 +237,7 @@ public class Chunk {
       int bx = (int) Math.floor(x) + worldPos.x();
       int by = (int) Math.floor(y);
       int bz = (int) Math.floor(z) + worldPos.z();
-      
-      int hash = bx * 73856093 ^ by * 19349663 ^ bz * 83492791;
-      hash ^= hash >>> 16;
-      hash *= 0x85ebca6b;
-      hash ^= hash >>> 13;
-      hash *= 0xc2b2ae35;
-      hash ^= hash >>> 16;
-      rot = (hash & Integer.MAX_VALUE) & 3;
+      rot = hash(bx, by, bz) % 3;
     }
 
     for (int i = 0; i < 4; i++) {
