@@ -17,6 +17,12 @@ val lwjglVersion = "3.4.0"
 val lwjglNatives = "natives-linux" // Change to "natives-linux" or "natives-macos" depending on your OS
 
 
+sourceSets {
+    main {
+        java.setSrcDirs(listOf("src"))
+    }
+}
+
 
 dependencies {
     // 2. Core LWJGL
