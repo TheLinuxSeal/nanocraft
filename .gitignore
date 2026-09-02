@@ -43,3 +43,7 @@ bin/
 .DS_Store
 
 .old
+
+bin/
+nanocraft.jar
+atlas_bkp.xcf
