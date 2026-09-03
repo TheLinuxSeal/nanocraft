@@ -1,6 +1,7 @@
 package org.sutormin.nanocraft.block;
 
 public class BlockTypes {
+    public static short NULL = -1;
     public static short AIR;
     public static short DIRT;
     public static short GRASS;

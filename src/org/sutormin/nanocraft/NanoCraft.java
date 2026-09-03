@@ -217,7 +217,7 @@ public class NanoCraft {
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) upDown -= 1.0f;
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            speed = 15.0f;
+            speed = 30.0f;
         }
 
         CAMERA.updatePosition(forwardBack, rightLeft, upDown, speed, dt);

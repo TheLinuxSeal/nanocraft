@@ -79,17 +79,17 @@ public class Chunk {
 
                 for (int y = 0; y < SIZE_Y; y++) {
                     if (y < height - 4) {
-                        blocks[getId(x,y,z)] = BlockTypes.STONE; // stone
+                        blocks[getIndex(x,y,z)] = BlockTypes.STONE; // stone
                     } else if (y < height) {
-                        blocks[getId(x,y,z)] = BlockTypes.DIRT; // dirt
+                        blocks[getIndex(x,y,z)] = BlockTypes.DIRT; // dirt
                     } else if (y == height) {
                         if (height <= SEA_LEVEL + 1) {
-                            blocks[getId(x,y,z)] = BlockTypes.SAND; // sand (unimp)
+                            blocks[getIndex(x,y,z)] = BlockTypes.SAND; // sand (unimp)
                         } else {
-                            blocks[getId(x,y,z)] = BlockTypes.GRASS; // grass
+                            blocks[getIndex(x,y,z)] = BlockTypes.GRASS; // grass
                         }
                     } else if (y <= SEA_LEVEL) {
-                        blocks[getId(x,y,z)] = BlockTypes.WATER; // water (unimp)
+                        blocks[getIndex(x,y,z)] = BlockTypes.WATER; // water (unimp)
                     }
                 }
 
@@ -103,7 +103,7 @@ public class Chunk {
     private void generateTree(int cx, int startY, int cz) {
         int trunkHeight = 4;
         for (int y = startY; y < startY + trunkHeight && y < SIZE_Y; y++) {
-            blocks[getId(cx, y, cz)] = BlockTypes.OAK_LOG;
+            blocks[getIndex(cx, y, cz)] = BlockTypes.OAK_LOG;
         }
         int leafStart = startY + trunkHeight - 2;
         for (int lx = -1; lx <= 1; lx++) {
@@ -112,8 +112,8 @@ public class Chunk {
                     int bx = cx + lx;
                     int bz = cz + lz;
                     if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
-                        if (blocks[getId(bx, ly, bz)] == BlockTypes.AIR) {
-                            blocks[getId(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
+                        if (blocks[getIndex(bx, ly, bz)] == BlockTypes.AIR) {
+                            blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
                         }
                     }
                 }
@@ -178,8 +178,8 @@ public class Chunk {
         for (int x = 0; x < SIZE_X; x++) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    if (blocks[getId(x,y,z)] == 0) continue;
-                    BlockType block = BlockRegistry.getBlock(blocks[getId(x,y,z)]);
+                    if (blocks[getIndex(x,y,z)] == 0) continue;
+                    BlockType block = BlockRegistry.getBlock(blocks[getIndex(x,y,z)]);
 
                     int wx = worldOffsetX + x;
                     int wy = y;
@@ -205,29 +205,7 @@ public class Chunk {
         mesh = new Mesh(vArray, iArray);
     }
 
-    private boolean isTransparent(int x, int y, int z) {
-        //System.out.println(x + " " + y + " " + z);
-        if (y < 0 || y >= SIZE_Y) return true;
-
-        if (x < 0 && z < 0) return getBlockFromOffsetChunk(-1,-1,SIZE_X+x,y,SIZE_Z+z)==BlockTypes.AIR;
-        if (x >= SIZE_X && z < 0)  return getBlockFromOffsetChunk(1,-1,x%SIZE_X,y,SIZE_Z+z)==BlockTypes.AIR;
-        if (x < 0 && z >= SIZE_Z) return getBlockFromOffsetChunk(-1,1,SIZE_X+x,y,z%SIZE_Z)==BlockTypes.AIR;
-        if (x >= SIZE_X && z >= SIZE_Z)  return getBlockFromOffsetChunk(1,1,x%SIZE_X,y,z%SIZE_Z)==BlockTypes.AIR;
-
-        if (x < 0) return getBlockFromOffsetChunk(-1,0,SIZE_X+x,y,z)==BlockTypes.AIR;
-        if (x >= SIZE_X)  return getBlockFromOffsetChunk(1,0,x%SIZE_X,y,z)==BlockTypes.AIR;
-        if (z < 0) return getBlockFromOffsetChunk(0,-1,x,y,SIZE_Z+z)==BlockTypes.AIR;
-        if (z >= SIZE_Z)  return getBlockFromOffsetChunk(0,1,x,y,z%SIZE_Z)==BlockTypes.AIR;
-        return blocks[getId(x,y,z)] == BlockTypes.AIR;
-    }
-
-    public short getBlockFromOffsetChunk(int cx, int cz, int x, int y, int z) {
-        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(cx,cz));
-        if (chunk == null) return -1;
-        return chunk.getBlock(x,y,z);
-    }
-
-    private void addFace(List<Float> v, List<Integer> idx, int x, int y, int z, int face, int block) {
+    private void addFace(List<Float> v, List<Integer> idx, int x, int y, int z, int face, int tex) {
         int startIndex = v.size() / 7;
 
         float[][] pos = switch (face) {
@@ -282,7 +260,7 @@ public class Chunk {
 
             v.add(uvs[uvIndex][0]);
             v.add(uvs[uvIndex][1]);
-            v.add((float) block);
+            v.add((float) tex);
 
             v.add(cornerAOs[i]);
         }
@@ -405,16 +383,33 @@ public class Chunk {
         return aos;
     }
 
-    private int getId(int x, int y, int z){
+    private int getIndex(int x, int y, int z){
         return (z * SIZE_X * SIZE_Y) + (y * SIZE_X) + x;
     }
 
     public short getBlock(int x, int y, int z) {
-        return blocks[getId(x,y,z)];
+        return blocks[getIndex(x,y,z)];
     }
 
     public void setBlock(int x, int y, int z, short block) {
-        blocks[getId(x,y,z)] = block;
+        blocks[getIndex(x,y,z)] = block;
+    }
+
+    public boolean isTransparent(int x, int y, int z) {
+        if (y < 0 || y >= SIZE_Y) return true;
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return getBlockChunkSafe(x,y,z) == BlockTypes.AIR;
+        return blocks[getIndex(x,y,z)] == BlockTypes.AIR;
+    }
+
+    public short getBlockChunkSafe(int x, int y, int z) {
+        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x,SIZE_X),Math.floorDiv(z,SIZE_Z)));
+        if (chunk == null) return BlockTypes.NULL;
+        return chunk.getBlock(Math.floorMod(x,SIZE_X),y,Math.floorMod(z,SIZE_Z));
+    }
+    public void setBlockChunkSafe(int x, int y, int z, short block) {
+        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x,SIZE_X),Math.floorDiv(z,SIZE_Z)));
+        if (chunk == null) return;
+        chunk.setBlock(Math.floorMod(x,SIZE_X),y,Math.floorMod(z,SIZE_Z),block);
     }
 
     public void render() {
