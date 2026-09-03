@@ -3,11 +3,13 @@ package org.sutormin.nanocraft;
 import org.sutormin.nanocraft.block.BlockTypes;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
     private final List<ChunkPos> forceRemeshChunks = new ArrayList<>();
     private final List<ChunkPos> cancelRemeshChunks = new ArrayList<>();
+    private final List<BlockData> setBlockPromises = new ArrayList<>();
 
     public World() {
     }
@@ -59,16 +61,14 @@ public class World {
         for (ChunkPos pos : posList) {
             meshChunk(pos);
         }
+
+        checkBlockPromises();
     }
 
-    public int getBlockAt(int x, int y, int z) {
+    public short getBlockAt(int x, int y, int z) {
         ChunkPos chunkPos = getChunkPosFromBlock(x, z);
         Chunk chunk = chunks.get(chunkPos);
         if (chunk == null) return BlockTypes.AIR;
-
-        System.out.println(x + ", " + y);
-        System.out.println(chunkPos);
-        System.out.println();
 
         int localX = Math.floorMod(x, Chunk.SIZE_X);
         int localZ = Math.floorMod(z, Chunk.SIZE_Z);
@@ -94,6 +94,29 @@ public class World {
         if (localZ == Chunk.SIZE_Z - 1) meshChunk(new ChunkPos(chunkPos.x(), chunkPos.z() + 1));
     }
 
+    public void setBlockPromise(int x, int y, int z, Function<Short, Short> block){
+        setBlockPromises.add(new BlockData(x,y,z,block));
+    }
+
+    private void checkBlockPromises() {
+        Iterator<BlockData> iterator = setBlockPromises.iterator();
+        while (iterator.hasNext()) {
+            BlockData blockData = iterator.next();
+            int x = blockData.x();
+            int y = blockData.y();
+            int z = blockData.z();
+            ChunkPos chunkPos = getChunkPosFromBlock(x, z);
+            Chunk chunk = chunks.get(chunkPos);
+
+            if (chunk == null) continue;
+
+            short block = blockData.block().apply(getBlockAt(x, y, z));
+            if (block != BlockTypes.NULL) setBlockAt(x, y, z, block);
+
+            iterator.remove();
+        }
+    }
+
     public Chunk getChunk(ChunkPos pos){
         return chunks.get(pos);
     }
@@ -116,4 +139,5 @@ public class World {
         }
         chunks.clear();
     }
+    private record BlockData(int x, int y, int z, Function<Short, Short> block){}
 }

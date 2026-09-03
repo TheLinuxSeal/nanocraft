@@ -6,6 +6,7 @@ import org.sutormin.nanocraft.block.BlockTypes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class Chunk {
     public static final int ATLAS_SIZE = 8;
@@ -24,42 +25,42 @@ public class Chunk {
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
         generateTerrain();
-        /*Random rand = new Random();
+/*Random rand = new Random();
 
-        for (int x = 0; x < SIZE_X; x++) {
-            for (int z = 0; z < SIZE_Z; z++) {
-                int height = 16;
-                for (int y = 0; y < height - 4; y++) {
-                    blocks[getId(x,y,z)] = BlockTypes.STONE;
-                }
-                for (int y = height - 4; y < height; y++) {
-                    blocks[getId(x,y,z)] = BlockTypes.DIRT;
-                }
-                List a = List.of(
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.AIR,
-                        BlockTypes.DIRT,
-                        BlockTypes.GRASS,
-                        BlockTypes.STONE,
-                        BlockTypes.OAK_LOG,
-                        BlockTypes.OAK_LEAVES,
-                        BlockTypes.OAK_PLANKS,
-                        BlockTypes.IRON_ORE,
-                        BlockTypes.COPPER_ORE,
-                        BlockTypes.GOLD_ORE,
-                        BlockTypes.REDSTONE_ORE,
-                        BlockTypes.DIAMOND_ORE
+for (int x = 0; x < SIZE_X; x++) {
+for (int z = 0; z < SIZE_Z; z++) {
+int height = 16;
+for (int y = 0; y < height - 4; y++) {
+blocks[getId(x,y,z)] = BlockTypes.STONE;
+}
+for (int y = height - 4; y < height; y++) {
+blocks[getId(x,y,z)] = BlockTypes.DIRT;
+}
+List a = List.of(
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.AIR,
+BlockTypes.DIRT,
+BlockTypes.GRASS,
+BlockTypes.STONE,
+BlockTypes.OAK_LOG,
+BlockTypes.OAK_LEAVES,
+BlockTypes.OAK_PLANKS,
+BlockTypes.IRON_ORE,
+BlockTypes.COPPER_ORE,
+BlockTypes.GOLD_ORE,
+BlockTypes.REDSTONE_ORE,
+BlockTypes.DIAMOND_ORE
 
-                );
-                blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
-            }
-        }*/
+);
+blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
+}
+}*/
     }
 
     private void generateTerrain() {
@@ -79,17 +80,17 @@ public class Chunk {
 
                 for (int y = 0; y < SIZE_Y; y++) {
                     if (y < height - 4) {
-                        blocks[getIndex(x,y,z)] = BlockTypes.STONE; // stone
+                        blocks[getIndex(x, y, z)] = BlockTypes.STONE; // stone
                     } else if (y < height) {
-                        blocks[getIndex(x,y,z)] = BlockTypes.DIRT; // dirt
+                        blocks[getIndex(x, y, z)] = BlockTypes.DIRT; // dirt
                     } else if (y == height) {
                         if (height <= SEA_LEVEL + 1) {
-                            blocks[getIndex(x,y,z)] = BlockTypes.SAND; // sand (unimp)
+                            blocks[getIndex(x, y, z)] = BlockTypes.SAND; // sand (unimp)
                         } else {
-                            blocks[getIndex(x,y,z)] = BlockTypes.GRASS; // grass
+                            blocks[getIndex(x, y, z)] = BlockTypes.GRASS; // grass
                         }
                     } else if (y <= SEA_LEVEL) {
-                        blocks[getIndex(x,y,z)] = BlockTypes.WATER; // water (unimp)
+                        blocks[getIndex(x, y, z)] = BlockTypes.WATER; // water (unimp)
                     }
                 }
 
@@ -106,19 +107,42 @@ public class Chunk {
             blocks[getIndex(cx, y, cz)] = BlockTypes.OAK_LOG;
         }
         int leafStart = startY + trunkHeight - 2;
-        for (int lx = -1; lx <= 1; lx++) {
-            for (int lz = -1; lz <= 1; lz++) {
-                for (int ly = leafStart; ly <= leafStart + 2; ly++) {
-                    int bx = cx + lx;
-                    int bz = cz + lz;
-                    if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
-                        if (blocks[getIndex(bx, ly, bz)] == BlockTypes.AIR) {
-                            blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
-                        }
-                    }
-                }
+        Function<Short,Short> leafFunc = block -> {if (block == BlockTypes.AIR) return BlockTypes.OAK_LEAVES;else return BlockTypes.NULL;};
+        for (int lx = -2; lx <= 2; lx++) {
+            for (int lz = -2; lz <= 2; lz++) {
+                setBlockInterchunkPromise(cx+lx,leafStart,cz+lz,leafFunc);
             }
         }
+        for (int lx = -2; lx <= 2; lx++) {
+            for (int lz = -2; lz <= 2; lz++) {
+                setBlockInterchunkPromise(cx+lx,leafStart+1,cz+lz,leafFunc);
+            }
+        }
+        for (int lx = -1; lx <= 1; lx++) {
+            for (int lz = -1; lz <= 1; lz++) {
+                setBlockInterchunkPromise(cx+lx,leafStart+2,cz+lz,leafFunc);
+            }
+        }
+        setBlockInterchunkPromise(cx,leafStart+3,cz,leafFunc);
+        setBlockInterchunkPromise(cx-1,leafStart+3,cz,leafFunc);
+        setBlockInterchunkPromise(cx+1,leafStart+3,cz,leafFunc);
+        setBlockInterchunkPromise(cx,leafStart+3,cz-1,leafFunc);
+        setBlockInterchunkPromise(cx,leafStart+3,cz+1,leafFunc);
+
+
+/*for (int lx = -1; lx <= 1; lx++) {
+for (int lz = -1; lz <= 1; lz++) {
+for (int ly = leafStart; ly <= leafStart + 2; ly++) {
+int bx = cx + lx;
+int bz = cz + lz;
+if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
+if (blocks[getIndex(bx, ly, bz)] == BlockTypes.AIR) {
+blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
+}
+}
+}
+}
+}*/
     }
 
     private int hash(int x, int z) {
@@ -178,19 +202,25 @@ public class Chunk {
         for (int x = 0; x < SIZE_X; x++) {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
-                    if (blocks[getIndex(x,y,z)] == 0) continue;
-                    BlockType block = BlockRegistry.getBlock(blocks[getIndex(x,y,z)]);
+                    if (blocks[getIndex(x, y, z)] == 0) continue;
+                    BlockType block = BlockRegistry.getBlock(blocks[getIndex(x, y, z)]);
 
                     int wx = worldOffsetX + x;
                     int wy = y;
                     int wz = worldOffsetZ + z;
 
-                    if (isTransparent(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
-                    if (isTransparent(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
-                    if (isTransparent(x, y, z + 1)) addFace(vertices, indices, wx, wy, wz, 2, block.getTexture(2)); // front
-                    if (isTransparent(x, y, z - 1)) addFace(vertices, indices, wx, wy, wz, 3, block.getTexture(3)); // back
-                    if (isTransparent(x - 1, y, z)) addFace(vertices, indices, wx, wy, wz, 4, block.getTexture(4)); // left
-                    if (isTransparent(x + 1, y, z)) addFace(vertices, indices, wx, wy, wz, 5, block.getTexture(5)); // right
+                    if (isTransparent(x, y + 1, z))
+                        addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
+                    if (isTransparent(x, y - 1, z))
+                        addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
+                    if (isTransparent(x, y, z + 1))
+                        addFace(vertices, indices, wx, wy, wz, 2, block.getTexture(2)); // front
+                    if (isTransparent(x, y, z - 1))
+                        addFace(vertices, indices, wx, wy, wz, 3, block.getTexture(3)); // back
+                    if (isTransparent(x - 1, y, z))
+                        addFace(vertices, indices, wx, wy, wz, 4, block.getTexture(4)); // left
+                    if (isTransparent(x + 1, y, z))
+                        addFace(vertices, indices, wx, wy, wz, 5, block.getTexture(5)); // right
                 }
             }
         }
@@ -209,45 +239,45 @@ public class Chunk {
         int startIndex = v.size() / 7;
 
         float[][] pos = switch (face) {
-            case 0 -> new float[][]{{0,1,1}, {1,1,1}, {1,1,0}, {0,1,0}}; // top
-            case 1 -> new float[][]{{0,0,0}, {1,0,0}, {1,0,1}, {0,0,1}}; // bottom
-            case 2 -> new float[][]{{0,0,1}, {1,0,1}, {1,1,1}, {0,1,1}}; // front
-            case 3 -> new float[][]{{1,0,0}, {0,0,0}, {0,1,0}, {1,1,0}}; // back
-            case 4 -> new float[][]{{0,0,0}, {0,0,1}, {0,1,1}, {0,1,0}}; // left
-            case 5 -> new float[][]{{1,0,1}, {1,0,0}, {1,1,0}, {1,1,1}}; // right
+            case 0 -> new float[][]{{0, 1, 1}, {1, 1, 1}, {1, 1, 0}, {0, 1, 0}}; // top
+            case 1 -> new float[][]{{0, 0, 0}, {1, 0, 0}, {1, 0, 1}, {0, 0, 1}}; // bottom
+            case 2 -> new float[][]{{0, 0, 1}, {1, 0, 1}, {1, 1, 1}, {0, 1, 1}}; // front
+            case 3 -> new float[][]{{1, 0, 0}, {0, 0, 0}, {0, 1, 0}, {1, 1, 0}}; // back
+            case 4 -> new float[][]{{0, 0, 0}, {0, 0, 1}, {0, 1, 1}, {0, 1, 0}}; // left
+            case 5 -> new float[][]{{1, 0, 1}, {1, 0, 0}, {1, 1, 0}, {1, 1, 1}}; // right
             default -> throw new IllegalArgumentException();
         };
 
-        //int tileX = block & 0xFFFF;
-        //int tileY = (block >>> 16) & 0xFFFF;
+//int tileX = block & 0xFFFF;
+//int tileY = (block >>> 16) & 0xFFFF;
 
-        /*float uMin = tileX * TILE_SIZE;
-        float uMax = uMin + TILE_SIZE;
-        float vMin = 1.0f - ((tileY + 1) * TILE_SIZE);
-        float vMax = 1.0f - (tileY * TILE_SIZE);*/
+/*float uMin = tileX * TILE_SIZE;
+float uMax = uMin + TILE_SIZE;
+float vMin = 1.0f - ((tileY + 1) * TILE_SIZE);
+float vMax = 1.0f - (tileY * TILE_SIZE);*/
 
 
         float[][] uvs = {
-                {0, 0},
-                {1, 0},
-                {1, 1},
-                {0, 1}
+            {0, 0},
+            {1, 0},
+            {1, 1},
+            {0, 1}
         };
 
-       /* int rot = 0;
-        if ((tileX == 0 && tileY == 0) || (tileX == 2 && tileY == 0)) {
-            int bx = (int) Math.floor(x) + worldPos.x();
-            int by = (int) Math.floor(y);
-            int bz = (int) Math.floor(z) + worldPos.z();
+/* int rot = 0;
+if ((tileX == 0 && tileY == 0) || (tileX == 2 && tileY == 0)) {
+int bx = (int) Math.floor(x) + worldPos.x();
+int by = (int) Math.floor(y);
+int bz = (int) Math.floor(z) + worldPos.z();
 
-            int hash = bx * 73856093 ^ by * 19349663 ^ bz * 83492791;
-            hash ^= hash >>> 16;
-            hash *= 0x85ebca6b;
-            hash ^= hash >>> 13;
-            hash *= 0xc2b2ae35;
-            hash ^= hash >>> 16;
-            rot = (hash & Integer.MAX_VALUE) & 3;
-        }*/
+int hash = bx * 73856093 ^ by * 19349663 ^ bz * 83492791;
+hash ^= hash >>> 16;
+hash *= 0x85ebca6b;
+hash ^= hash >>> 13;
+hash *= 0xc2b2ae35;
+hash ^= hash >>> 16;
+rot = (hash & Integer.MAX_VALUE) & 3;
+}*/
 
         float[] cornerAOs = calculateFaceAO(x & 15, y, z & 15, face);
 
@@ -265,10 +295,10 @@ public class Chunk {
             v.add(cornerAOs[i]);
         }
 
-        float aoBottomLeft  = cornerAOs[0];
+        float aoBottomLeft = cornerAOs[0];
         float aoBottomRight = cornerAOs[1];
-        float aoTopRight    = cornerAOs[2];
-        float aoTopLeft     = cornerAOs[3];
+        float aoTopRight = cornerAOs[2];
+        float aoTopLeft = cornerAOs[3];
 
         if (aoBottomLeft + aoTopRight < aoBottomRight + aoTopLeft) {
             idx.add(startIndex);
@@ -307,7 +337,7 @@ public class Chunk {
     private float[] calculateFaceAO(float x, float y, float z, int face) {
         float[] aos = new float[4];
 
-        // Convert local positions to absolute values for safe rounding
+// Convert local positions to absolute values for safe rounding
         int bx = (int) Math.floor(x);
         int by = (int) Math.floor(y);
         int bz = (int) Math.floor(z);
@@ -316,8 +346,8 @@ public class Chunk {
             case 0 -> { // TOP Face (y + 1)
                 boolean s1 = !isTransparent(bx - 1, by + 1, bz);
                 boolean s2 = !isTransparent(bx + 1, by + 1, bz);
-                boolean s3 = !isTransparent(bx,     by + 1, bz - 1);
-                boolean s4 = !isTransparent(bx,     by + 1, bz + 1);
+                boolean s3 = !isTransparent(bx, by + 1, bz - 1);
+                boolean s4 = !isTransparent(bx, by + 1, bz + 1);
 
                 aos[0] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz + 1)); // BL
                 aos[1] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz + 1)); // BR
@@ -327,8 +357,8 @@ public class Chunk {
             case 1 -> { // BOTTOM Face (y - 1)
                 boolean s1 = !isTransparent(bx - 1, by - 1, bz);
                 boolean s2 = !isTransparent(bx + 1, by - 1, bz);
-                boolean s3 = !isTransparent(bx,     by - 1, bz - 1);
-                boolean s4 = !isTransparent(bx,     by - 1, bz + 1);
+                boolean s3 = !isTransparent(bx, by - 1, bz - 1);
+                boolean s4 = !isTransparent(bx, by - 1, bz + 1);
 
                 aos[0] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz - 1));
                 aos[1] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz - 1));
@@ -336,10 +366,10 @@ public class Chunk {
                 aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by - 1, bz + 1));
             }
             case 2 -> { // FRONT Face (z + 1)
-                boolean s1 = !isTransparent(bx - 1, by,     bz + 1);
-                boolean s2 = !isTransparent(bx + 1, by,     bz + 1);
-                boolean s3 = !isTransparent(bx,     by - 1, bz + 1);
-                boolean s4 = !isTransparent(bx,     by + 1, bz + 1);
+                boolean s1 = !isTransparent(bx - 1, by, bz + 1);
+                boolean s2 = !isTransparent(bx + 1, by, bz + 1);
+                boolean s3 = !isTransparent(bx, by - 1, bz + 1);
+                boolean s4 = !isTransparent(bx, by + 1, bz + 1);
 
                 aos[0] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz + 1));
                 aos[1] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz + 1));
@@ -347,10 +377,10 @@ public class Chunk {
                 aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz + 1));
             }
             case 3 -> { // BACK Face (z - 1)
-                boolean s1 = !isTransparent(bx - 1, by,     bz - 1);
-                boolean s2 = !isTransparent(bx + 1, by,     bz - 1);
-                boolean s3 = !isTransparent(bx,     by - 1, bz - 1);
-                boolean s4 = !isTransparent(bx,     by + 1, bz - 1);
+                boolean s1 = !isTransparent(bx - 1, by, bz - 1);
+                boolean s2 = !isTransparent(bx + 1, by, bz - 1);
+                boolean s3 = !isTransparent(bx, by - 1, bz - 1);
+                boolean s4 = !isTransparent(bx, by + 1, bz - 1);
 
                 aos[0] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz - 1));
                 aos[1] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz - 1));
@@ -358,8 +388,8 @@ public class Chunk {
                 aos[3] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz - 1));
             }
             case 4 -> { // LEFT Face (x - 1)
-                boolean s1 = !isTransparent(bx - 1, by,     bz - 1);
-                boolean s2 = !isTransparent(bx - 1, by,     bz + 1);
+                boolean s1 = !isTransparent(bx - 1, by, bz - 1);
+                boolean s2 = !isTransparent(bx - 1, by, bz + 1);
                 boolean s3 = !isTransparent(bx - 1, by - 1, bz);
                 boolean s4 = !isTransparent(bx - 1, by + 1, bz);
 
@@ -369,8 +399,8 @@ public class Chunk {
                 aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz - 1));
             }
             case 5 -> { // RIGHT Face (x + 1)
-                boolean s1 = !isTransparent(bx + 1, by,     bz - 1);
-                boolean s2 = !isTransparent(bx + 1, by,     bz + 1);
+                boolean s1 = !isTransparent(bx + 1, by, bz - 1);
+                boolean s2 = !isTransparent(bx + 1, by, bz + 1);
                 boolean s3 = !isTransparent(bx + 1, by - 1, bz);
                 boolean s4 = !isTransparent(bx + 1, by + 1, bz);
 
@@ -383,33 +413,58 @@ public class Chunk {
         return aos;
     }
 
-    private int getIndex(int x, int y, int z){
+    private int getIndex(int x, int y, int z) {
         return (z * SIZE_X * SIZE_Y) + (y * SIZE_X) + x;
     }
 
     public short getBlock(int x, int y, int z) {
-        return blocks[getIndex(x,y,z)];
+        return blocks[getIndex(x, y, z)];
     }
 
     public void setBlock(int x, int y, int z, short block) {
-        blocks[getIndex(x,y,z)] = block;
+        blocks[getIndex(x, y, z)] = block;
     }
 
     public boolean isTransparent(int x, int y, int z) {
         if (y < 0 || y >= SIZE_Y) return true;
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return getBlockChunkSafe(x,y,z) == BlockTypes.AIR;
-        return blocks[getIndex(x,y,z)] == BlockTypes.AIR;
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return getBlockInterchunk(x, y, z) == BlockTypes.AIR;
+        return blocks[getIndex(x, y, z)] == BlockTypes.AIR;
+    }
+
+    public short getBlockInterchunk(int x, int y, int z) {
+        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
+        if (chunk == null) return BlockTypes.NULL;
+        return chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z));
+    }
+
+    public void setBlockInterchunk(int x, int y, int z, short block) {
+        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
+        if (chunk == null) return;
+        chunk.setBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z), block);
+    }
+
+    public void setBlockInterchunkPromise(int x, int y, int z, Function<Short,Short> block) {
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
+            Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
+            if (chunk == null) NanoCraft.WORLD.setBlockPromise(worldPos.x()*SIZE_X+x,y,worldPos.z()*SIZE_Z+z,block);
+            else {
+                short b = block.apply(chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z)));
+                if (b != BlockTypes.NULL) chunk.setBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z), b);
+            }
+        } else {
+            short b = block.apply(blocks[getIndex(x,y,z)]);
+            if (b != BlockTypes.NULL)  blocks[getIndex(x,y,z)] = b;
+        }
     }
 
     public short getBlockChunkSafe(int x, int y, int z) {
-        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x,SIZE_X),Math.floorDiv(z,SIZE_Z)));
-        if (chunk == null) return BlockTypes.NULL;
-        return chunk.getBlock(Math.floorMod(x,SIZE_X),y,Math.floorMod(z,SIZE_Z));
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return BlockTypes.NULL;
+        return blocks[getIndex(x, y, z)];
     }
+
     public void setBlockChunkSafe(int x, int y, int z, short block) {
-        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x,SIZE_X),Math.floorDiv(z,SIZE_Z)));
-        if (chunk == null) return;
-        chunk.setBlock(Math.floorMod(x,SIZE_X),y,Math.floorMod(z,SIZE_Z),block);
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return;
+        blocks[getIndex(x, y, z)] = block;
     }
 
     public void render() {
