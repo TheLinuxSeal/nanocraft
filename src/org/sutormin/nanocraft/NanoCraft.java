@@ -1,9 +1,11 @@
 package org.sutormin.nanocraft;
 
-import org.sutormin.nanocraft.registries.block.BlockRegistryLegacy;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.resources.Texture;
+import org.sutormin.nanocraft.resources.Textures;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -20,10 +22,8 @@ public class NanoCraft {
 
     private Texture texture;
     private Shader shader;
-    public static World world;
-    private final Camera camera = new Camera();
-
-    public static final BlockRegistryLegacy blockRegistry = new BlockRegistryLegacy();
+    public static World WORLD;
+    private final Camera CAMERA = new Camera();
 
     private double lastMouseX = width / 2.0;
     private double lastMouseY = height / 2.0;
@@ -35,9 +35,11 @@ public class NanoCraft {
     #version 330 core
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec3 aTexCoord;
+    layout (location = 2) in float aAO; // 1. Pass Ambient Occlusion value per-vertex
 
     out vec3 TexCoord;
     out vec3 FragPosView;
+    out float vAO;                     // 2. Pass it down to the fragment shader
 
     uniform mat4 uProjection;
     uniform mat4 uView;
@@ -47,6 +49,7 @@ public class NanoCraft {
         FragPosView = viewPos.xyz;
         gl_Position = uProjection * viewPos;
         TexCoord = aTexCoord;
+        vAO = aAO;                     // 3. Forward the value to fragment stage
     }
   """;
 
@@ -54,6 +57,7 @@ public class NanoCraft {
     #version 330 core
     in vec3 TexCoord;
     in vec3 FragPosView;
+    in float vAO;                      // 1. Receive interpolated AO from vertices
     out vec4 FragColor;
 
     uniform sampler2DArray uTexture;
@@ -72,10 +76,13 @@ public class NanoCraft {
         // Linear fog interpolation factor (0.0 = full fog, 1.0 = full texture)
         //float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
 
-        //vec3 finalColor = mix(uFogColor, , fogFactor);
-        FragColor = vec4(texColor.rgb, texColor.a);
+        //vec3 finalColor = mix(uFogColor, texColor.rgb * vAO, fogFactor);
+        
+        // 2. Multiply the texture color by the ambient occlusion lighting factor
+        FragColor = vec4(texColor.rgb * vAO, texColor.a);
     }
   """;
+
 
     public void run() {
         init();
@@ -116,7 +123,7 @@ public class NanoCraft {
             lastMouseX = xpos;
             lastMouseY = ypos;
 
-            camera.processMouseInput(xOffset, yOffset);
+            CAMERA.processMouseInput(xOffset, yOffset);
         });
 
         glfwMakeContextCurrent(window);
@@ -136,7 +143,10 @@ public class NanoCraft {
 
         glViewport(0, 0, framebufferWidth[0], framebufferHeight[0]);
 
-        texture = new Texture("res/atlas.png");
+        BlockTypes.define();
+
+        Textures.loadTextures();
+
 
         shader = new Shader(VERTEX_SHADER, FRAGMENT_SHADER);
         shader.createUniform("uProjection");
@@ -145,7 +155,9 @@ public class NanoCraft {
         //shader.createUniform("uFogNear");
         //shader.createUniform("uFogFar");
 
-        world = new World();
+
+
+        WORLD = new World();
     }
 
     private void loop() {
@@ -159,9 +171,9 @@ public class NanoCraft {
             float deltaTime = (now - lastTime) / 1000000000.0f;
             lastTime = now;
 
-            ChunkPos currentChunkPos = camera.getChunkPos();
+            ChunkPos currentChunkPos = CAMERA.getChunkPos();
             if (!currentChunkPos.equals(lastCameraChunkPos)) {
-                world.loadChunksAndUnloadAllOtherChunks(getChunksInRenderDistance(currentChunkPos, 8));
+                WORLD.loadChunksAndUnloadAllOtherChunks(getChunksInRenderDistance(currentChunkPos, 8));
                 lastCameraChunkPos = currentChunkPos;
             }
 
@@ -169,15 +181,18 @@ public class NanoCraft {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            texture.bind();
+            Textures.BLOCK.bind();
             shader.bind();
             shader.setUniform("uProjection", projection);
-            shader.setUniform("uView", camera.getViewMatrix());
+            shader.setUniform("uView", CAMERA.getViewMatrix());
             //shader.setUniform("uFogColor", new org.joml.Vector3f(0.623f, 0.734f, 0.785f));
             //shader.setUniform("uFogNear", 80.0f);
             //shader.setUniform("uFogFar", 120.0f);
 
-            world.render();
+            WORLD.renderChunks();
+
+            Textures.BLOCK.unbind();
+
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -205,7 +220,7 @@ public class NanoCraft {
             speed = 15.0f;
         }
 
-        camera.updatePosition(forwardBack, rightLeft, upDown, speed, dt);
+        CAMERA.updatePosition(forwardBack, rightLeft, upDown, speed, dt);
     }
 
     private List<ChunkPos> getChunksInRenderDistance(ChunkPos center, int renderDistance) {
@@ -219,8 +234,8 @@ public class NanoCraft {
     }
 
     private void cleanup() {
-        texture.cleanup();
-        world.cleanup();
+        Textures.cleanup();
+        WORLD.cleanup();
         shader.cleanup();
 
         glfwFreeCallbacks(window);

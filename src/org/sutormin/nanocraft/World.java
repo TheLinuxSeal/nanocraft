@@ -1,6 +1,6 @@
 package org.sutormin.nanocraft;
 
-import org.sutormin.nanocraft.registries.block.BlockTypes;
+import org.sutormin.nanocraft.block.BlockTypes;
 
 import java.util.*;
 
@@ -104,7 +104,7 @@ public class World {
         return new ChunkPos(chunkX, chunkZ);
     }
 
-    public void render() {
+    public void renderChunks() {
         for (Chunk chunk : chunks.values()) {
             chunk.render();
         }

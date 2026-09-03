@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.registries.block;
+package org.sutormin.nanocraft.block;
 
 public enum BlockStateKey {
     AXIS,

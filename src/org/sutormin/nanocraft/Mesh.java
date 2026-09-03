@@ -36,13 +36,16 @@ public class Mesh {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBuffer, GL_STATIC_DRAW);
         MemoryUtil.memFree(iBuffer);
 
-        int stride = 6 * Float.BYTES;
+        int stride = 7 * Float.BYTES;
 
         glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, 0);
         glEnableVertexAttribArray(0);
 
         glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, 3 * Float.BYTES);
         glEnableVertexAttribArray(1);
+
+        glVertexAttribPointer(2, 1, GL_FLOAT, false, stride, 6 * Float.BYTES);
+        glEnableVertexAttribArray(2);
 
         glBindVertexArray(0);
     }

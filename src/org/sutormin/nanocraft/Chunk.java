@@ -1,6 +1,8 @@
 package org.sutormin.nanocraft;
 
-import org.sutormin.nanocraft.registries.block.*;
+import org.sutormin.nanocraft.block.BlockType;
+import org.sutormin.nanocraft.block.BlockRegistry;
+import org.sutormin.nanocraft.block.BlockTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,12 +84,12 @@ public class Chunk {
                         blocks[getId(x,y,z)] = BlockTypes.DIRT; // dirt
                     } else if (y == height) {
                         if (height <= SEA_LEVEL + 1) {
-                            blocks[getId(x,y,z)] = BlockTypes.GOLD_ORE; // sand (unimp)
+                            blocks[getId(x,y,z)] = BlockTypes.SAND; // sand (unimp)
                         } else {
                             blocks[getId(x,y,z)] = BlockTypes.GRASS; // grass
                         }
                     } else if (y <= SEA_LEVEL) {
-                        blocks[getId(x,y,z)] = BlockTypes.DIAMOND_ORE; // water (unimp)
+                        blocks[getId(x,y,z)] = BlockTypes.WATER; // water (unimp)
                     }
                 }
 
@@ -177,11 +179,11 @@ public class Chunk {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
                     if (blocks[getId(x,y,z)] == 0) continue;
-                    BlockType block = BlockTypeRegistry.getBlock(blocks[getId(x,y,z)]);
+                    BlockType block = BlockRegistry.getBlock(blocks[getId(x,y,z)]);
 
-                    float wx = worldOffsetX + x;
-                    float wy = y;
-                    float wz = worldOffsetZ + z;
+                    int wx = worldOffsetX + x;
+                    int wy = y;
+                    int wz = worldOffsetZ + z;
 
                     if (isTransparent(x, y + 1, z)) addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
                     if (isTransparent(x, y - 1, z)) addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
@@ -204,23 +206,29 @@ public class Chunk {
     }
 
     private boolean isTransparent(int x, int y, int z) {
+        //System.out.println(x + " " + y + " " + z);
         if (y < 0 || y >= SIZE_Y) return true;
 
+        if (x < 0 && z < 0) return getBlockFromOffsetChunk(-1,-1,SIZE_X+x,y,SIZE_Z+z)==BlockTypes.AIR;
+        if (x >= SIZE_X && z < 0)  return getBlockFromOffsetChunk(1,-1,x%SIZE_X,y,SIZE_Z+z)==BlockTypes.AIR;
+        if (x < 0 && z >= SIZE_Z) return getBlockFromOffsetChunk(-1,1,SIZE_X+x,y,z%SIZE_Z)==BlockTypes.AIR;
+        if (x >= SIZE_X && z >= SIZE_Z)  return getBlockFromOffsetChunk(1,1,x%SIZE_X,y,z%SIZE_Z)==BlockTypes.AIR;
+
         if (x < 0) return getBlockFromOffsetChunk(-1,0,SIZE_X+x,y,z)==BlockTypes.AIR;
-        if (x >= SIZE_Z)  return getBlockFromOffsetChunk(1,0,x%SIZE_X,y,z)==BlockTypes.AIR;
+        if (x >= SIZE_X)  return getBlockFromOffsetChunk(1,0,x%SIZE_X,y,z)==BlockTypes.AIR;
         if (z < 0) return getBlockFromOffsetChunk(0,-1,x,y,SIZE_Z+z)==BlockTypes.AIR;
         if (z >= SIZE_Z)  return getBlockFromOffsetChunk(0,1,x,y,z%SIZE_Z)==BlockTypes.AIR;
         return blocks[getId(x,y,z)] == BlockTypes.AIR;
     }
 
     public short getBlockFromOffsetChunk(int cx, int cz, int x, int y, int z) {
-        Chunk chunk = NanoCraft.world.getChunk(worldPos.offset(cx,cz));
+        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(cx,cz));
         if (chunk == null) return -1;
         return chunk.getBlock(x,y,z);
     }
 
-    private void addFace(List<Float> v, List<Integer> idx, float x, float y, float z, int face, int block) {
-        int startIndex = v.size() / 6;
+    private void addFace(List<Float> v, List<Integer> idx, int x, int y, int z, int face, int block) {
+        int startIndex = v.size() / 7;
 
         float[][] pos = switch (face) {
             case 0 -> new float[][]{{0,1,1}, {1,1,1}, {1,1,0}, {0,1,0}}; // top
@@ -232,23 +240,23 @@ public class Chunk {
             default -> throw new IllegalArgumentException();
         };
 
-        int tileX = block & 0xFFFF;
-        int tileY = (block >>> 16) & 0xFFFF;
+        //int tileX = block & 0xFFFF;
+        //int tileY = (block >>> 16) & 0xFFFF;
 
-        float uMin = tileX * TILE_SIZE;
+        /*float uMin = tileX * TILE_SIZE;
         float uMax = uMin + TILE_SIZE;
         float vMin = 1.0f - ((tileY + 1) * TILE_SIZE);
-        float vMax = 1.0f - (tileY * TILE_SIZE);
+        float vMax = 1.0f - (tileY * TILE_SIZE);*/
 
 
         float[][] uvs = {
-                {uMin, vMin},
-                {uMax, vMin},
-                {uMax, vMax},
-                {uMin, vMax}
+                {0, 0},
+                {1, 0},
+                {1, 1},
+                {0, 1}
         };
 
-        int rot = 0;
+       /* int rot = 0;
         if ((tileX == 0 && tileY == 0) || (tileX == 2 && tileY == 0)) {
             int bx = (int) Math.floor(x) + worldPos.x();
             int by = (int) Math.floor(y);
@@ -261,10 +269,12 @@ public class Chunk {
             hash *= 0xc2b2ae35;
             hash ^= hash >>> 16;
             rot = (hash & Integer.MAX_VALUE) & 3;
-        }
+        }*/
+
+        float[] cornerAOs = calculateFaceAO(x & 15, y, z & 15, face);
 
         for (int i = 0; i < 4; i++) {
-            int uvIndex = (i + rot) % 4;
+            int uvIndex = i % 4;
 
             v.add(x + pos[i][0]);
             v.add(y + pos[i][1]);
@@ -272,15 +282,127 @@ public class Chunk {
 
             v.add(uvs[uvIndex][0]);
             v.add(uvs[uvIndex][1]);
-            v.add(0f);
+            v.add((float) block);
+
+            v.add(cornerAOs[i]);
         }
 
-        idx.add(startIndex);
-        idx.add(startIndex + 1);
-        idx.add(startIndex + 2);
-        idx.add(startIndex + 2);
-        idx.add(startIndex + 3);
-        idx.add(startIndex);
+        float aoBottomLeft  = cornerAOs[0];
+        float aoBottomRight = cornerAOs[1];
+        float aoTopRight    = cornerAOs[2];
+        float aoTopLeft     = cornerAOs[3];
+
+        if (aoBottomLeft + aoTopRight < aoBottomRight + aoTopLeft) {
+            idx.add(startIndex);
+            idx.add(startIndex + 1);
+            idx.add(startIndex + 3);
+
+            idx.add(startIndex + 1);
+            idx.add(startIndex + 2);
+            idx.add(startIndex + 3);
+        } else {
+            idx.add(startIndex);
+            idx.add(startIndex + 1);
+            idx.add(startIndex + 2);
+
+            idx.add(startIndex + 2);
+            idx.add(startIndex + 3);
+            idx.add(startIndex);
+        }
+    }
+
+    private float getAOValue(boolean side1, boolean side2, boolean corner) {
+        if (side1 && side2) return 0.4f; // 3 blocks: corner enclosed (darkest)
+        int count = 0;
+        if (side1) count++;
+        if (side2) count++;
+        if (corner) count++;
+
+        return switch (count) {
+            case 1 -> 0.8f;
+            case 2 -> 0.6f;
+            case 3 -> 0.4f;
+            default -> 1.0f; // 0 blocks: completely open air (bright)
+        };
+    }
+
+    private float[] calculateFaceAO(float x, float y, float z, int face) {
+        float[] aos = new float[4];
+
+        // Convert local positions to absolute values for safe rounding
+        int bx = (int) Math.floor(x);
+        int by = (int) Math.floor(y);
+        int bz = (int) Math.floor(z);
+
+        switch (face) {
+            case 0 -> { // TOP Face (y + 1)
+                boolean s1 = !isTransparent(bx - 1, by + 1, bz);
+                boolean s2 = !isTransparent(bx + 1, by + 1, bz);
+                boolean s3 = !isTransparent(bx,     by + 1, bz - 1);
+                boolean s4 = !isTransparent(bx,     by + 1, bz + 1);
+
+                aos[0] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz + 1)); // BL
+                aos[1] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz + 1)); // BR
+                aos[2] = getAOValue(s2, s3, !isTransparent(bx + 1, by + 1, bz - 1)); // TR
+                aos[3] = getAOValue(s1, s3, !isTransparent(bx - 1, by + 1, bz - 1)); // TL
+            }
+            case 1 -> { // BOTTOM Face (y - 1)
+                boolean s1 = !isTransparent(bx - 1, by - 1, bz);
+                boolean s2 = !isTransparent(bx + 1, by - 1, bz);
+                boolean s3 = !isTransparent(bx,     by - 1, bz - 1);
+                boolean s4 = !isTransparent(bx,     by - 1, bz + 1);
+
+                aos[0] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz - 1));
+                aos[1] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz - 1));
+                aos[2] = getAOValue(s2, s4, !isTransparent(bx + 1, by - 1, bz + 1));
+                aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by - 1, bz + 1));
+            }
+            case 2 -> { // FRONT Face (z + 1)
+                boolean s1 = !isTransparent(bx - 1, by,     bz + 1);
+                boolean s2 = !isTransparent(bx + 1, by,     bz + 1);
+                boolean s3 = !isTransparent(bx,     by - 1, bz + 1);
+                boolean s4 = !isTransparent(bx,     by + 1, bz + 1);
+
+                aos[0] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz + 1));
+                aos[1] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz + 1));
+                aos[2] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz + 1));
+                aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz + 1));
+            }
+            case 3 -> { // BACK Face (z - 1)
+                boolean s1 = !isTransparent(bx - 1, by,     bz - 1);
+                boolean s2 = !isTransparent(bx + 1, by,     bz - 1);
+                boolean s3 = !isTransparent(bx,     by - 1, bz - 1);
+                boolean s4 = !isTransparent(bx,     by + 1, bz - 1);
+
+                aos[0] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz - 1));
+                aos[1] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz - 1));
+                aos[2] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz - 1));
+                aos[3] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz - 1));
+            }
+            case 4 -> { // LEFT Face (x - 1)
+                boolean s1 = !isTransparent(bx - 1, by,     bz - 1);
+                boolean s2 = !isTransparent(bx - 1, by,     bz + 1);
+                boolean s3 = !isTransparent(bx - 1, by - 1, bz);
+                boolean s4 = !isTransparent(bx - 1, by + 1, bz);
+
+                aos[0] = getAOValue(s1, s3, !isTransparent(bx - 1, by - 1, bz - 1));
+                aos[1] = getAOValue(s2, s3, !isTransparent(bx - 1, by - 1, bz + 1));
+                aos[2] = getAOValue(s2, s4, !isTransparent(bx - 1, by + 1, bz + 1));
+                aos[3] = getAOValue(s1, s4, !isTransparent(bx - 1, by + 1, bz - 1));
+            }
+            case 5 -> { // RIGHT Face (x + 1)
+                boolean s1 = !isTransparent(bx + 1, by,     bz - 1);
+                boolean s2 = !isTransparent(bx + 1, by,     bz + 1);
+                boolean s3 = !isTransparent(bx + 1, by - 1, bz);
+                boolean s4 = !isTransparent(bx + 1, by + 1, bz);
+
+                aos[0] = getAOValue(s2, s3, !isTransparent(bx + 1, by - 1, bz + 1));
+                aos[1] = getAOValue(s1, s3, !isTransparent(bx + 1, by - 1, bz - 1));
+                aos[2] = getAOValue(s1, s4, !isTransparent(bx + 1, by + 1, bz - 1));
+                aos[3] = getAOValue(s2, s4, !isTransparent(bx + 1, by + 1, bz + 1));
+            }
+        }
+        return aos;
     }
 
     private int getId(int x, int y, int z){

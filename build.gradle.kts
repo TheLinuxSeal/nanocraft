@@ -20,6 +20,7 @@ val lwjglNatives = "natives-linux" // Change to "natives-linux" or "natives-maco
 sourceSets {
     main {
         java.setSrcDirs(listOf("src"))
+        resources.setSrcDirs(listOf("src/assets"))
     }
 }
 
