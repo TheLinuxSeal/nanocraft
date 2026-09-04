@@ -29,7 +29,7 @@ public class World {
     public void meshChunk(ChunkPos pos) {
         if (!chunks.containsKey(pos)) return;
         Chunk chunk = chunks.get(pos);
-        if (chunk.mesh != null && (!forceRemeshChunks.contains(pos) || cancelRemeshChunks.contains(pos))) return;
+        if (chunk.mesh.generated && (!forceRemeshChunks.contains(pos) || cancelRemeshChunks.contains(pos))) return;
         chunk.buildMesh();
     }
 
@@ -54,28 +54,13 @@ public class World {
         forceRemeshChunks.clear();
         cancelRemeshChunks.clear();
 
-        long startTime = System.nanoTime();
-
         for (ChunkPos pos : posList) {
             makeChunk(pos);
         }
 
-        System.out.println((startTime-System.nanoTime())/1_000_000.0);
-
-        //System.out.println(forceRemeshChunks.size()-cancelRemeshChunks.size());
-
-        startTime = System.nanoTime();
-
         for (ChunkPos pos : posList) {
             meshChunk(pos);
         }
-
-        System.out.println((startTime-System.nanoTime())/1_000_000.0);
-        startTime = System.nanoTime();
-        //checkBlockPromises();
-        System.out.println((startTime-System.nanoTime())/1_000_000.0);
-
-        System.out.println();
     }
 
     public short getBlockAt(int x, int y, int z) {
