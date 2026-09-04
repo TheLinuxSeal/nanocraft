@@ -17,7 +17,6 @@ public class World {
     public void makeChunk(ChunkPos pos) {
         if (chunks.containsKey(pos)) return;
         Chunk chunk = new Chunk(pos);
-        //chunk.buildMesh();
         chunks.put(pos, chunk);
         forceRemeshChunks.add(pos.offset(-1,0));
         forceRemeshChunks.add(pos.offset(1,0));

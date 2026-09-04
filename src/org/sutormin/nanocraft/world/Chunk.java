@@ -61,41 +61,9 @@ public class Chunk {
                     }
                 }
 
-                if (height > SEA_LEVEL + 1 && hash(wx, wz) % 100 == 0 && x > 1 && z > 1 && x < SIZE_X - 1 && z < SIZE_Z - 1) {
-                    generateTree(x, height + 1, z);
-                }
                 blocks[getIndex(x, 0, z)] = BlockTypes.BEDROCK;
             }
         }
-    }
-
-    private void generateTree(int cx, int startY, int cz) {
-        int trunkHeight = 4;
-        for (int y = startY; y < startY + trunkHeight && y < SIZE_Y; y++) {
-            blocks[getIndex(cx, y, cz)] = BlockTypes.OAK_LOG;
-        }
-        int leafStart = startY + trunkHeight - 2;
-        Function<Short,Short> leafFunc = block -> {if (block == BlockTypes.AIR) return BlockTypes.OAK_LEAVES;else return BlockTypes.NULL;};
-        for (int lx = -2; lx <= 2; lx++) {
-            for (int lz = -2; lz <= 2; lz++) {
-                setBlockInterchunkPromise(cx+lx,leafStart,cz+lz,leafFunc);
-            }
-        }
-        for (int lx = -2; lx <= 2; lx++) {
-            for (int lz = -2; lz <= 2; lz++) {
-                setBlockInterchunkPromise(cx+lx,leafStart+1,cz+lz,leafFunc);
-            }
-        }
-        for (int lx = -1; lx <= 1; lx++) {
-            for (int lz = -1; lz <= 1; lz++) {
-                setBlockInterchunkPromise(cx+lx,leafStart+2,cz+lz,leafFunc);
-            }
-        }
-        setBlockInterchunkPromise(cx,leafStart+3,cz,leafFunc);
-        setBlockInterchunkPromise(cx-1,leafStart+3,cz,leafFunc);
-        setBlockInterchunkPromise(cx+1,leafStart+3,cz,leafFunc);
-        setBlockInterchunkPromise(cx,leafStart+3,cz-1,leafFunc);
-        setBlockInterchunkPromise(cx,leafStart+3,cz+1,leafFunc);
     }
 
     private int hash(int x, int z) {
@@ -183,7 +151,6 @@ public class Chunk {
         int[] iArray = new int[indices.size()];
         for (int i = 0; i < indices.size(); i++) iArray[i] = indices.get(i);
 
-        //if (mesh != null) mesh.cleanup();
         mesh.updateMesh(vArray, iArray);
     }
 
@@ -200,36 +167,12 @@ public class Chunk {
             default -> throw new IllegalArgumentException();
         };
 
-//int tileX = block & 0xFFFF;
-//int tileY = (block >>> 16) & 0xFFFF;
-
-/*float uMin = tileX * TILE_SIZE;
-float uMax = uMin + TILE_SIZE;
-float vMin = 1.0f - ((tileY + 1) * TILE_SIZE);
-float vMax = 1.0f - (tileY * TILE_SIZE);*/
-
-
         float[][] uvs = {
             {0, 0},
             {1, 0},
             {1, 1},
             {0, 1}
         };
-
-/* int rot = 0;
-if ((tileX == 0 && tileY == 0) || (tileX == 2 && tileY == 0)) {
-int bx = (int) Math.floor(x) + worldPos.x();
-int by = (int) Math.floor(y);
-int bz = (int) Math.floor(z) + worldPos.z();
-
-int hash = bx * 73856093 ^ by * 19349663 ^ bz * 83492791;
-hash ^= hash >>> 16;
-hash *= 0x85ebca6b;
-hash ^= hash >>> 13;
-hash *= 0xc2b2ae35;
-hash ^= hash >>> 16;
-rot = (hash & Integer.MAX_VALUE) & 3;
-}*/
 
         float[] cornerAOs = calculateFaceAO(x & 15, y, z & 15, face);
 
@@ -289,7 +232,6 @@ rot = (hash & Integer.MAX_VALUE) & 3;
     private float[] calculateFaceAO(float x, float y, float z, int face) {
         float[] aos = new float[4];
 
-// Convert local positions to absolute values for safe rounding
         int bx = (int) Math.floor(x);
         int by = (int) Math.floor(y);
         int bz = (int) Math.floor(z);
@@ -387,26 +329,6 @@ rot = (hash & Integer.MAX_VALUE) & 3;
         Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
         if (chunk == null) return BlockTypes.NULL;
         return chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z));
-    }
-
-    public void setBlockInterchunk(int x, int y, int z, short block) {
-        Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
-        if (chunk == null) return;
-        chunk.setBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z), block);
-    }
-
-    public void setBlockInterchunkPromise(int x, int y, int z, Function<Short,Short> block) {
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
-            Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
-            if (chunk == null) NanoCraft.WORLD.setBlockPromise(worldPos.x()*SIZE_X+x,y,worldPos.z()*SIZE_Z+z,block);
-            else {
-                short b = block.apply(chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z)));
-                if (b != BlockTypes.NULL) chunk.setBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z), b);
-            }
-        } else {
-            short b = block.apply(blocks[getIndex(x,y,z)]);
-            if (b != BlockTypes.NULL)  blocks[getIndex(x,y,z)] = b;
-        }
     }
 
     public short getBlockChunkSafe(int x, int y, int z) {

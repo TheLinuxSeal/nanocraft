@@ -10,53 +10,40 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.List;
 
 public class MinecraftEncryptionDecoder extends ByteToMessageDecoder {
+    private final Cipher cipher;
 
-  private final Cipher cipher;
+    public MinecraftEncryptionDecoder(byte[] sharedSecret) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(sharedSecret, "AES");
+            IvParameterSpec iv = new IvParameterSpec(sharedSecret);
 
-  public MinecraftEncryptionDecoder(byte[] sharedSecret) {
-    try {
-      SecretKeySpec key = new SecretKeySpec(sharedSecret, "AES");
-      IvParameterSpec iv = new IvParameterSpec(sharedSecret);
-
-      cipher = Cipher.getInstance("AES/CFB8/NoPadding");
-      cipher.init(Cipher.DECRYPT_MODE, key, iv);
-
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Failed to initialize Minecraft encryption decoder",
-          e
-      );
-    }
-  }
-
-  @Override
-  protected void decode(
-      ChannelHandlerContext ctx,
-      ByteBuf in,
-      List<Object> out
-  ) {
-    if (!in.isReadable()) {
-      return;
+            cipher = Cipher.getInstance("AES/CFB8/NoPadding");
+            cipher.init(Cipher.DECRYPT_MODE, key, iv);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Minecraft encryption decoder", e);
+        }
     }
 
-    int length = in.readableBytes();
+    @Override
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+        if (!in.isReadable()) {
+            return;
+        }
 
-    byte[] encrypted = new byte[length];
-    in.readBytes(encrypted);
+        int length = in.readableBytes();
 
-    try {
-      byte[] decrypted = cipher.update(encrypted);
+        byte[] encrypted = new byte[length];
+        in.readBytes(encrypted);
 
-      if (decrypted != null && decrypted.length > 0) {
-        out.add(ctx.alloc().buffer(decrypted.length)
-            .writeBytes(decrypted));
-      }
+        try {
+            byte[] decrypted = cipher.update(encrypted);
 
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Failed to decrypt Minecraft packet data",
-          e
-      );
+            if (decrypted != null && decrypted.length > 0) {
+                out.add(ctx.alloc().buffer(decrypted.length)
+                    .writeBytes(decrypted));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to decrypt Minecraft packet data", e);
+        }
     }
-  }
 }

@@ -18,7 +18,6 @@ import static org.lwjgl.stb.STBImage.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class Texture {
-    //private final int textureId;
     private int texSize = 16;
 
     private int tex;
@@ -44,16 +43,13 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 4);
-        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, texSize, texSize, paths.size(), 0, GL_RGB,
-                GL_UNSIGNED_BYTE, (ByteBuffer) null);
+        glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, texSize, texSize, paths.size(), 0, GL_RGB, GL_UNSIGNED_BYTE, (ByteBuffer) null);
         try (MemoryStack stack = stackPush()) {
-            for (var i=0;i<paths.size();i++) {
+            for (var i = 0; i < paths.size(); i++) {
                 InputStream is = Main.class.getClassLoader().getResourceAsStream(paths.get(i));
                 IntBuffer width = stack.mallocInt(1);
                 IntBuffer height = stack.mallocInt(1);
                 IntBuffer channels = stack.mallocInt(1);
-
-
 
                 byte[] bytes = is.readAllBytes();
 
@@ -65,9 +61,6 @@ public class Texture {
 
                 MemoryUtil.memFree(buf);
 
-
-
-                //ByteBuffer image = stbi_load_from_memory( ByteBuffer.wrap(is.readAllBytes()), width, height, channels, 4);
                 int w = width.get(0);
                 int h = height.get(0);
                 glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, i, w, h, 1, GL_RGBA, GL_UNSIGNED_BYTE, image);

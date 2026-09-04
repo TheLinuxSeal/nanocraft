@@ -8,50 +8,38 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class MinecraftEncryptionEncoder
-    extends MessageToByteEncoder<ByteBuf> {
+public class MinecraftEncryptionEncoder extends MessageToByteEncoder<ByteBuf> {
+    private final Cipher cipher;
 
-  private final Cipher cipher;
+    public MinecraftEncryptionEncoder(byte[] sharedSecret) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(sharedSecret, "AES");
+            IvParameterSpec iv = new IvParameterSpec(sharedSecret);
 
-  public MinecraftEncryptionEncoder(byte[] sharedSecret) {
-    try {
-      SecretKeySpec key = new SecretKeySpec(sharedSecret, "AES");
-      IvParameterSpec iv = new IvParameterSpec(sharedSecret);
+            cipher = Cipher.getInstance("AES/CFB8/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, key, iv);
 
-      cipher = Cipher.getInstance("AES/CFB8/NoPadding");
-      cipher.init(Cipher.ENCRYPT_MODE, key, iv);
-
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Failed to initialize Minecraft encryption encoder",
-          e
-      );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Minecraft encryption encoder", e);
+        }
     }
-  }
 
-  @Override
-  protected void encode(
-      ChannelHandlerContext ctx,
-      ByteBuf msg,
-      ByteBuf out
-  ) {
-    int length = msg.readableBytes();
+    @Override
+    protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) {
+        int length = msg.readableBytes();
 
-    byte[] plaintext = new byte[length];
-    msg.readBytes(plaintext);
+        byte[] plaintext = new byte[length];
+        msg.readBytes(plaintext);
 
-    try {
-      byte[] encrypted = cipher.update(plaintext);
+        try {
+            byte[] encrypted = cipher.update(plaintext);
 
-      if (encrypted != null) {
-        out.writeBytes(encrypted);
-      }
+            if (encrypted != null) {
+                out.writeBytes(encrypted);
+            }
 
-    } catch (Exception e) {
-      throw new RuntimeException(
-          "Failed to encrypt Minecraft packet data",
-          e
-      );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to encrypt Minecraft packet data", e);
+        }
     }
-  }
 }

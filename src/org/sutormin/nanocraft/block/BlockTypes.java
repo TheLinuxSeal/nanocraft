@@ -23,14 +23,14 @@ public class BlockTypes {
         BEDROCK = BlockRegistry.add().setTextures("bedrock.png").getId();
         DIRT = BlockRegistry.add().setTextures("dirt.png").getId();
         GRASS = BlockRegistry.add()
-                .setTextures(0b100000,"grass_block_top.png")
-                .setTextures(0b001111,"grass_block_side.png")
-                .setTextures(0b010000,"dirt.png").getId();
+            .setTextures(0b100000,"grass_block_top.png")
+            .setTextures(0b001111,"grass_block_side.png")
+            .setTextures(0b010000,"dirt.png").getId();
         SAND = BlockRegistry.add().setTextures("sand.png").getId();
         STONE = BlockRegistry.add().setTextures("stone.png").getId();
         OAK_LOG = BlockRegistry.add()
-                .setTextures(0b110000,"oak_log_top.png")
-                .setTextures(0b001111,"oak_log.png").getId();
+            .setTextures(0b110000,"oak_log_top.png")
+            .setTextures(0b001111,"oak_log.png").getId();
         OAK_LEAVES = BlockRegistry.add().setTextures("oak_leaves.png").getId();
         OAK_PLANKS = BlockRegistry.add().setTextures("oak_planks.png").getId();
         IRON_ORE = BlockRegistry.add().setTextures("iron_ore.png").getId();
