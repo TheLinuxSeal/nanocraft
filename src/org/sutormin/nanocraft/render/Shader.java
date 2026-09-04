@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft;
+package org.sutormin.nanocraft.render;
 
 import org.joml.Vector3f;
 import org.joml.Matrix4f;

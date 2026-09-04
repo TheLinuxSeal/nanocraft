@@ -4,8 +4,13 @@ import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.networking.Networking;
+import org.sutormin.nanocraft.networking.NetworkPhase;
+import org.sutormin.nanocraft.render.Shader;
 import org.sutormin.nanocraft.resources.Texture;
 import org.sutormin.nanocraft.resources.Textures;
+import org.sutormin.nanocraft.world.ChunkPos;
+import org.sutormin.nanocraft.world.World;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -24,6 +29,8 @@ public class NanoCraft {
     private Shader shader;
     public static World WORLD;
     private final Camera CAMERA = new Camera();
+
+    public static NetworkPhase networkPhase = NetworkPhase.HANDSHAKE;
 
     private double lastMouseX = width / 2.0;
     private double lastMouseY = height / 2.0;
@@ -158,6 +165,8 @@ public class NanoCraft {
 
 
         WORLD = new World();
+
+        //Networking.init();
     }
 
     private void loop() {

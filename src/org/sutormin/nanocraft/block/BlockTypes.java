@@ -3,6 +3,7 @@ package org.sutormin.nanocraft.block;
 public class BlockTypes {
     public static short NULL = -1;
     public static short AIR;
+    public static short BEDROCK;
     public static short DIRT;
     public static short GRASS;
     public static short SAND;
@@ -19,6 +20,7 @@ public class BlockTypes {
 
     public static void define(){
         AIR = BlockRegistry.add().getId();
+        BEDROCK = BlockRegistry.add().setTextures("bedrock.png").getId();
         DIRT = BlockRegistry.add().setTextures("dirt.png").getId();
         GRASS = BlockRegistry.add()
                 .setTextures(0b100000,"grass_block_top.png")

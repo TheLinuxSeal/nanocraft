@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft;
+package org.sutormin.nanocraft.world;
 
 public record ChunkPos(int x, int z) {
     public ChunkPos offset(int ox, int oz) {

@@ -2,6 +2,8 @@ package org.sutormin.nanocraft;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.sutormin.nanocraft.world.Chunk;
+import org.sutormin.nanocraft.world.ChunkPos;
 
 public class Camera {
     private final Vector3f position = new Vector3f(8.0f, 20.0f, 25.0f);

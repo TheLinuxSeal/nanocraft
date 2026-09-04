@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft;
+package org.sutormin.nanocraft.world;
 
 import org.sutormin.nanocraft.block.BlockTypes;
 
@@ -54,15 +54,28 @@ public class World {
         forceRemeshChunks.clear();
         cancelRemeshChunks.clear();
 
+        long startTime = System.nanoTime();
+
         for (ChunkPos pos : posList) {
             makeChunk(pos);
         }
+
+        System.out.println((startTime-System.nanoTime())/1_000_000.0);
+
+        //System.out.println(forceRemeshChunks.size()-cancelRemeshChunks.size());
+
+        startTime = System.nanoTime();
 
         for (ChunkPos pos : posList) {
             meshChunk(pos);
         }
 
-        checkBlockPromises();
+        System.out.println((startTime-System.nanoTime())/1_000_000.0);
+        startTime = System.nanoTime();
+        //checkBlockPromises();
+        System.out.println((startTime-System.nanoTime())/1_000_000.0);
+
+        System.out.println();
     }
 
     public short getBlockAt(int x, int y, int z) {

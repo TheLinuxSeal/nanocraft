@@ -1,8 +1,10 @@
-package org.sutormin.nanocraft;
+package org.sutormin.nanocraft.world;
 
+import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.block.BlockType;
 import org.sutormin.nanocraft.block.BlockRegistry;
 import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.render.Mesh;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +14,10 @@ public class Chunk {
     public static final int ATLAS_SIZE = 8;
     public static final float TILE_SIZE = 1.0f / ATLAS_SIZE;
     public static final int SIZE_X = 16;
-    public static final int SIZE_Y = 32;
+    public static final int SIZE_Y = 384;
     public static final int SIZE_Z = 16;
 
-    public static final int SEA_LEVEL = 10;
+    public static final int SEA_LEVEL = 63;
 
     private final ChunkPos worldPos;
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
@@ -24,43 +26,8 @@ public class Chunk {
 
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
+        this.mesh = new Mesh();
         generateTerrain();
-/*Random rand = new Random();
-
-for (int x = 0; x < SIZE_X; x++) {
-for (int z = 0; z < SIZE_Z; z++) {
-int height = 16;
-for (int y = 0; y < height - 4; y++) {
-blocks[getId(x,y,z)] = BlockTypes.STONE;
-}
-for (int y = height - 4; y < height; y++) {
-blocks[getId(x,y,z)] = BlockTypes.DIRT;
-}
-List a = List.of(
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.AIR,
-BlockTypes.DIRT,
-BlockTypes.GRASS,
-BlockTypes.STONE,
-BlockTypes.OAK_LOG,
-BlockTypes.OAK_LEAVES,
-BlockTypes.OAK_PLANKS,
-BlockTypes.IRON_ORE,
-BlockTypes.COPPER_ORE,
-BlockTypes.GOLD_ORE,
-BlockTypes.REDSTONE_ORE,
-BlockTypes.DIAMOND_ORE
-
-);
-blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
-}
-}*/
     }
 
     private void generateTerrain() {
@@ -75,7 +42,7 @@ blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
                 float baseNoise = sampleNoise2D(wx * 0.02f, wz * 0.02f);
                 float detailNoise = sampleNoise2D(wx * 0.08f, wz * 0.08f);
 
-                int height = (int) (14 + (baseNoise * 8.0f) + (detailNoise * 3.0f));
+                int height = (int) (72 + (baseNoise * 32.0f) + (detailNoise * 3.0f));
                 height = Math.max(1, Math.min(SIZE_Y - 1, height));
 
                 for (int y = 0; y < SIZE_Y; y++) {
@@ -97,6 +64,7 @@ blocks[getId(x,height,z)] = (short) a.get(rand.nextInt(a.size()));
                 if (height > SEA_LEVEL + 1 && hash(wx, wz) % 100 == 0 && x > 1 && z > 1 && x < SIZE_X - 1 && z < SIZE_Z - 1) {
                     generateTree(x, height + 1, z);
                 }
+                blocks[getIndex(x, 0, z)] = BlockTypes.BEDROCK;
             }
         }
     }
@@ -206,21 +174,20 @@ blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
                     BlockType block = BlockRegistry.getBlock(blocks[getIndex(x, y, z)]);
 
                     int wx = worldOffsetX + x;
-                    int wy = y;
-                    int wz = worldOffsetZ + z;
+                  int wz = worldOffsetZ + z;
 
                     if (isTransparent(x, y + 1, z))
-                        addFace(vertices, indices, wx, wy, wz, 0, block.getTexture(0)); // top
+                        addFace(vertices, indices, wx, y, wz, 0, block.getTexture(0)); // top
                     if (isTransparent(x, y - 1, z))
-                        addFace(vertices, indices, wx, wy, wz, 1, block.getTexture(1)); // bottom
+                        addFace(vertices, indices, wx, y, wz, 1, block.getTexture(1)); // bottom
                     if (isTransparent(x, y, z + 1))
-                        addFace(vertices, indices, wx, wy, wz, 2, block.getTexture(2)); // front
+                        addFace(vertices, indices, wx, y, wz, 2, block.getTexture(2)); // front
                     if (isTransparent(x, y, z - 1))
-                        addFace(vertices, indices, wx, wy, wz, 3, block.getTexture(3)); // back
+                        addFace(vertices, indices, wx, y, wz, 3, block.getTexture(3)); // back
                     if (isTransparent(x - 1, y, z))
-                        addFace(vertices, indices, wx, wy, wz, 4, block.getTexture(4)); // left
+                        addFace(vertices, indices, wx, y, wz, 4, block.getTexture(4)); // left
                     if (isTransparent(x + 1, y, z))
-                        addFace(vertices, indices, wx, wy, wz, 5, block.getTexture(5)); // right
+                        addFace(vertices, indices, wx, y, wz, 5, block.getTexture(5)); // right
                 }
             }
         }
@@ -231,8 +198,8 @@ blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
         int[] iArray = new int[indices.size()];
         for (int i = 0; i < indices.size(); i++) iArray[i] = indices.get(i);
 
-        if (mesh != null) mesh.cleanup();
-        mesh = new Mesh(vArray, iArray);
+        //if (mesh != null) mesh.cleanup();
+        mesh.updateMesh(vArray, iArray);
     }
 
     private void addFace(List<Float> v, List<Integer> idx, int x, int y, int z, int face, int tex) {
