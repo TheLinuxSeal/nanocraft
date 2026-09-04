@@ -158,11 +158,6 @@ public class NanoCraft {
         shader = new Shader(VERTEX_SHADER, FRAGMENT_SHADER);
         shader.createUniform("uProjection");
         shader.createUniform("uView");
-        //shader.createUniform("uFogColor");
-        //shader.createUniform("uFogNear");
-        //shader.createUniform("uFogFar");
-
-
 
         WORLD = new World();
 
@@ -194,9 +189,6 @@ public class NanoCraft {
             shader.bind();
             shader.setUniform("uProjection", projection);
             shader.setUniform("uView", CAMERA.getViewMatrix());
-            //shader.setUniform("uFogColor", new org.joml.Vector3f(0.623f, 0.734f, 0.785f));
-            //shader.setUniform("uFogNear", 80.0f);
-            //shader.setUniform("uFogFar", 120.0f);
 
             WORLD.renderChunks();
 

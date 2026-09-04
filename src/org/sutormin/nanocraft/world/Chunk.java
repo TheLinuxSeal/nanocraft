@@ -96,21 +96,6 @@ public class Chunk {
         setBlockInterchunkPromise(cx+1,leafStart+3,cz,leafFunc);
         setBlockInterchunkPromise(cx,leafStart+3,cz-1,leafFunc);
         setBlockInterchunkPromise(cx,leafStart+3,cz+1,leafFunc);
-
-
-/*for (int lx = -1; lx <= 1; lx++) {
-for (int lz = -1; lz <= 1; lz++) {
-for (int ly = leafStart; ly <= leafStart + 2; ly++) {
-int bx = cx + lx;
-int bz = cz + lz;
-if (bx >= 0 && bx < SIZE_X && bz >= 0 && bz < SIZE_Z && ly < SIZE_Y) {
-if (blocks[getIndex(bx, ly, bz)] == BlockTypes.AIR) {
-blocks[getIndex(bx, ly, bz)] = BlockTypes.OAK_LEAVES; // leaves
-}
-}
-}
-}
-}*/
     }
 
     private int hash(int x, int z) {
