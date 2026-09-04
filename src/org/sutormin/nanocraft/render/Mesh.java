@@ -13,6 +13,7 @@ public class Mesh {
     private final int vboId;
     private final int eboId;
     private int vertexCount;
+    public boolean generated = false;
 
     public Mesh() {
         vaoId = glGenVertexArrays();
@@ -41,6 +42,7 @@ public class Mesh {
     }
 
     public void updateMesh(float[] vertices, int[] indices){
+        generated = true;
         if (vertices.length == 0 || indices.length == 0) {
             this.vertexCount = 0;
             return;
