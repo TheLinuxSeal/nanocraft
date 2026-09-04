@@ -11,14 +11,14 @@ import org.sutormin.nanocraft.networking.packets.C2SPacket;
 import java.util.UUID;
 
 public class LoginStart implements C2SPacket {
-  public static short ID = 0;
-  public static void make(ByteBuf buf, String username, UUID uuid){
-    NanoCraft.networkPhase = NetworkPhase.LOGIN;
-    ByteBuf packet = Unpooled.buffer();
-    VarCoder.writeString(packet,username);
-    packet.writeLong(uuid.getMostSignificantBits());
-    packet.writeLong(uuid.getLeastSignificantBits());
-    PacketIO.write(buf,ID,packet);
-    packet.release();
-  }
+    public static short ID = 0;
+    public static void make(ByteBuf buf, String username, UUID uuid){
+        NanoCraft.networkPhase = NetworkPhase.LOGIN;
+        ByteBuf packet = Unpooled.buffer();
+        VarCoder.writeString(packet,username);
+        packet.writeLong(uuid.getMostSignificantBits());
+        packet.writeLong(uuid.getLeastSignificantBits());
+        PacketIO.write(buf,ID,packet);
+        packet.release();
+    }
 }

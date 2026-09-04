@@ -6,17 +6,15 @@ import org.sutormin.nanocraft.networking.packets.S2CPacket;
 import org.sutormin.nanocraft.networking.packets.c2s.LoginAcknowledged;
 
 public class LoginSuccess implements S2CPacket {
-  private final Channel channel;
+    private final Channel channel;
 
-  public LoginSuccess(Channel channel) {
-    this.channel = channel;
-  }
-  public void read(ByteBuf data) {
-    ByteBuf out = channel.alloc().buffer();
-    LoginAcknowledged.make(
-        out
-    );
-    channel.writeAndFlush(out);
-  }
+    public LoginSuccess(Channel channel) {
+        this.channel = channel;
+    }
+    public void read(ByteBuf data) {
+        ByteBuf out = channel.alloc().buffer();
+        LoginAcknowledged.make(out);
+        channel.writeAndFlush(out);
+    }
 }
 

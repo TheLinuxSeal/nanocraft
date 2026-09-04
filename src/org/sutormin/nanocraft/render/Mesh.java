@@ -8,7 +8,6 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL30.*;
 
 public class Mesh {
-
     private final int vaoId;
     private final int vboId;
     private final int eboId;

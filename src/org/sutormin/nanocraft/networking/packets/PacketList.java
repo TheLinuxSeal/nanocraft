@@ -7,14 +7,10 @@ import org.sutormin.nanocraft.networking.packets.s2c.LoginSuccess;
 import org.sutormin.nanocraft.networking.packets.s2c.SetCompression;
 
 public class PacketList {
-  public static S2CPacket getS2CPacket(
-      int id,
-      NetworkPhase phase,
-      Channel channel
-  ) {
-    if (phase == NetworkPhase.LOGIN && id == 1) {return new EncryptionRequest(channel);}
-    if (phase == NetworkPhase.LOGIN && id == 3) {return new SetCompression();}
-    if (phase == NetworkPhase.LOGIN && id == 2) {return new LoginSuccess(channel);}
+  public static S2CPacket getS2CPacket(int id, NetworkPhase phase, Channel channel) {
+    if (phase == NetworkPhase.LOGIN && id == 1) return new EncryptionRequest(channel);
+    if (phase == NetworkPhase.LOGIN && id == 3) return new SetCompression();
+    if (phase == NetworkPhase.LOGIN && id == 2) return new LoginSuccess(channel);
 
     return null;
   }

@@ -11,39 +11,31 @@ import javax.crypto.Cipher;
 import java.security.PublicKey;
 
 public class EncryptionResponse implements C2SPacket {
-  public static short ID = 1;
+    public static short ID = 1;
 
-  public static void make(
-      ByteBuf buf,
-      PublicKey publicKey,
-      byte[] sharedSecret,
-      byte[] verifyToken
-  ) {
-    try {
-      // RSA/ECB/PKCS1Padding is RSA PKCS#1 v1.5 encryption,
-      // which is what Minecraft's protocol uses here.
-      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-      cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+    public static void make(ByteBuf buf, PublicKey publicKey, byte[] sharedSecret, byte[] verifyToken) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
-      byte[] encryptedSecret = cipher.doFinal(sharedSecret);
-      byte[] encryptedToken = cipher.doFinal(verifyToken);
+            byte[] encryptedSecret = cipher.doFinal(sharedSecret);
+            byte[] encryptedToken = cipher.doFinal(verifyToken);
 
-      ByteBuf packet = Unpooled.buffer();
+            ByteBuf packet = Unpooled.buffer();
 
-      // Shared Secret
-      VarCoder.writeVarInt(packet, encryptedSecret.length);
-      packet.writeBytes(encryptedSecret);
+            // Shared Secret
+            VarCoder.writeVarInt(packet, encryptedSecret.length);
+            packet.writeBytes(encryptedSecret);
 
-      // Verify Token
-      VarCoder.writeVarInt(packet, encryptedToken.length);
-      packet.writeBytes(encryptedToken);
+            // Verify Token
+            VarCoder.writeVarInt(packet, encryptedToken.length);
+            packet.writeBytes(encryptedToken);
 
-      PacketIO.write(buf, ID, packet);
+            PacketIO.write(buf, ID, packet);
 
-      packet.release();
-
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to encrypt Encryption Response", e);
+            packet.release();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to encrypt Encryption Response", e);
+        }
     }
-  }
 }

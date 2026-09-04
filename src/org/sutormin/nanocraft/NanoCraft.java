@@ -39,32 +39,32 @@ public class NanoCraft {
     private ChunkPos lastCameraChunkPos = null;
 
     private static final String VERTEX_SHADER = """
-    #version 330 core
-    layout (location = 0) in vec3 aPos;
-    layout (location = 1) in vec3 aTexCoord;
-    layout (location = 2) in float aAO; // 1. Pass Ambient Occlusion value per-vertex
+        #version 330 core
+        layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec3 aTexCoord;
+        layout (location = 2) in float aAO;
 
-    out vec3 TexCoord;
-    out vec3 FragPosView;
-    out float vAO;                     // 2. Pass it down to the fragment shader
+        out vec3 TexCoord;
+        out vec3 FragPosView;
+        out float vAO;
 
-    uniform mat4 uProjection;
-    uniform mat4 uView;
+        uniform mat4 uProjection;
+        uniform mat4 uView;
 
-    void main() {
-        vec4 viewPos = uView * vec4(aPos, 1.0);
-        FragPosView = viewPos.xyz;
-        gl_Position = uProjection * viewPos;
-        TexCoord = aTexCoord;
-        vAO = aAO;                     // 3. Forward the value to fragment stage
-    }
-  """;
+        void main() {
+            vec4 viewPos = uView * vec4(aPos, 1.0);
+            FragPosView = viewPos.xyz;
+            gl_Position = uProjection * viewPos;
+            TexCoord = aTexCoord;
+            vAO = aAO;
+        }
+    """;
 
     private static final String FRAGMENT_SHADER = """
     #version 330 core
     in vec3 TexCoord;
     in vec3 FragPosView;
-    in float vAO;                      // 1. Receive interpolated AO from vertices
+    in float vAO;
     out vec4 FragColor;
 
     uniform sampler2DArray uTexture;
@@ -75,17 +75,13 @@ public class NanoCraft {
     void main() {
         vec4 texColor = texture(uTexture, TexCoord);
         
-        //if (texColor.a < 0.1) discard; // Prevent blending clear cut outlines
+        //if (texColor.a < 0.1) discard; // buggy bc of mipmaps
 
-        // Distance from camera in view space
+        // fog (optional)
         //float dist = length(FragPosView);
-        
-        // Linear fog interpolation factor (0.0 = full fog, 1.0 = full texture)
         //float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
-
         //vec3 finalColor = mix(uFogColor, texColor.rgb * vAO, fogFactor);
         
-        // 2. Multiply the texture color by the ambient occlusion lighting factor
         FragColor = vec4(texColor.rgb * vAO, texColor.a);
     }
   """;
@@ -111,14 +107,7 @@ public class NanoCraft {
         if (window == NULL) throw new RuntimeException("[ERROR] failed to create GLFW window");
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    /*glfwSetMouseButtonCallback(window, (win, button, action, mods) -> {
-      if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-        // unimp
-      }
-      if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-        // unimp
-      }
-    });*/
+
         glfwSetCursorPosCallback(window, (win, xpos, ypos) -> {
             if (firstMouse) {
                 lastMouseX = xpos;
@@ -158,11 +147,6 @@ public class NanoCraft {
         shader = new Shader(VERTEX_SHADER, FRAGMENT_SHADER);
         shader.createUniform("uProjection");
         shader.createUniform("uView");
-        //shader.createUniform("uFogColor");
-        //shader.createUniform("uFogNear");
-        //shader.createUniform("uFogFar");
-
-
 
         WORLD = new World();
 
@@ -194,14 +178,10 @@ public class NanoCraft {
             shader.bind();
             shader.setUniform("uProjection", projection);
             shader.setUniform("uView", CAMERA.getViewMatrix());
-            //shader.setUniform("uFogColor", new org.joml.Vector3f(0.623f, 0.734f, 0.785f));
-            //shader.setUniform("uFogNear", 80.0f);
-            //shader.setUniform("uFogFar", 120.0f);
 
             WORLD.renderChunks();
 
             Textures.BLOCK.unbind();
-
 
             glfwSwapBuffers(window);
             glfwPollEvents();
