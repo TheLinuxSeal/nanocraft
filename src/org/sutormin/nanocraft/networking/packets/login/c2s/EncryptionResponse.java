@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
-import org.sutormin.nanocraft.networking.packets.C2SPacket;
+import org.sutormin.nanocraft.networking.packets.types.C2SPacket;
 
 import javax.crypto.Cipher;
 import java.security.PublicKey;

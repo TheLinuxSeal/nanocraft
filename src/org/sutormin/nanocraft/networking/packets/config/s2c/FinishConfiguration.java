@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
-import org.sutormin.nanocraft.networking.packets.S2CPacket;
+import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 import org.sutormin.nanocraft.networking.packets.config.c2s.FinishConfigurationAcknowledged;
 
 public class FinishConfiguration implements S2CPacket {

@@ -10,6 +10,7 @@ import org.sutormin.nanocraft.networking.packets.login.s2c.EncryptionRequest;
 import org.sutormin.nanocraft.networking.packets.login.s2c.LoginSuccess;
 import org.sutormin.nanocraft.networking.packets.login.s2c.SetCompression;
 import io.netty.channel.Channel;
+import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
 public class PacketList {
   public static S2CPacket getS2CPacket(int id, NetworkPhase phase, Channel channel) {

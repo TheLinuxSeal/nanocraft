@@ -6,8 +6,9 @@ import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
+import org.sutormin.nanocraft.networking.packets.types.C2SPacket;
 
-public class KeepAliveC2S {
+public class KeepAliveC2S implements C2SPacket {
     public static short CONFIG_ID = 4;
     public static short PLAY_ID = 28;
     public static void make(ByteBuf buf, long id) {

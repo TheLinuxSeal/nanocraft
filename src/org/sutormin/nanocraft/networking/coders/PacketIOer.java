@@ -3,10 +3,9 @@ package org.sutormin.nanocraft.networking.coders;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.PacketList;
-import org.sutormin.nanocraft.networking.packets.S2CPacket;
+import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;

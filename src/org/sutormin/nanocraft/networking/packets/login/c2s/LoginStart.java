@@ -6,7 +6,7 @@ import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
-import org.sutormin.nanocraft.networking.packets.C2SPacket;
+import org.sutormin.nanocraft.networking.packets.types.C2SPacket;
 
 import java.util.UUID;
 
