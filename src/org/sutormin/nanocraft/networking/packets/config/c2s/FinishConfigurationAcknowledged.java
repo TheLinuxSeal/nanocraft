@@ -1,10 +1,10 @@
-package org.sutormin.nanocraft.networking.packets.c2s;
+package org.sutormin.nanocraft.networking.packets.config.c2s;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
 
-public class LoginAcknowledged {
+public class FinishConfigurationAcknowledged {
     public static int ID = 3;
     public static void make(ByteBuf buf){
         ByteBuf packet = Unpooled.buffer();

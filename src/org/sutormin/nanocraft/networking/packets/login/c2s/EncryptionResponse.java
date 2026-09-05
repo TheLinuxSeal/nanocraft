@@ -1,9 +1,8 @@
-package org.sutormin.nanocraft.networking.packets.c2s;
+package org.sutormin.nanocraft.networking.packets.login.c2s;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
-import org.sutormin.nanocraft.networking.coders.PacketIOer;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
 import org.sutormin.nanocraft.networking.packets.C2SPacket;
 

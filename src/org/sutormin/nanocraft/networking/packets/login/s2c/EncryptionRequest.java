@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.networking.packets.s2c;
+package org.sutormin.nanocraft.networking.packets.login.s2c;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
@@ -6,7 +6,7 @@ import org.sutormin.nanocraft.networking.coders.MinecraftEncryptionDecoder;
 import org.sutormin.nanocraft.networking.coders.MinecraftEncryptionEncoder;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
 import org.sutormin.nanocraft.networking.packets.S2CPacket;
-import org.sutormin.nanocraft.networking.packets.c2s.EncryptionResponse;
+import org.sutormin.nanocraft.networking.packets.login.c2s.EncryptionResponse;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;

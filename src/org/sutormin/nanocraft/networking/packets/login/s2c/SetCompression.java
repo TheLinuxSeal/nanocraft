@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.networking.packets.s2c;
+package org.sutormin.nanocraft.networking.packets.login.s2c;
 
 import io.netty.buffer.ByteBuf;
 import org.sutormin.nanocraft.networking.Networking;

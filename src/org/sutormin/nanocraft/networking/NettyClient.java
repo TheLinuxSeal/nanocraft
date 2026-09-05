@@ -6,8 +6,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
-import org.sutormin.nanocraft.networking.packets.c2s.Handshake;
-import org.sutormin.nanocraft.networking.packets.c2s.LoginStart;
+import org.sutormin.nanocraft.networking.packets.login.c2s.Handshake;
+import org.sutormin.nanocraft.networking.packets.login.c2s.LoginStart;
 
 public class NettyClient extends ChannelInboundHandlerAdapter {
 

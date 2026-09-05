@@ -1,22 +1,23 @@
-package org.sutormin.nanocraft.networking.packets.s2c;
+package org.sutormin.nanocraft.networking.packets.login.s2c;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.S2CPacket;
-import org.sutormin.nanocraft.networking.packets.c2s.FinishConfigurationAcknowledged;
+import org.sutormin.nanocraft.networking.packets.login.c2s.LoginAcknowledged;
 
-public class FinishConfiguration implements S2CPacket {
+public class LoginSuccess implements S2CPacket {
     private final Channel channel;
 
-    public FinishConfiguration(Channel channel) {
+    public LoginSuccess(Channel channel) {
         this.channel = channel;
     }
     public void read(ByteBuf data) {
         ByteBuf buf = channel.alloc().buffer();
-        FinishConfigurationAcknowledged.make(buf);
+        LoginAcknowledged.make(buf);
         channel.writeAndFlush(buf);
-        Networking.networkPhase = NetworkPhase.PLAY;
+        Networking.networkPhase = NetworkPhase.CONFIG;
     }
 }
+

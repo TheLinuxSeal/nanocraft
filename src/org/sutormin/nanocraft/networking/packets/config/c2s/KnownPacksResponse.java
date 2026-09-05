@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.networking.packets.c2s;
+package org.sutormin.nanocraft.networking.packets.config.c2s;
 
 import io.netty.buffer.ByteBuf;
 import org.sutormin.nanocraft.networking.coders.PacketIO;
