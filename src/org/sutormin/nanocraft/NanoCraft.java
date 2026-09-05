@@ -30,8 +30,6 @@ public class NanoCraft {
     public static World WORLD;
     private final Camera CAMERA = new Camera();
 
-    public static NetworkPhase networkPhase = NetworkPhase.HANDSHAKE;
-
     private double lastMouseX = width / 2.0;
     private double lastMouseY = height / 2.0;
     private boolean firstMouse = true;
@@ -150,7 +148,7 @@ public class NanoCraft {
 
         WORLD = new World();
 
-        //Networking.init();
+        Networking.init();
     }
 
     private void loop() {
