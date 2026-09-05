@@ -23,8 +23,11 @@ public class PacketList {
     if (phase == NetworkPhase.CONFIG && id == 7) return new IgnorePacket("RegistryData");
     if (phase == NetworkPhase.CONFIG && id == 13) return new IgnorePacket("UpdateTags");
     if (phase == NetworkPhase.CONFIG && id == 3) return new FinishConfiguration(channel);
+
     if (phase == NetworkPhase.CONFIG && id == 4) return new KeepAliveS2C(channel);
     if (phase == NetworkPhase.CONFIG && id == 5) return new Ping(channel);
+    if (phase == NetworkPhase.PLAY && id == 44) return new KeepAliveS2C(channel);
+    if (phase == NetworkPhase.PLAY && id == 61) return new Ping(channel);
 
     return null;
   }
