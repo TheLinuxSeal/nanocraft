@@ -15,7 +15,7 @@ public class Ping  implements S2CPacket {
     @Override
     public void read(ByteBuf data) {
         ByteBuf buf = channel.alloc().buffer();
-        Pong.make(buf, VarCoder.readVarInt(data));
+        Pong.make(buf, data.readInt());
         channel.writeAndFlush(buf);
     }
 }
