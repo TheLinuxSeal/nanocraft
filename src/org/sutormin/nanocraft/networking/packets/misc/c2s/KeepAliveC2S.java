@@ -13,7 +13,7 @@ public class KeepAliveC2S implements C2SPacket {
     public static short PLAY_ID = 28;
     public static void make(ByteBuf buf, long id) {
         ByteBuf packet = Unpooled.buffer();
-        VarCoder.writeVarLong(packet,id);
+        packet.writeLong(id);
         if (Networking.networkPhase == NetworkPhase.CONFIG) PacketIO.write(buf, CONFIG_ID, packet);
         if (Networking.networkPhase == NetworkPhase.PLAY) PacketIO.write(buf, PLAY_ID, packet);
         packet.release();

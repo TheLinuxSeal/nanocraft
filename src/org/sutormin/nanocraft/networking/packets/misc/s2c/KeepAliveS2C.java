@@ -15,7 +15,7 @@ public class KeepAliveS2C implements S2CPacket {
     @Override
     public void read(ByteBuf data) {
         ByteBuf buf = channel.alloc().buffer();
-        KeepAliveC2S.make(buf, VarCoder.readVarLong(data));
+        KeepAliveC2S.make(buf, data.readLong());
         channel.writeAndFlush(buf);
     }
 }

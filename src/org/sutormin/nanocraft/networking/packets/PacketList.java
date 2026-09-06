@@ -10,6 +10,7 @@ import org.sutormin.nanocraft.networking.packets.login.s2c.EncryptionRequest;
 import org.sutormin.nanocraft.networking.packets.login.s2c.LoginSuccess;
 import org.sutormin.nanocraft.networking.packets.login.s2c.SetCompression;
 import io.netty.channel.Channel;
+import org.sutormin.nanocraft.networking.packets.play.s2c.ChunkData;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
 public class PacketList {
@@ -29,6 +30,8 @@ public class PacketList {
     if (phase == NetworkPhase.CONFIG && id == 5) return new Ping(channel);
     if (phase == NetworkPhase.PLAY && id == 44) return new KeepAliveS2C(channel);
     if (phase == NetworkPhase.PLAY && id == 61) return new Ping(channel);
+
+    if (phase == NetworkPhase.PLAY && id == 45) return new ChunkData();
 
     return null;
   }

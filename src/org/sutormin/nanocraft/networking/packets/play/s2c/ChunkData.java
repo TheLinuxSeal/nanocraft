@@ -3,6 +3,7 @@ package org.sutormin.nanocraft.networking.packets.play.s2c;
 import io.netty.buffer.ByteBuf;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
+import org.sutormin.nanocraft.world.ChunkLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,9 @@ public class ChunkData implements S2CPacket {
 
         readBlockEntities(buf);
         readLight(buf);
+
+
+        ChunkLoader.submit(this);
 
         System.out.printf(
                 "Chunk (%d, %d): %d sections, %d block entities%n",
