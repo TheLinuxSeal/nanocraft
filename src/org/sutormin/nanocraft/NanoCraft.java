@@ -7,6 +7,8 @@ import org.sutormin.nanocraft.block.BlockTypes;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.render.Shader;
+import org.sutormin.nanocraft.render.shaders.Frag;
+import org.sutormin.nanocraft.render.shaders.Vert;
 import org.sutormin.nanocraft.resources.Texture;
 import org.sutormin.nanocraft.resources.Textures;
 import org.sutormin.nanocraft.world.ChunkLoader;
@@ -26,8 +28,7 @@ public class NanoCraft {
     private final int width = 1024;
     private final int height = 576;
 
-    private Texture texture;
-    private Shader shader;
+    public static Shader SHADER;
     public static World WORLD;
     public static final Camera CAMERA = new Camera();
 
@@ -35,58 +36,7 @@ public class NanoCraft {
     private double lastMouseY = height / 2.0;
     private boolean firstMouse = true;
 
-    private ChunkPos lastCameraChunkPos = null;
-
-    long lastLog;
-
-    private static final String VERTEX_SHADER = """
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aTexCoord;
-        layout (location = 2) in float aAO;
-
-        out vec3 TexCoord;
-        out vec3 FragPosView;
-        out float vAO;
-
-        uniform mat4 uProjection;
-        uniform mat4 uView;
-
-        void main() {
-            vec4 viewPos = uView * vec4(aPos, 1.0);
-            FragPosView = viewPos.xyz;
-            gl_Position = uProjection * viewPos;
-            TexCoord = aTexCoord;
-            vAO = aAO;
-        }
-    """;
-
-    private static final String FRAGMENT_SHADER = """
-    #version 330 core
-    in vec3 TexCoord;
-    in vec3 FragPosView;
-    in float vAO;
-    out vec4 FragColor;
-
-    uniform sampler2DArray uTexture;
-    //uniform vec3 uFogColor;
-    //uniform float uFogNear;
-    //uniform float uFogFar;
-
-    void main() {
-        vec4 texColor = texture(uTexture, TexCoord);
-        
-        //if (texColor.a < 0.1) discard; // buggy bc of mipmaps
-
-        // fog (optional)
-        //float dist = length(FragPosView);
-        //float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
-        //vec3 finalColor = mix(uFogColor, texColor.rgb * vAO, fogFactor);
-        
-        FragColor = vec4(texColor.rgb * vAO, texColor.a);
-    }
-  """;
-
+    //private ChunkPos lastCameraChunkPos = null;
 
     public void run() {
         init();
@@ -145,9 +95,9 @@ public class NanoCraft {
         Textures.loadTextures();
 
 
-        shader = new Shader(VERTEX_SHADER, FRAGMENT_SHADER);
-        shader.createUniform("uProjection");
-        shader.createUniform("uView");
+        SHADER = new Shader(Vert.VERTEX_SHADER, Frag.FRAGMENT_SHADER);
+        SHADER.createUniform("uProjection");
+        SHADER.createUniform("uView");
 
         WORLD = new World();
 
@@ -164,32 +114,30 @@ public class NanoCraft {
             long now = System.nanoTime();
             float deltaTime = (now - lastTime) / 1000000000.0f;
             lastTime = now;
+
             WORLD.drainNetworkChunks(100);
-            ChunkPos currentChunkPos = CAMERA.getChunkPos();
-            if (!currentChunkPos.equals(lastCameraChunkPos)) {
 
-               // WORLD.loadChunksAndUnloadAllOtherChunks(getChunksInRenderDistance(currentChunkPos, 8));
-                lastCameraChunkPos = currentChunkPos;
-            }
+            ChunkLoader.poll();
 
-            if (now - lastLog > 1_000_000_000L) {
+            /*if (now - lastLog > 1_000_000_000L) {
                 System.out.printf("camera chunk %s | loaded %d | queued %d%n",
                         CAMERA.getChunkPos(), WORLD.chunkCount(), ChunkLoader.pendingCount());
                 lastLog = now;
-            }
+            }*/
 
             processInput(deltaTime);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             Textures.BLOCK.bind();
-            shader.bind();
-            shader.setUniform("uProjection", projection);
-            shader.setUniform("uView", CAMERA.getViewMatrix());
+            SHADER.bind();
+            SHADER.setUniform("uProjection", projection);
+            SHADER.setUniform("uView", CAMERA.getViewMatrix());
 
             WORLD.renderChunks();
 
             Textures.BLOCK.unbind();
+            SHADER.unbind();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -233,7 +181,7 @@ public class NanoCraft {
     private void cleanup() {
         Textures.cleanup();
         WORLD.cleanup();
-        shader.cleanup();
+        SHADER.cleanup();
 
         glfwFreeCallbacks(window);
         glfwDestroyWindow(window);

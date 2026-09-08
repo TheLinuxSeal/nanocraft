@@ -60,8 +60,9 @@ public class World {
     public void drainNetworkChunks(int budget) {
         ChunkLoader.Pending p;
         while (budget-- > 0 && (p = ChunkLoader.poll()) != null) {
-            addChunk(p.pos(), new Chunk(p.pos()));
-            chunks.get(p.pos()).setBlocks(p.blocks());
+            Chunk c = new Chunk(p.pos());
+            c.setBlocks(p.blocks());
+            addChunk(p.pos(), c);
 
             if (!snapped) {
                 snapped = true;
@@ -104,7 +105,7 @@ public class World {
         }
     }
 
-    public short getBlockAt(int x, int y, int z) {
+    public char getBlockAt(int x, int y, int z) {
         ChunkPos chunkPos = getChunkPosFromBlock(x, z);
         Chunk chunk = chunks.get(chunkPos);
         if (chunk == null) return BlockTypes.AIR;
@@ -115,7 +116,7 @@ public class World {
         return chunk.getBlock(localX, y, localZ);
     }
 
-    public void setBlockAt(int x, int y, int z, short block) {
+    public void setBlockAt(int x, int y, int z, char block) {
         ChunkPos chunkPos = getChunkPosFromBlock(x, z);
         Chunk chunk = chunks.get(chunkPos);
         if (chunk == null) return;
@@ -133,7 +134,7 @@ public class World {
         if (localZ == Chunk.SIZE_Z - 1) meshChunk(new ChunkPos(chunkPos.x(), chunkPos.z() + 1));
     }
 
-    public void setBlockPromise(int x, int y, int z, Function<Short, Short> block){
+    public void setBlockPromise(int x, int y, int z, Function<Character, Character> block){
         setBlockPromises.add(new BlockData(x,y,z,block));
     }
 
@@ -149,7 +150,7 @@ public class World {
 
             if (chunk == null) continue;
 
-            short block = blockData.block().apply(getBlockAt(x, y, z));
+            char block = blockData.block().apply(getBlockAt(x, y, z));
             if (block != BlockTypes.NULL) setBlockAt(x, y, z, block);
 
             iterator.remove();
@@ -178,5 +179,5 @@ public class World {
         }
         chunks.clear();
     }
-    private record BlockData(int x, int y, int z, Function<Short, Short> block){}
+    private record BlockData(int x, int y, int z, Function<Character, Character> block){}
 }

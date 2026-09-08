@@ -21,7 +21,7 @@ public class Chunk {
 
     private final ChunkPos worldPos;
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
-    private short[] blocks = new short[SIZE_X * SIZE_Y * SIZE_Z];
+    private char[] blocks = new char[SIZE_X * SIZE_Y * SIZE_Z];
     public Mesh mesh;
 
     public Chunk(ChunkPos worldPos) {
@@ -30,7 +30,7 @@ public class Chunk {
         //generateTerrain();
     }
 
-    public void setBlocks(short[] blocks){this.blocks=blocks;}
+    public void setBlocks(char[] blocks){this.blocks=blocks;}
 
     /*private void generateTerrain() {
         int worldOffsetX = worldPos.x() * SIZE_X;
@@ -313,11 +313,11 @@ public class Chunk {
         return (z * SIZE_X * SIZE_Y) + (y * SIZE_X) + x;
     }
 
-    public short getBlock(int x, int y, int z) {
+    public char getBlock(int x, int y, int z) {
         return blocks[getIndex(x, y, z)];
     }
 
-    public void setBlock(int x, int y, int z, short block) {
+    public void setBlock(int x, int y, int z, char block) {
         blocks[getIndex(x, y, z)] = block;
     }
 
@@ -327,18 +327,18 @@ public class Chunk {
         return blocks[getIndex(x, y, z)] == BlockTypes.AIR;
     }
 
-    public short getBlockInterchunk(int x, int y, int z) {
+    public char getBlockInterchunk(int x, int y, int z) {
         Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
         if (chunk == null) return BlockTypes.NULL;
         return chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z));
     }
 
-    public short getBlockChunkSafe(int x, int y, int z) {
+    public char getBlockChunkSafe(int x, int y, int z) {
         if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return BlockTypes.NULL;
         return blocks[getIndex(x, y, z)];
     }
 
-    public void setBlockChunkSafe(int x, int y, int z, short block) {
+    public void setBlockChunkSafe(int x, int y, int z, char block) {
         if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return;
         blocks[getIndex(x, y, z)] = block;
     }
