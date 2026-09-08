@@ -20,7 +20,7 @@ public class PacketIO {
     }
     
     public static void write(ByteBuf out, int packetId, ByteBuf data){
-        System.out.println("SENDING ID: "+packetId);
+        //System.out.println("SENDING ID: "+packetId);
         //System.out.println(data.readableBytes());
         if (Networking.compressionThreshold >= 0) {
             writeCompressedPacket(
@@ -48,7 +48,7 @@ public class PacketIO {
         int length = VarCoder.readVarInt(buf);
         int packetId = VarCoder.readVarInt(buf);
 
-        System.out.printf(
+        /*System.out.printf(
             "Packet Received -> Length: %d, ID: 0x%02X%n",
             length,
             packetId
@@ -59,14 +59,17 @@ public class PacketIO {
             Networking.networkPhase,
             packetId,
             length
-        );
+        );*/
 
         S2CPacket packet = PacketList.getS2CPacket(
             packetId,
             Networking.networkPhase,
             channel
         );
-        if (packet == null) {System.out.printf("UNKNOWN S2C: phase=%s id=0x%02X length=%d%n", Networking.networkPhase, packetId,length); return;}
+        if (packet == null) {
+            //System.out.printf("UNKNOWN S2C: phase=%s id=0x%02X length=%d%n", Networking.networkPhase, packetId,length);
+            return;
+        }
         packet.read(buf);
     }
 
@@ -234,7 +237,10 @@ public class PacketIO {
                 Networking.networkPhase,
                 channel
             );
-            if (packet == null) {System.out.printf("UNKNOWN S2C: phase=%s id=0x%02X length=%d%n", Networking.networkPhase, packetId,dataLength); return;}
+            if (packet == null) {
+                //System.out.printf("UNKNOWN S2C: phase=%s id=0x%02X length=%d%n", Networking.networkPhase, packetId,dataLength);
+                return;
+            }
 
             packet.read(packetData);
 

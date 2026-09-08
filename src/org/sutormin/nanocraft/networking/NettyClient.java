@@ -17,8 +17,8 @@ public class NettyClient extends ChannelInboundHandlerAdapter {
 
         C2SHandshake.make(
                 packet,
-                "127.0.0.1",
-                25565
+                Options.SERVER_IP,
+                Options.PORT
         );
 
         ctx.write(packet);

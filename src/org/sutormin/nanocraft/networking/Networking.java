@@ -9,6 +9,7 @@ import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.networking.coders.Defragmentor;
 
 public class Networking {
@@ -20,8 +21,8 @@ public class Networking {
     private static Channel channel;
 
     public static void init() {
-        String host = "127.0.0.1";
-        int port = 25565;
+        String host = Options.SERVER_IP;
+        int port = Options.PORT;
 
         group = new MultiThreadIoEventLoopGroup(
             NioIoHandler.newFactory()

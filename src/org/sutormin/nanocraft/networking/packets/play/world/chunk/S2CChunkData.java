@@ -61,13 +61,13 @@ public class S2CChunkData implements S2CPacket {
 
         ChunkLoader.submit(this);
 
-        System.out.printf(
+        /*System.out.printf(
                 "Chunk (%d, %d): %d sections, %d block entities%n",
                 chunkX,
                 chunkZ,
                 sections.length,
                 blockEntities.size()
-        );
+        );*/
     }
 
     /**

@@ -11,11 +11,7 @@ public class C2SConfirmTeleport implements C2SPacket {
   public static void make(ByteBuf buf, int id) {
     ByteBuf packet = Unpooled.buffer();
     VarCoder.writeVarInt(packet,id);
-    System.out.println(buf.readableBytes());
-    System.out.println(packet.readableBytes());
     PacketIO.write(buf, ID, packet);
-    System.out.println(buf.readableBytes());
-    System.out.println(packet.readableBytes());
     packet.release();
   }
 }

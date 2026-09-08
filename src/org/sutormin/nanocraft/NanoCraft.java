@@ -152,7 +152,7 @@ public class NanoCraft {
         float forwardBack = 0.0f;
         float rightLeft = 0.0f;
         float upDown = 0.0f;
-        float speed = 10.0f;
+        float speed = 1f;
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) forwardBack += 1.0f;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) forwardBack -= 1.0f;
@@ -162,10 +162,11 @@ public class NanoCraft {
         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) upDown -= 1.0f;
 
         if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-            speed = 30.0f;
+            speed = 1.5f;
         }
 
         CAMERA.updatePosition(forwardBack, rightLeft, upDown, speed, dt);
+        CAMERA.tick();
     }
 
     private List<ChunkPos> getChunksInRenderDistance(ChunkPos center, int renderDistance) {

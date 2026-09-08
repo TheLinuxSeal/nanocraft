@@ -19,7 +19,7 @@ public class Camera {
     private final Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f);
 
     private final Vector3f movement = new Vector3f();
-    private final Vector3f velocity = new Vector3f();
+    private final Vector3f velocity = new Vector3f(0f, 0f, 0f);
 
     private float yaw = -90.0f;
     private float pitch = 0.0f;
@@ -44,7 +44,7 @@ public class Camera {
         float distance = speed * dt;
 
         if (forwardBack != 0.0f) {
-            position.add(
+            velocity.add(
                 movement
                     .set(front.x, 0.0f, front.z)
                     .normalize()
@@ -53,7 +53,7 @@ public class Camera {
         }
 
         if (rightLeft != 0.0f) {
-            position.add(
+            velocity.add(
                 movement
                     .set(right)
                     .mul(rightLeft * distance)
@@ -61,7 +61,7 @@ public class Camera {
         }
 
         if (upDown != 0.0f) {
-            position.add(
+            velocity.add(
                 movement
                     .set(up)
                     .mul(upDown * distance)
@@ -168,12 +168,14 @@ public class Camera {
     }
 
     public void tick() {
+        position.add(velocity);
+        velocity.mul(0.98f);
         if (!position.equals(lastPosition)) {
             ByteBuf buf = Unpooled.buffer();
             C2SSetPlayerPosition.make(
                 buf,
                 position.x,
-                position.y,
+                position.y-64,
                 position.z,
                 (byte) 0
             );
