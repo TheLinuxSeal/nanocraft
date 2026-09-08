@@ -25,12 +25,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public final class ChunkLoader {
 
     public static final int SECTION_SIZE = 16;
-    public static final int ENTRIES_PER_SECTION = 4096;
+    //public static final int ENTRIES_PER_SECTION = 4096;
 
     private static final Queue<Pending> RECEIVING = new ConcurrentLinkedQueue<>();
     private static final Queue<Pending> READY = new ConcurrentLinkedQueue<>();
+    private static final Queue<ChunkPos> UNLOADS = new ConcurrentLinkedQueue<>();
+    //private static final Queue<ChunkPos> REMESHES = new ConcurrentLinkedQueue<>();
+    private static final Queue<BlockChange> BLOCK_CHANGES = new ConcurrentLinkedQueue<>();
 
     public record Pending(ChunkPos pos, char[] blocks) {
+    }
+
+    public record BlockChange(int x, int y, int z, char block) {
     }
 
     private ChunkLoader() {
@@ -46,6 +52,18 @@ public final class ChunkLoader {
             new ChunkPos(data.chunkX, data.chunkZ),
             toBlocks(data)
         ));
+    }
+
+    public static void submitUnload(ChunkPos pos) {
+        UNLOADS.add(pos);
+    }
+
+    //public static void submitRemesh(ChunkPos pos) {
+    //    REMESHES.add(pos);
+    //}
+
+    public static void submitBlockChange(int x, int y, int z, char block) {
+        BLOCK_CHANGES.add(new BlockChange(x, y, z, block));
     }
 
     /**
@@ -95,6 +113,18 @@ public final class ChunkLoader {
         return READY.poll();
     }
 
+    public static ChunkPos pollUnload() {
+        return UNLOADS.poll();
+    }
+
+    //public static ChunkPos pollRemesh() {
+    //    return REMESHES.poll();
+    //}
+
+    public static BlockChange pollBlockChange() {
+        return BLOCK_CHANGES.poll();
+    }
+
     /** Number of chunks waiting for the current batch to finish. */
     public static int receivingCount() {
         return RECEIVING.size();
@@ -103,6 +133,19 @@ public final class ChunkLoader {
     /** Number of completed chunks waiting for the GL thread. */
     public static int readyCount() {
         return READY.size();
+    }
+
+    /** Number of chunks queued for unload. */
+    public static int unloadCount() {
+        return UNLOADS.size();
+    }
+
+    //public static int remeshCount() {
+    //    return REMESHES.size();
+    //}
+
+    public static int blockChangeCount() {
+        return BLOCK_CHANGES.size();
     }
 
     public static char[] toBlocks(S2CChunkData data) {

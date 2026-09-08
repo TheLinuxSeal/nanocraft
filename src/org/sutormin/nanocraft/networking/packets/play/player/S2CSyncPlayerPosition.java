@@ -68,7 +68,7 @@ public class S2CSyncPlayerPosition implements S2CPacket {
      * Rotation
      */
     float yaw = buf.readFloat();
-    float pitch = buf.readFloat();
+    float pitch = -buf.readFloat();
 
     /*
      * Teleport flags
@@ -177,7 +177,7 @@ public class S2CSyncPlayerPosition implements S2CPacket {
 
     camera.setRotation(
         90+yaw,
-        180-pitch
+        -pitch
     );
 
     camera.setVelocity(

@@ -196,16 +196,16 @@ public class Chunk {
     }
 
     private float getAOValue(boolean side1, boolean side2, boolean corner) {
-        if (side1 && side2) return 0.6f; // 3 blocks: corner enclosed (darkest)
+        if (side1 && side2) return 0.4f; // 3 blocks: corner enclosed (darkest)
         int count = 0;
         if (side1) count++;
         if (side2) count++;
         if (corner) count++;
 
         return switch (count) {
-            case 1 -> 0.9f;
-            case 2 -> 0.7f;
-            case 3 -> 0.6f;
+            case 1 -> 0.8f;
+            case 2 -> 0.6f;
+            case 3 -> 0.4f;
             default -> 1.0f; // 0 blocks: completely open air (bright)
         };
     }

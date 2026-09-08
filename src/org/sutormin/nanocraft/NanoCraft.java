@@ -115,8 +115,7 @@ public class NanoCraft {
             float deltaTime = (now - lastTime) / 1000000000.0f;
             lastTime = now;
 
-            WORLD.drainNetworkChunks(100);
-            WORLD.flushDirty(10);
+            WORLD.tick();
 
             //ChunkLoader.poll();
 
