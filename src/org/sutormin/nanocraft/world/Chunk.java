@@ -206,7 +206,7 @@ public class Chunk {
             case 1 -> 0.8f;
             case 2 -> 0.6f;
             case 3 -> 0.4f;
-            default -> 1.0f; // 0 blocks: completely open air (bright)
+            default -> 0.9f; // 0 blocks: completely open air (bright)
         };
     }
 
