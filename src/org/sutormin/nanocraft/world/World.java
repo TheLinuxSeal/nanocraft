@@ -8,29 +8,8 @@ import java.util.function.Function;
 
 public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
-    private final List<ChunkPos> forceRemeshChunks = new ArrayList<>();
-    private final List<ChunkPos> cancelRemeshChunks = new ArrayList<>();
-    private final List<BlockData> setBlockPromises = new ArrayList<>();
 
     public World() {
-    }
-
-    public void makeChunk(ChunkPos pos) {
-        if (chunks.containsKey(pos)) return;
-        Chunk chunk = new Chunk(pos);
-        chunks.put(pos, chunk);
-        forceRemeshChunks.add(pos.offset(-1,0));
-        forceRemeshChunks.add(pos.offset(1,0));
-        forceRemeshChunks.add(pos.offset(0,-1));
-        forceRemeshChunks.add(pos.offset(0,1));
-        cancelRemeshChunks.add(pos);
-    }
-
-    public void meshChunk(ChunkPos pos) {
-        if (!chunks.containsKey(pos)) return;
-        Chunk chunk = chunks.get(pos);
-        if (chunk.mesh.generated && (!forceRemeshChunks.contains(pos) || cancelRemeshChunks.contains(pos))) return;
-        chunk.buildMesh();
     }
 
     public void removeChunk(ChunkPos pos) {
@@ -55,54 +34,18 @@ public class World {
         if (c != null) c.buildMesh();
     }
 
-    private boolean snapped = false;
-
     public void drainNetworkChunks(int budget) {
         ChunkLoader.Pending p;
         while (budget-- > 0 && (p = ChunkLoader.poll()) != null) {
             Chunk c = new Chunk(p.pos());
             c.setBlocks(p.blocks());
             addChunk(p.pos(), c);
-
-            if (!snapped) {
-                snapped = true;
-                NanoCraft.CAMERA.updatePosition(
-                        p.pos().x() * Chunk.SIZE_X + 8,
-                        100 + 3,
-                        p.pos().z() * Chunk.SIZE_Z + 8,
-                        0,
-                        0
-                );
-            }
         }
     }
 
 
     public int chunkCount() {
         return chunks.size();
-    }
-
-    public void loadChunksAndUnloadAllOtherChunks(Collection<ChunkPos> posList) {
-        Set<ChunkPos> keepSet = new HashSet<>(posList);
-
-        chunks.entrySet().removeIf(entry -> {
-            if (!keepSet.contains(entry.getKey())) {
-                entry.getValue().cleanup();
-                return true;
-            }
-            return false;
-        });
-
-        forceRemeshChunks.clear();
-        cancelRemeshChunks.clear();
-
-        for (ChunkPos pos : posList) {
-            makeChunk(pos);
-        }
-
-        for (ChunkPos pos : posList) {
-            meshChunk(pos);
-        }
     }
 
     public char getBlockAt(int x, int y, int z) {
@@ -128,34 +71,12 @@ public class World {
         chunk.setBlock(localX, y, localZ, block);
         chunk.buildMesh();
 
-        if (localX == 0) meshChunk(new ChunkPos(chunkPos.x() - 1, chunkPos.z()));
-        if (localX == Chunk.SIZE_X - 1) meshChunk(new ChunkPos(chunkPos.x() + 1, chunkPos.z()));
-        if (localZ == 0) meshChunk(new ChunkPos(chunkPos.x(), chunkPos.z() - 1));
-        if (localZ == Chunk.SIZE_Z - 1) meshChunk(new ChunkPos(chunkPos.x(), chunkPos.z() + 1));
+        if (localX == 0) remesh(chunkPos.offset(-1,0));
+        if (localX == Chunk.SIZE_X - 1) remesh(chunkPos.offset(1,0));
+        if (localZ == 0) remesh(chunkPos.offset(0,-1));
+        if (localZ == Chunk.SIZE_Z - 1) chunkPos.offset(0,1);
     }
 
-    public void setBlockPromise(int x, int y, int z, Function<Character, Character> block){
-        setBlockPromises.add(new BlockData(x,y,z,block));
-    }
-
-    private void checkBlockPromises() {
-        Iterator<BlockData> iterator = setBlockPromises.iterator();
-        while (iterator.hasNext()) {
-            BlockData blockData = iterator.next();
-            int x = blockData.x();
-            int y = blockData.y();
-            int z = blockData.z();
-            ChunkPos chunkPos = getChunkPosFromBlock(x, z);
-            Chunk chunk = chunks.get(chunkPos);
-
-            if (chunk == null) continue;
-
-            char block = blockData.block().apply(getBlockAt(x, y, z));
-            if (block != BlockTypes.NULL) setBlockAt(x, y, z, block);
-
-            iterator.remove();
-        }
-    }
 
     public Chunk getChunk(ChunkPos pos){
         return chunks.get(pos);
@@ -179,5 +100,4 @@ public class World {
         }
         chunks.clear();
     }
-    private record BlockData(int x, int y, int z, Function<Character, Character> block){}
 }
