@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
+    private final Set<ChunkPos> dirty = new LinkedHashSet<>();
 
     public World() {
     }
@@ -22,11 +23,15 @@ public class World {
     public void addChunk(ChunkPos pos, Chunk chunk) {
         Chunk old = chunks.put(pos, chunk);
         if (old != null) old.cleanup();
-        chunk.buildMesh();
-        remesh(pos.offset(-1, 0));
-        remesh(pos.offset(1, 0));
-        remesh(pos.offset(0, -1));
-        remesh(pos.offset(0, 1));
+        dirty.add(pos);
+        dirty.add(pos.offset(-1, 0));
+        dirty.add(pos.offset(1, 0));
+        dirty.add(pos.offset(0, -1));
+        dirty.add(pos.offset(0, 1));
+        dirty.add(pos.offset(-1, -1));
+        dirty.add(pos.offset(-1, 1));
+        dirty.add(pos.offset(1, -1));
+        dirty.add(pos.offset(1, 1));
     }
 
     private void remesh(ChunkPos pos) {
@@ -43,6 +48,15 @@ public class World {
         }
     }
 
+    public void flushDirty(int budget) {
+        Iterator<ChunkPos> it = dirty.iterator();
+        while (it.hasNext() && budget-- > 0) {
+            ChunkPos pos = it.next();
+            it.remove();
+            Chunk c = chunks.get(pos);
+            if (c != null) c.buildMesh();
+        }
+    }
 
     public int chunkCount() {
         return chunks.size();

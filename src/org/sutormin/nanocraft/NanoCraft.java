@@ -116,8 +116,9 @@ public class NanoCraft {
             lastTime = now;
 
             WORLD.drainNetworkChunks(100);
+            WORLD.flushDirty(10);
 
-            ChunkLoader.poll();
+            //ChunkLoader.poll();
 
             /*if (now - lastLog > 1_000_000_000L) {
                 System.out.printf("camera chunk %s | loaded %d | queued %d%n",
