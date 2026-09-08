@@ -74,7 +74,7 @@ public class World {
         if (localX == 0) remesh(chunkPos.offset(-1,0));
         if (localX == Chunk.SIZE_X - 1) remesh(chunkPos.offset(1,0));
         if (localZ == 0) remesh(chunkPos.offset(0,-1));
-        if (localZ == Chunk.SIZE_Z - 1) chunkPos.offset(0,1);
+        if (localZ == Chunk.SIZE_Z - 1) remesh(chunkPos.offset(0,1));
     }
 
 

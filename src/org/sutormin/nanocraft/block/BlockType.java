@@ -9,6 +9,7 @@ public class BlockType {
 
     public BlockType(int id, String name) {
         this.id = (char) id; this.name = name;
+        //this.setTextures(this.name+".png");
     }
 
     public BlockType setTextures(int which, String path){

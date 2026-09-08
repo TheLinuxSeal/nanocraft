@@ -76,6 +76,7 @@ public final class ChunkLoader {
                     i,
                     chunks
                 );
+                RECEIVING.clear();
                 return false;
             }
 
