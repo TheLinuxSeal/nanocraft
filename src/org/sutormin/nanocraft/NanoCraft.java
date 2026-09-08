@@ -117,6 +117,7 @@ public class NanoCraft {
         SHADER = new Shader(Vert.VERTEX_SHADER, Frag.FRAGMENT_SHADER);
         SHADER.createUniform("uProjection");
         SHADER.createUniform("uView");
+        SHADER.createUniform("uChunkOffset");
 
         WORLD = new World();
 
