@@ -2,6 +2,7 @@ package org.sutormin.nanocraft.data.types;
 
 import org.sutormin.nanocraft.data.registry.RegistryType;
 import org.sutormin.nanocraft.world.Direction;
+import org.sutormin.nanocraft.world.FaceCullCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,8 @@ public class BlockShape extends RegistryType {
     public record Face(int[] vertices, Direction dir, boolean shouldCull, float[][] uv){};
     private List<Vertex> vertices = new ArrayList<>();
     private List<Face> faces = new ArrayList<>();
+    // filled lazily by FaceCullCache.infoOf
+    private FaceCullCache.ShapeInfo cullInfo;
 
     public BlockShape(int id) {super(id);}
     @Override
@@ -38,6 +41,14 @@ public class BlockShape extends RegistryType {
 
     public List<Face> getFaces() {
         return faces;
+    }
+
+    public FaceCullCache.ShapeInfo getCullInfo() {
+        return cullInfo;
+    }
+
+    public void setCullInfo(FaceCullCache.ShapeInfo cullInfo) {
+        this.cullInfo = cullInfo;
     }
 
 }

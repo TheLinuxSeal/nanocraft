@@ -30,6 +30,13 @@ public class Chunk {
 
     public Mesh mesh;
 
+    // The 3x3 chunks around this one (index (dz+1)*3 + (dx+1)), looked up once per
+    // buildMesh so neighbor reads at the chunk edges don't hit the world's map.
+    private final Chunk[] neighbors = new Chunk[9];
+    private float[] aoScratch = new float[8];
+    // blocks whose face/texture count mismatch was already reported
+    private static final java.util.Set<Integer> WARNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
         this.mesh = new Mesh();
@@ -115,15 +122,10 @@ public class Chunk {
      * occlude against.
      */
     private BlockShape getShapeAt(int x, int y, int z) {
-        char id;
         if (y < 0 || y >= SIZE_Y) return null;
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
-            id = getBlockInterchunk(x, y, z);
-            if (id == QuickAccessBlocks.NULL) return null; // unloaded chunk -> can't occlude
-        } else {
-            id = blocks[getIndex(x, y, z)];
-        }
-        if (id == QuickAccessBlocks.AIR) return null;
+        char id = meshBlockAt(x, y, z);
+        // NULL: unloaded chunk (can't occlude) or never-written air
+        if (id == QuickAccessBlocks.AIR || id == QuickAccessBlocks.NULL) return null;
 
         Block neighborType = Registries.BLOCK.get(id);
         return neighborType != null ? neighborType.getShape() : null;
@@ -135,14 +137,13 @@ public class Chunk {
      * test and caching; this just wires it up with this chunk's neighbor
      * lookup.
      */
-    private boolean isFaceOccluded(int x, int y, int z, BlockShape.Face face, List<BlockShape.Vertex> verts) {
-        if (!FaceCullCache.touchesOwnBoundary(face, verts)) return false; // cached; skips the neighbor lookup entirely
+    private boolean isFaceOccluded(int x, int y, int z, BlockShape shape, int faceIndex, FaceCullCache.FaceBasis basis) {
+        if (!FaceCullCache.infoOf(shape).faceTouchesBoundary()[faceIndex]) return false; // skips the neighbor lookup entirely
 
-        FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
         BlockShape neighborShape = getShapeAt(x + basis.nx(), y + basis.ny(), z + basis.nz());
         if (neighborShape == null) return false;
 
-        return FaceCullCache.occludes(face, verts, neighborShape);
+        return FaceCullCache.occludes(shape.getFaces().get(faceIndex), shape.getVertices(), neighborShape);
     }
 
     // ------------------------------------------------------------------
@@ -159,11 +160,19 @@ public class Chunk {
         int worldOffsetX = worldPos.x() * SIZE_X;
         int worldOffsetZ = worldPos.z() * SIZE_Z;
 
-        for (int x = 0; x < SIZE_X; x++) {
+        for (int dz = -1; dz <= 1; dz++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                neighbors[(dz + 1) * 3 + (dx + 1)] = (dx == 0 && dz == 0) ? this
+                        : NanoCraft.WORLD.getChunk(worldPos.offset(dx, dz));
+            }
+        }
+
+        // z, y, x order walks the blocks array sequentially (see getIndex)
+        for (int z = 0; z < SIZE_Z; z++) {
             for (int y = 0; y < SIZE_Y; y++) {
-                for (int z = 0; z < SIZE_Z; z++) {
+                for (int x = 0; x < SIZE_X; x++) {
                     char blockId = blocks[getIndex(x, y, z)];
-                    if (blockId == QuickAccessBlocks.AIR) continue;
+                    if (blockId == QuickAccessBlocks.AIR || blockId == QuickAccessBlocks.NULL) continue;
 
                     Block block = Registries.BLOCK.get(blockId);
                     BlockShape shape = block.getShape();
@@ -173,12 +182,14 @@ public class Chunk {
                     int wz = worldOffsetZ + z;
                     List<BlockShape.Vertex> verts = shape.getVertices();
                     List<BlockShape.Face> faces = shape.getFaces();
+                    // one texture means "every face"; otherwise there should be one per face
+                    if (block.getTextureCount() > 1 && faces.size() > block.getTextureCount()
+                            && WARNED.add(block.getId())) {
+                        System.err.println("Block " + block.getName() + " (id=" + block.getId() + ") has "
+                                + faces.size() + " faces but only " + block.getTextureCount() + " textures");
+                    }
                     for (int i = 0; i < faces.size(); i++) {
                         BlockShape.Face face = faces.get(i);
-                        if (i >= block.getTextureCount()) {  // or however you can check array length safely
-                            System.err.println("Block " + block.getName() + " (id=" + (int) block.getId() + ") has "
-                                    + faces.size() + " faces but only " + block.getTextureCount() + " textures");
-                        }
                         FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
 
                         // shouldCull=true means "attempt culling": actually
@@ -188,7 +199,7 @@ public class Chunk {
                         // blindly hiding it. shouldCull=false skips the
                         // check entirely and always renders the face (e.g.
                         // a cross-plant quad that should never be culled).
-                        if (face.shouldCull() && isFaceOccluded(x, y, z, face, verts)) {
+                        if (face.shouldCull() && isFaceOccluded(x, y, z, shape, i, basis)) {
                             continue;
                         }
 
@@ -214,7 +225,8 @@ public class Chunk {
         if (n < 3) return; // not a renderable polygon
 
         int startIndex = vCount / 7;
-        float[] aos = new float[n];
+        if (aoScratch.length < n) aoScratch = new float[n];
+        float[] aos = aoScratch;
 
         for (int i = 0; i < n; i++) {
             BlockShape.Vertex v = verts.get(indices[i]);
@@ -367,14 +379,21 @@ public class Chunk {
         blocks[getIndex(x, y, z)] = block;
     }
 
+    /** Used while meshing: NULL is an unloaded chunk or air ChunkLoader never wrote, both transparent. */
     public boolean isTransparent(int x, int y, int z) {
         if (y < 0 || y >= SIZE_Y) return true;
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
-            char neighborBlock = getBlockInterchunk(x, y, z);
-            if (neighborBlock == QuickAccessBlocks.NULL) return true; // unloaded chunk -> treat as transparent
-            return neighborBlock == QuickAccessBlocks.AIR;
-        }
-        return blocks[getIndex(x, y, z)] == QuickAccessBlocks.AIR;
+        char id = meshBlockAt(x, y, z);
+        return id == QuickAccessBlocks.AIR || id == QuickAccessBlocks.NULL;
+    }
+
+    /** Block at chunk-local (x,y,z), reaching up to one chunk over via the neighbors cached by buildMesh. */
+    private char meshBlockAt(int x, int y, int z) {
+        if (x >= 0 && x < SIZE_X && z >= 0 && z < SIZE_Z) return blocks[getIndex(x, y, z)];
+        int dx = x < 0 ? -1 : x >= SIZE_X ? 1 : 0;
+        int dz = z < 0 ? -1 : z >= SIZE_Z ? 1 : 0;
+        Chunk chunk = neighbors[(dz + 1) * 3 + (dx + 1)];
+        if (chunk == null) return QuickAccessBlocks.NULL;
+        return chunk.getBlock(x - dx * SIZE_X, y, z - dz * SIZE_Z);
     }
 
     public char getBlockInterchunk(int x, int y, int z) {

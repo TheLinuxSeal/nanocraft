@@ -41,15 +41,19 @@ public final class FaceCullCache {
 
     public record FaceBasis(int nx, int ny, int nz, int ux, int uy, int uz, int vx, int vy, int vz) {}
 
+    // indexed by Direction.ordinal(); built once so meshing doesn't allocate a basis per face
+    private static final FaceBasis[] BASES = new FaceBasis[Direction.values().length];
+    static {
+        BASES[Direction.UP.ordinal()]    = new FaceBasis(0, 1, 0,  0, 0, 1,  1, 0, 0);
+        BASES[Direction.DOWN.ordinal()]  = new FaceBasis(0, -1, 0, 1, 0, 0,  0, 0, 1);
+        BASES[Direction.NORTH.ordinal()] = new FaceBasis(0, 0, 1,  1, 0, 0,  0, 1, 0); // +Z
+        BASES[Direction.SOUTH.ordinal()] = new FaceBasis(0, 0, -1, 0, 1, 0,  1, 0, 0); // -Z
+        BASES[Direction.WEST.ordinal()]  = new FaceBasis(-1, 0, 0, 0, 0, 1,  0, 1, 0); // -X
+        BASES[Direction.EAST.ordinal()]  = new FaceBasis(1, 0, 0,  0, 1, 0,  0, 0, 1); // +X
+    }
+
     public static FaceBasis basisOf(Direction dir) {
-        return switch (dir) {
-            case UP    -> new FaceBasis(0, 1, 0,  0, 0, 1,  1, 0, 0);
-            case DOWN  -> new FaceBasis(0, -1, 0, 1, 0, 0,  0, 0, 1);
-            case NORTH -> new FaceBasis(0, 0, 1,  1, 0, 0,  0, 1, 0); // +Z
-            case SOUTH -> new FaceBasis(0, 0, -1, 0, 1, 0,  1, 0, 0); // -Z
-            case WEST  -> new FaceBasis(-1, 0, 0, 0, 0, 1,  0, 1, 0); // -X
-            case EAST  -> new FaceBasis(1, 0, 0,  0, 1, 0,  0, 0, 1); // +X
-        };
+        return BASES[dir.ordinal()];
     }
 
 
@@ -103,6 +107,45 @@ public final class FaceCullCache {
     }
 
     // ------------------------------------------------------------------
+    // Per-shape info
+    //
+    // Computed once per shape and stored on it, so the mesher can answer
+    // the two hottest questions with an array read instead of a map lookup:
+    // does face i touch the block boundary, and does this shape completely
+    // cover side d (true for every side of a full cube)? A neighbor that
+    // fully covers the facing side hides any boundary face, whatever its
+    // footprint, so the face-pair cache below is only needed otherwise.
+    // ------------------------------------------------------------------
+
+    public record ShapeInfo(boolean[] faceTouchesBoundary, boolean[] fullSide) {}
+
+    public static ShapeInfo infoOf(BlockShape shape) {
+        ShapeInfo info = shape.getCullInfo();
+        if (info == null) {
+            // benign race: every thread computes the same value
+            info = analyze(shape);
+            shape.setCullInfo(info);
+        }
+        return info;
+    }
+
+    private static ShapeInfo analyze(BlockShape shape) {
+        List<BlockShape.Face> faces = shape.getFaces();
+        boolean[] touches = new boolean[faces.size()];
+        boolean[] fullSide = new boolean[Direction.values().length];
+
+        for (int i = 0; i < faces.size(); i++) {
+            BlockShape.Face face = faces.get(i);
+            Footprint fp = computeFootprint(shape.getVertices(), face, basisOf(face.dir()));
+            touches[i] = fp.touchesOwnBoundary();
+            if (touches[i] && fp.minA() <= 0 && fp.maxA() >= 128 && fp.minB() <= 0 && fp.maxB() >= 128) {
+                fullSide[face.dir().ordinal()] = true;
+            }
+        }
+        return new ShapeInfo(touches, fullSide);
+    }
+
+    // ------------------------------------------------------------------
     // Caches
     // ------------------------------------------------------------------
 
@@ -146,6 +189,7 @@ public final class FaceCullCache {
      */
     public static boolean occludes(BlockShape.Face face, List<BlockShape.Vertex> verts, BlockShape neighborShape) {
         Direction opposite = opposite(face.dir());
+        if (infoOf(neighborShape).fullSide()[opposite.ordinal()]) return true; // caller checked face touches its boundary
         List<BlockShape.Vertex> neighborVerts = neighborShape.getVertices();
 
         for (BlockShape.Face candidate : neighborShape.getFaces()) {
