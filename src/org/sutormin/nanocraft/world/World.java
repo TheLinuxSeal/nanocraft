@@ -1,17 +1,35 @@
 package org.sutormin.nanocraft.world;
 
+import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.world.chunk.Chunk;
 import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
+import org.sutormin.nanocraft.world.render.Mesh;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
     private final Set<ChunkPos> dirty = new LinkedHashSet<>();
     private final Map<ChunkPos, List<ChunkLoader.BlockChange>> pendingBlockChanges = new HashMap<>();
+
+    // Meshing runs on worker threads; only captureNeighbors and uploads touch the main thread.
+    // A chunk is in `meshing` from submission until its result is taken off `meshed`, so it never
+    // has two builds at once. If it gets dirty meanwhile it stays in `dirty` and is resubmitted after.
+    private final ExecutorService meshExecutor = Executors.newFixedThreadPool(Options.MESH_THREADS, r -> {
+        Thread t = new Thread(r, "chunk-mesher");
+        t.setDaemon(true);
+        return t;
+    });
+    private final Set<Chunk> meshing = new HashSet<>();
+    private final Queue<MeshResult> meshed = new ConcurrentLinkedQueue<>();
+
+    private record MeshResult(Chunk chunk, Mesh.Prepared data) {}
 
     public World() {
     }
@@ -58,13 +76,45 @@ public class World {
         }
     }
 
-    public void flushDirty(int budget) {
+    /** Hands dirty chunks to the mesh workers, keeping at most {@code maxInFlight} builds queued. */
+    public void submitDirty(int maxInFlight) {
         Iterator<ChunkPos> it = dirty.iterator();
-        while (it.hasNext() && budget-- > 0) {
+        while (it.hasNext() && meshing.size() < maxInFlight) {
             ChunkPos pos = it.next();
-            it.remove();
             Chunk c = chunks.get(pos);
-            if (c != null) c.buildMesh();
+            if (c == null) {
+                it.remove();
+                continue;
+            }
+            if (meshing.contains(c)) continue; // still building; resubmit once that finishes
+
+            it.remove();
+            meshing.add(c);
+            c.captureNeighbors();
+            meshExecutor.execute(() -> {
+                Mesh.Prepared data = null;
+                try {
+                    data = c.buildMeshData();
+                } catch (RuntimeException e) {
+                    System.err.println("Failed to mesh chunk " + c.getPos());
+                    e.printStackTrace();
+                }
+                meshed.add(new MeshResult(c, data));
+            });
+        }
+    }
+
+    /** Uploads finished meshes until {@code budgetNanos} has passed; the rest wait for the next frame. */
+    public void uploadMeshes(long budgetNanos) {
+        long deadline = System.nanoTime() + budgetNanos;
+        MeshResult result;
+        while (System.nanoTime() < deadline && (result = meshed.poll()) != null) {
+            Chunk c = result.chunk();
+            meshing.remove(c);
+            if (result.data() == null) continue;
+            // skip chunks that were unloaded or replaced while building
+            if (chunks.get(c.getPos()) == c) c.uploadMesh(result.data());
+            else result.data().free();
         }
     }
 
@@ -153,10 +203,16 @@ public class World {
         drainNetworkChunks(100);
         drainUnloads(50);
         drainBlockChanges(200);
-        flushDirty(10);
+        submitDirty(Options.MESH_THREADS * 2);
+        uploadMeshes((long) (Options.MESH_UPLOAD_BUDGET_MS * 1_000_000));
     }
 
     public void cleanup() {
+        meshExecutor.shutdownNow();
+        MeshResult result;
+        while ((result = meshed.poll()) != null) {
+            if (result.data() != null) result.data().free();
+        }
         for (Chunk chunk : chunks.values()) {
             chunk.cleanup();
         }

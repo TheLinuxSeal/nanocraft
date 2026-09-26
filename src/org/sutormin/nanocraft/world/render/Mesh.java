@@ -44,11 +44,22 @@ public class Mesh {
     }
 
     /**
+     * Vertex and index data copied into native buffers, ready for {@link #upload}.
+     * Preparing needs no GL context, so it can run on a worker thread.
+     */
+    public record Prepared(ByteBuffer vertices, IntBuffer indices, int indexCount) {
+        /** Frees the native buffers; {@link #upload} does this for you. */
+        public void free() {
+            if (vertices != null) MemoryUtil.memFree(vertices);
+            if (indices != null) MemoryUtil.memFree(indices);
+        }
+    }
+
+    /**
      * @param vertices  interleaved vertex data, 7 chars per vertex
      * @param charCount number of chars actually written (vertexCount * 7)
      */
-    public void updateMesh(char[] vertices, int charCount, int[] indices, int iCount) {
-
+    public static Prepared prepare(char[] vertices, int charCount, int[] indices, int iCount) {
         if (charCount % CHARS_PER_VERTEX != 0) {
             throw new IllegalStateException("charCount " + charCount + " is not a multiple of " + CHARS_PER_VERTEX);
         }
@@ -59,40 +70,44 @@ public class Mesh {
             }
         }
 
-        generated = true;
-
         if (charCount == 0 || iCount == 0) {
-            this.indexCount = 0;
-            return;
+            return new Prepared(null, null, 0);
         }
-
-        indexCount = iCount;
 
         // Vertex buffer: raw bytes, filled through a native-order char view
         ByteBuffer vBuffer = MemoryUtil.memAlloc(charCount * Character.BYTES);
-        try {
-            vBuffer.order(ByteOrder.nativeOrder());
-            vBuffer.asCharBuffer().put(vertices, 0, charCount); // doesn't move vBuffer's position
+        vBuffer.order(ByteOrder.nativeOrder());
+        vBuffer.asCharBuffer().put(vertices, 0, charCount); // doesn't move vBuffer's position
 
-            glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferData(GL_ARRAY_BUFFER, vBuffer, GL_DYNAMIC_DRAW);
-        } finally {
-            MemoryUtil.memFree(vBuffer);
-        }
-
-        // Index buffer
         IntBuffer iBuffer = MemoryUtil.memAllocInt(iCount);
+        iBuffer.put(indices, 0, iCount).flip();
+
+        return new Prepared(vBuffer, iBuffer, iCount);
+    }
+
+    /** Uploads prepared data and frees its buffers. GL thread only. */
+    public void upload(Prepared data) {
+        generated = true;
+        indexCount = data.indexCount();
+        if (indexCount == 0) return;
+
         try {
-            iBuffer.put(indices, 0, iCount).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, data.vertices(), GL_DYNAMIC_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBuffer, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.indices(), GL_DYNAMIC_DRAW);
         } finally {
-            MemoryUtil.memFree(iBuffer);
+            data.free();
         }
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    /** {@link #prepare} and {@link #upload} in one go. GL thread only. */
+    public void updateMesh(char[] vertices, int charCount, int[] indices, int iCount) {
+        upload(prepare(vertices, charCount, indices, iCount));
     }
 
     public void setPos(int x, int z) {

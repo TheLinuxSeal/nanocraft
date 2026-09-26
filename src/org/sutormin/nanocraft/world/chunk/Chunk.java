@@ -23,9 +23,10 @@ public class Chunk {
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
     private char[] blocks = new char[SIZE_X * SIZE_Y * SIZE_Z];
 
-    private char[] vArray = new char[1024];
+    // Point at the building thread's scratch arrays during buildMeshData
+    private char[] vArray;
     private int vCount = 0;
-    private int[] iArray = new int[1024];
+    private int[] iArray;
     private int iCount = 0;
 
     public Mesh mesh;
@@ -34,6 +35,14 @@ public class Chunk {
     // buildMesh so neighbor reads at the chunk edges don't hit the world's map.
     private final Chunk[] neighbors = new Chunk[9];
     private float[] aoScratch = new float[8];
+
+    // Per-thread vertex/index arrays, kept at their grown size between builds. Mesh.prepare
+    // copies the data out, so reusing them avoids ~10 MB of garbage per chunk build.
+    private static final class Scratch {
+        char[] vertices = new char[1024];
+        int[] indices = new int[1024];
+    }
+    private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
     // blocks whose face/texture count mismatch was already reported
     private static final java.util.Set<Integer> WARNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
@@ -150,22 +159,40 @@ public class Chunk {
     // Meshing
     // ------------------------------------------------------------------
 
+    /** Builds and uploads the mesh right away. Main (GL) thread only. */
     public void buildMesh() {
-        vArray = new char[1024];
-        vCount = 0;
-        iArray = new int[1024];
-        iCount = 0;
-        //System.out.println("buildMesh for " + worldPos + ", blocks[0]=" + (int) blocks[22852]);
+        captureNeighbors();
+        uploadMesh(buildMeshData());
+    }
 
-        int worldOffsetX = worldPos.x() * SIZE_X;
-        int worldOffsetZ = worldPos.z() * SIZE_Z;
-
+    /**
+     * Records the 8 surrounding chunks for the next {@link #buildMeshData}.
+     * Main thread only: the world's chunk map isn't thread-safe.
+     */
+    public void captureNeighbors() {
         for (int dz = -1; dz <= 1; dz++) {
             for (int dx = -1; dx <= 1; dx++) {
                 neighbors[(dz + 1) * 3 + (dx + 1)] = (dx == 0 && dz == 0) ? this
                         : NanoCraft.WORLD.getChunk(worldPos.offset(dx, dz));
             }
         }
+    }
+
+    /**
+     * Builds the mesh data without touching OpenGL, so it can run on a worker thread.
+     * Call {@link #captureNeighbors} first, and never run two builds of the same chunk at
+     * once (they share the scratch fields). Blocks changed by the main thread mid-build may
+     * give a stale mesh; World re-meshes the chunk afterwards because the change marks it dirty.
+     */
+    public Mesh.Prepared buildMeshData() {
+        Scratch scratch = SCRATCH.get();
+        vArray = scratch.vertices;
+        vCount = 0;
+        iArray = scratch.indices;
+        iCount = 0;
+
+        int worldOffsetX = worldPos.x() * SIZE_X;
+        int worldOffsetZ = worldPos.z() * SIZE_Z;
 
         // z, y, x order walks the blocks array sequentially (see getIndex)
         for (int z = 0; z < SIZE_Z; z++) {
@@ -209,7 +236,18 @@ public class Chunk {
             }
         }
 
-        mesh.updateMesh(vArray, vCount, iArray, iCount);
+        scratch.vertices = vArray; // keep any growth for the next build
+        scratch.indices = iArray;
+        return Mesh.prepare(vArray, vCount, iArray, iCount);
+    }
+
+    /** Uploads data from {@link #buildMeshData} and frees it. Main (GL) thread only. */
+    public void uploadMesh(Mesh.Prepared data) {
+        mesh.upload(data);
+    }
+
+    public ChunkPos getPos() {
+        return worldPos;
     }
 
     /**
