@@ -1,0 +1,5 @@
+// fallback for any block without its own definition
+// <name> <shape> <textures...>  * = base block name (grass_block), ^ = state tag ([snowy=true], empty if stateless)
+// a single texture is used on every face
+// name[prop=a|b] matches every state with those property values; the most specific match wins
+@default full *

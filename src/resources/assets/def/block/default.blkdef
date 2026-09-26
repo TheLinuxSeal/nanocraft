@@ -1,2 +1,0 @@
-@default full * * * * * *
-#name, model, tex[]. in @default, * is replaced with the base block name (grass_block) and ^ with the state tag ([snowy=true], empty if stateless). a file can have multiple.
