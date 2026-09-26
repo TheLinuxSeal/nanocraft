@@ -73,20 +73,23 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, 4);
+        int maxLevel = Integer.numberOfTrailingZeros(texSize); // 16x16 -> levels 0..4
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAX_LEVEL, maxLevel);
 
-        glTexImage3D(
-                GL_TEXTURE_2D_ARRAY,
-                0,
-                GL_RGBA,
-                texSize,
-                texSize,
-                paths.size(),
-                0,
-                GL_RGBA,
-                GL_UNSIGNED_BYTE,
-                (ByteBuffer) null
-        );
+        for (int level = 0; level <= maxLevel; level++) {
+            glTexImage3D(
+                    GL_TEXTURE_2D_ARRAY,
+                    level,
+                    GL_RGBA,
+                    texSize >> level,
+                    texSize >> level,
+                    paths.size(),
+                    0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    (ByteBuffer) null
+            );
+        }
 
         for (int i = 0; i < paths.size(); i++) {
             ByteBuffer image = null;
@@ -145,6 +148,7 @@ public class Texture {
                         GL_UNSIGNED_BYTE,
                         image
                 );
+                uploadMipmaps(image, w, i, maxLevel);
 
             } catch (Exception e) {
                 System.err.println(
@@ -163,8 +167,54 @@ public class Texture {
             }
         }
 
-        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    }
+
+    /**
+     * Builds and uploads mip levels 1..maxLevel for one layer. Like glGenerateMipmap, each
+     * pixel averages a 2x2 block, but colors are weighted by alpha so the (often black) color of
+     * fully transparent pixels doesn't bleed dark fringes into leaves and glass at a distance.
+     */
+    private void uploadMipmaps(ByteBuffer image, int size, int layer, int maxLevel) {
+        int[] src = new int[size * size * 4];
+        for (int k = 0; k < src.length; k++) src[k] = image.get(k) & 0xFF;
+
+        for (int level = 1; level <= maxLevel; level++) {
+            int half = size / 2;
+            int[] dst = new int[half * half * 4];
+            for (int y = 0; y < half; y++) {
+                for (int x = 0; x < half; x++) {
+                    int r = 0, g = 0, b = 0, a = 0, rawR = 0, rawG = 0, rawB = 0;
+                    for (int dy = 0; dy < 2; dy++) {
+                        for (int dx = 0; dx < 2; dx++) {
+                            int p = ((y * 2 + dy) * size + (x * 2 + dx)) * 4;
+                            int pa = src[p + 3];
+                            r += src[p] * pa; g += src[p + 1] * pa; b += src[p + 2] * pa; a += pa;
+                            rawR += src[p]; rawG += src[p + 1]; rawB += src[p + 2];
+                        }
+                    }
+                    int q = (y * half + x) * 4;
+                    if (a > 0) {
+                        dst[q] = r / a; dst[q + 1] = g / a; dst[q + 2] = b / a;
+                    } else { // fully transparent: color is never visible, plain average is fine
+                        dst[q] = rawR / 4; dst[q + 1] = rawG / 4; dst[q + 2] = rawB / 4;
+                    }
+                    dst[q + 3] = a / 4;
+                }
+            }
+
+            ByteBuffer buf = MemoryUtil.memAlloc(dst.length);
+            try {
+                for (int v : dst) buf.put((byte) v);
+                buf.flip();
+                glTexSubImage3D(GL_TEXTURE_2D_ARRAY, level, 0, 0, layer, half, half, 1,
+                        GL_RGBA, GL_UNSIGNED_BYTE, buf);
+            } finally {
+                MemoryUtil.memFree(buf);
+            }
+            src = dst;
+            size = half;
+        }
     }
 
     public void bind() {

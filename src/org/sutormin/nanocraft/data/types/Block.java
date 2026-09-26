@@ -19,6 +19,10 @@ public class Block extends RegistryType {
     /** Atlas indices matching texturePaths, filled in when the atlas is built. */
     private int[] textures = new int[0];
     private RenderLayer renderLayer = RenderLayer.OPAQUE;
+    /** Block name without the state tag, e.g. "glass" for every glass state. */
+    private String baseName = null;
+    /** Whether faces between two non-opaque blocks of the same kind are hidden (glass, water; not leaves). */
+    private boolean cullsSameBlock = true;
     private int tintColor = 0xFFFFFF; // e.g. for grass / leaves
 
     // ---- Mining (client predicts break time / crack animation; server validates) ----
@@ -49,6 +53,8 @@ public class Block extends RegistryType {
         b.texturePaths = texturePaths.clone();
         b.textures = textures.clone();
         b.renderLayer = renderLayer;
+        b.baseName = baseName;
+        b.cullsSameBlock = cullsSameBlock;
         b.tintColor = tintColor;
         b.hardness = hardness;
         b.effectiveTool = effectiveTool;
@@ -122,6 +128,22 @@ public class Block extends RegistryType {
 
     public RenderLayer getRenderLayer() { return renderLayer; }
     public Block setRenderLayer(RenderLayer layer) { this.renderLayer = layer; return this; }
+
+    public String getBaseName() { return baseName; }
+    public Block setBaseName(String baseName) { this.baseName = baseName; return this; }
+
+    public boolean cullsSameBlock() { return cullsSameBlock; }
+    public Block setCullsSameBlock(boolean culls) { this.cullsSameBlock = culls; return this; }
+
+    /**
+     * Whether this block hides the face of {@code other} that touches it (geometry permitting).
+     * Opaque blocks hide anything; see-through ones only hide the same kind of block.
+     */
+    public boolean hidesFacesOf(Block other) {
+        if (renderLayer == RenderLayer.OPAQUE) return true;
+        if (renderLayer == RenderLayer.INVISIBLE) return false;
+        return cullsSameBlock && baseName != null && baseName.equals(other.baseName);
+    }
 
     public int getTintColor() { return tintColor; }
     public Block setTintColor(int rgb) { this.tintColor = rgb & 0xFFFFFF; return this; }

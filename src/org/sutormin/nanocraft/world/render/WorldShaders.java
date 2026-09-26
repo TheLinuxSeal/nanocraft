@@ -45,13 +45,18 @@ public class WorldShaders {
     out vec4 FragColor;
 
     uniform sampler2DArray uTexture;
+    // pixels with less alpha than this are discarded: 0.5 for the opaque/cutout pass,
+    // near 0 for the blended translucent pass
+    uniform float uAlphaCutoff;
     //uniform vec3 uFogColor;
     //uniform float uFogNear;
     //uniform float uFogFar;
 
     void main() {
+        // Alpha test on the full-size texture, not the mipmap: averaged alpha in small mips
+        // would make leaves and glass frames thin out and vanish with distance.
+        if (textureLod(uTexture, TexCoord, 0.0).a < uAlphaCutoff) discard;
         vec4 texColor = texture(uTexture, TexCoord);
-        //if (texColor.a < 0.1) discard; // buggy bc of mipmaps
 
         // fog (optional)
         //float dist = length(FragPosView);

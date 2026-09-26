@@ -23,13 +23,10 @@ public class Chunk {
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
     private char[] blocks = new char[SIZE_X * SIZE_Y * SIZE_Z];
 
-    // Point at the building thread's scratch arrays during buildMeshData
-    private char[] vArray;
-    private int vCount = 0;
-    private int[] iArray;
-    private int iCount = 0;
-
+    // Opaque and cutout faces (alpha-tested), drawn first
     public Mesh mesh;
+    // Translucent faces (water, stained glass, ice), blended after all opaque geometry
+    public Mesh translucentMesh;
 
     // The 3x3 chunks around this one (index (dz+1)*3 + (dx+1)), looked up once per
     // buildMesh so neighbor reads at the chunk edges don't hit the world's map.
@@ -38,11 +35,39 @@ public class Chunk {
 
     // Per-thread vertex/index arrays, kept at their grown size between builds. Mesh.prepare
     // copies the data out, so reusing them avoids ~10 MB of garbage per chunk build.
-    private static final class Scratch {
+    private static final class MeshBuffer {
         char[] vertices = new char[1024];
+        int vCount;
         int[] indices = new int[1024];
+        int iCount;
+
+        void pushVertex(char v) {
+            if (vCount == vertices.length) vertices = java.util.Arrays.copyOf(vertices, vertices.length * 2);
+            vertices[vCount++] = v;
+        }
+
+        void pushIndex(int i) {
+            if (iCount == indices.length) indices = java.util.Arrays.copyOf(indices, indices.length * 2);
+            indices[iCount++] = i;
+        }
+
+        Mesh.Prepared prepare() {
+            return Mesh.prepare(vertices, vCount, indices, iCount);
+        }
+    }
+    private static final class Scratch {
+        final MeshBuffer solid = new MeshBuffer();
+        final MeshBuffer translucent = new MeshBuffer();
     }
     private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
+
+    /** Output of {@link #buildMeshData}: one prepared mesh per render pass. */
+    public record MeshData(Mesh.Prepared solid, Mesh.Prepared translucent) {
+        public void free() {
+            solid.free();
+            translucent.free();
+        }
+    }
     // blocks whose face/texture count mismatch was already reported
     private static final java.util.Set<Integer> WARNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
@@ -50,6 +75,8 @@ public class Chunk {
         this.worldPos = worldPos;
         this.mesh = new Mesh();
         mesh.setPos(this.worldPos.x(), this.worldPos.z());
+        this.translucentMesh = new Mesh();
+        translucentMesh.setPos(this.worldPos.x(), this.worldPos.z());
     }
 
     public void setBlocks(char[] blocks) {
@@ -124,20 +151,17 @@ public class Chunk {
     // ------------------------------------------------------------------
 
     /**
-     * Looks up the shape of the block at chunk-local (x,y,z), which may
-     * reach into a neighboring chunk (mirrors {@link #isTransparent}'s
-     * bounds handling). Returns {@code null} for air, out-of-world-height
+     * Looks up the block at chunk-local (x,y,z), which may reach into a
+     * neighboring chunk. Returns {@code null} for air, out-of-world-height
      * space, or an unloaded neighbor chunk -- anywhere there's nothing to
      * occlude against.
      */
-    private BlockShape getShapeAt(int x, int y, int z) {
+    private Block getBlockAt(int x, int y, int z) {
         if (y < 0 || y >= SIZE_Y) return null;
         char id = meshBlockAt(x, y, z);
         // NULL: unloaded chunk (can't occlude) or never-written air
         if (id == QuickAccessBlocks.AIR || id == QuickAccessBlocks.NULL) return null;
-
-        Block neighborType = Registries.BLOCK.get(id);
-        return neighborType != null ? neighborType.getShape() : null;
+        return Registries.BLOCK.get(id);
     }
 
     /**
@@ -146,10 +170,13 @@ public class Chunk {
      * test and caching; this just wires it up with this chunk's neighbor
      * lookup.
      */
-    private boolean isFaceOccluded(int x, int y, int z, BlockShape shape, int faceIndex, FaceCullCache.FaceBasis basis) {
+    private boolean isFaceOccluded(int x, int y, int z, Block block, BlockShape shape, int faceIndex,
+                                   FaceCullCache.FaceBasis basis) {
         if (!FaceCullCache.infoOf(shape).faceTouchesBoundary()[faceIndex]) return false; // skips the neighbor lookup entirely
 
-        BlockShape neighborShape = getShapeAt(x + basis.nx(), y + basis.ny(), z + basis.nz());
+        Block neighbor = getBlockAt(x + basis.nx(), y + basis.ny(), z + basis.nz());
+        if (neighbor == null || !neighbor.hidesFacesOf(block)) return false; // e.g. stone stays visible behind glass
+        BlockShape neighborShape = neighbor.getShape();
         if (neighborShape == null) return false;
 
         return FaceCullCache.occludes(shape.getFaces().get(faceIndex), shape.getVertices(), neighborShape);
@@ -184,12 +211,10 @@ public class Chunk {
      * once (they share the scratch fields). Blocks changed by the main thread mid-build may
      * give a stale mesh; World re-meshes the chunk afterwards because the change marks it dirty.
      */
-    public Mesh.Prepared buildMeshData() {
+    public MeshData buildMeshData() {
         Scratch scratch = SCRATCH.get();
-        vArray = scratch.vertices;
-        vCount = 0;
-        iArray = scratch.indices;
-        iCount = 0;
+        scratch.solid.vCount = scratch.solid.iCount = 0;
+        scratch.translucent.vCount = scratch.translucent.iCount = 0;
 
         int worldOffsetX = worldPos.x() * SIZE_X;
         int worldOffsetZ = worldPos.z() * SIZE_Z;
@@ -203,7 +228,9 @@ public class Chunk {
 
                     Block block = Registries.BLOCK.get(blockId);
                     BlockShape shape = block.getShape();
-                    if (shape == null) continue;
+                    if (shape == null || block.getRenderLayer() == Block.RenderLayer.INVISIBLE) continue;
+                    MeshBuffer out = block.getRenderLayer() == Block.RenderLayer.TRANSLUCENT
+                            ? scratch.translucent : scratch.solid;
 
                     int wx = worldOffsetX + x;
                     int wz = worldOffsetZ + z;
@@ -226,24 +253,23 @@ public class Chunk {
                         // blindly hiding it. shouldCull=false skips the
                         // check entirely and always renders the face (e.g.
                         // a cross-plant quad that should never be culled).
-                        if (face.shouldCull() && isFaceOccluded(x, y, z, shape, i, basis)) {
+                        if (face.shouldCull() && isFaceOccluded(x, y, z, block, shape, i, basis)) {
                             continue;
                         }
 
-                        addFace(wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i));
+                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i));
                     }
                 }
             }
         }
 
-        scratch.vertices = vArray; // keep any growth for the next build
-        scratch.indices = iArray;
-        return Mesh.prepare(vArray, vCount, iArray, iCount);
+        return new MeshData(scratch.solid.prepare(), scratch.translucent.prepare());
     }
 
     /** Uploads data from {@link #buildMeshData} and frees it. Main (GL) thread only. */
-    public void uploadMesh(Mesh.Prepared data) {
-        mesh.upload(data);
+    public void uploadMesh(MeshData data) {
+        mesh.upload(data.solid());
+        translucentMesh.upload(data.translucent());
     }
 
     public ChunkPos getPos() {
@@ -255,14 +281,14 @@ public class Chunk {
      * quad) for the block at world position (wx,wy,wz) / chunk-local
      * position (lx,ly,lz).
      */
-    private void addFace(int wx, int wy, int wz, int lx, int ly, int lz,
+    private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
                          BlockShape.Face face, int tex) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
 
-        int startIndex = vCount / 7;
+        int startIndex = out.vCount / 7;
         if (aoScratch.length < n) aoScratch = new float[n];
         float[] aos = aoScratch;
 
@@ -283,13 +309,13 @@ public class Chunk {
             char texH = (char) (tex >>> 16);
             char texL = (char) (tex & 0xFFFF);
 
-            pushVertex(gx);
-            pushVertex(gy);
-            pushVertex(gz);
-            pushVertex(uv);
-            pushVertex(ao);
-            pushVertex(texL);
-            pushVertex(texH);
+            out.pushVertex(gx);
+            out.pushVertex(gy);
+            out.pushVertex(gz);
+            out.pushVertex(uv);
+            out.pushVertex(ao);
+            out.pushVertex(texL);
+            out.pushVertex(texH);
 
             /*long packed =
                     ((long) (gx & 0xFFFL) << 0)
@@ -299,7 +325,7 @@ public class Chunk {
                             | ((long) (tex & 0xFFFFL) << 42)
                             | ((long) (aos[i] & 0x3L) << 58);
 
-            pushVertex(packed);*/
+            out.pushVertex(packed);*/
         }
 
         if (n == 4) {
@@ -312,32 +338,20 @@ public class Chunk {
             float ao3 = aos[3];
 
             if (ao0 + ao2 < ao1 + ao3) {
-                pushIndex(startIndex);     pushIndex(startIndex + 1); pushIndex(startIndex + 3);
-                pushIndex(startIndex + 1); pushIndex(startIndex + 2); pushIndex(startIndex + 3);
+                out.pushIndex(startIndex);     out.pushIndex(startIndex + 1); out.pushIndex(startIndex + 3);
+                out.pushIndex(startIndex + 1); out.pushIndex(startIndex + 2); out.pushIndex(startIndex + 3);
             } else {
-                pushIndex(startIndex);     pushIndex(startIndex + 1); pushIndex(startIndex + 2);
-                pushIndex(startIndex + 2); pushIndex(startIndex + 3); pushIndex(startIndex);
+                out.pushIndex(startIndex);     out.pushIndex(startIndex + 1); out.pushIndex(startIndex + 2);
+                out.pushIndex(startIndex + 2); out.pushIndex(startIndex + 3); out.pushIndex(startIndex);
             }
         } else {
             // Arbitrary polygon: simple fan triangulation from vertex 0.
             for (int i = 1; i < n - 1; i++) {
-                pushIndex(startIndex);
-                pushIndex(startIndex + i);
-                pushIndex(startIndex + i + 1);
+                out.pushIndex(startIndex);
+                out.pushIndex(startIndex + i);
+                out.pushIndex(startIndex + i + 1);
             }
         }
-    }
-
-    private void pushVertex(char v) {
-        if (vCount == vArray.length)
-            vArray = java.util.Arrays.copyOf(vArray, vArray.length * 2);
-        vArray[vCount++] = v;
-    }
-
-    private void pushIndex(int i) {
-        if (iCount == iArray.length)
-            iArray = java.util.Arrays.copyOf(iArray, iArray.length * 2);
-        iArray[iCount++] = i;
     }
 
     // ------------------------------------------------------------------
@@ -417,11 +431,14 @@ public class Chunk {
         blocks[getIndex(x, y, z)] = block;
     }
 
-    /** Used while meshing: NULL is an unloaded chunk or air ChunkLoader never wrote, both transparent. */
+    /**
+     * Used for AO while meshing: only opaque blocks cast ambient occlusion, so glass, water,
+     * leaves and plants don't darken their neighbors. NULL (unloaded chunk or never-written air)
+     * counts as transparent.
+     */
     public boolean isTransparent(int x, int y, int z) {
-        if (y < 0 || y >= SIZE_Y) return true;
-        char id = meshBlockAt(x, y, z);
-        return id == QuickAccessBlocks.AIR || id == QuickAccessBlocks.NULL;
+        Block block = getBlockAt(x, y, z);
+        return block == null || block.getRenderLayer() != Block.RenderLayer.OPAQUE;
     }
 
     /** Block at chunk-local (x,y,z), reaching up to one chunk over via the neighbors cached by buildMesh. */
@@ -454,7 +471,12 @@ public class Chunk {
         if (mesh != null) mesh.render();
     }
 
+    public void renderTranslucent() {
+        if (translucentMesh != null) translucentMesh.render();
+    }
+
     public void cleanup() {
         if (mesh != null) mesh.cleanup();
+        if (translucentMesh != null) translucentMesh.cleanup();
     }
 }

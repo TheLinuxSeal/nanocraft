@@ -116,6 +116,7 @@ public class Mesh {
     }
 
     public void render() {
+        if (indexCount == 0) return;
         //glDisable(GL_CULL_FACE);
         //glDisable(GL_DEPTH_TEST);
         glBindVertexArray(vaoId);

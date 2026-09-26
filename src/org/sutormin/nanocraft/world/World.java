@@ -1,12 +1,12 @@
 package org.sutormin.nanocraft.world;
 
+import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.world.chunk.Chunk;
 import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
-import org.sutormin.nanocraft.world.render.Mesh;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -29,7 +29,7 @@ public class World {
     private final Set<Chunk> meshing = new HashSet<>();
     private final Queue<MeshResult> meshed = new ConcurrentLinkedQueue<>();
 
-    private record MeshResult(Chunk chunk, Mesh.Prepared data) {}
+    private record MeshResult(Chunk chunk, Chunk.MeshData data) {}
 
     public World() {
     }
@@ -92,7 +92,7 @@ public class World {
             meshing.add(c);
             c.captureNeighbors();
             meshExecutor.execute(() -> {
-                Mesh.Prepared data = null;
+                Chunk.MeshData data = null;
                 try {
                     data = c.buildMeshData();
                 } catch (RuntimeException e) {
@@ -193,9 +193,29 @@ public class World {
         return new ChunkPos(chunkX, chunkZ);
     }
 
+    /** Opaque and cutout geometry. Call before {@link #renderTranslucent}. */
     public void renderChunks() {
         for (Chunk chunk : chunks.values()) {
             chunk.render();
+        }
+    }
+
+    /**
+     * Translucent geometry, farthest chunk first so nearer water/glass blends over farther.
+     * Faces inside one chunk aren't sorted, so overlapping translucent faces in the same
+     * chunk can blend in the wrong order from some angles.
+     */
+    public void renderTranslucent() {
+        float camX = NanoCraft.CAMERA.getX();
+        float camZ = NanoCraft.CAMERA.getZ();
+        List<Chunk> sorted = new ArrayList<>(chunks.values());
+        sorted.sort(Comparator.comparingDouble((Chunk c) -> {
+            float dx = c.getPos().x() * Chunk.SIZE_X + Chunk.SIZE_X / 2f - camX;
+            float dz = c.getPos().z() * Chunk.SIZE_Z + Chunk.SIZE_Z / 2f - camZ;
+            return dx * dx + dz * dz;
+        }).reversed());
+        for (Chunk chunk : sorted) {
+            chunk.renderTranslucent();
         }
     }
 

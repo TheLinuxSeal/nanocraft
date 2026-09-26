@@ -136,6 +136,7 @@ public class NanoCraft {
         SHADER.createUniform("uProjection");
         SHADER.createUniform("uView");
         SHADER.createUniform("uChunkOffset");
+        SHADER.createUniform("uAlphaCutoff");
         //SHADER.createUniform("uTexture");
 
         WORLD = new World();
@@ -174,7 +175,18 @@ public class NanoCraft {
             SHADER.setUniform("uView", CAMERA.getViewMatrix());
             //SHADER.setUniform("uTexture", 0);
 
+            SHADER.setUniform("uAlphaCutoff", 0.5f);
             WORLD.renderChunks();
+
+            // Translucent pass: blended over the opaque scene, depth-tested but not written,
+            // so translucent faces don't hide each other
+            SHADER.setUniform("uAlphaCutoff", 0.004f);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDepthMask(false);
+            WORLD.renderTranslucent();
+            glDepthMask(true);
+            glDisable(GL_BLEND);
 
             Textures.BLOCK.unbind();
             SHADER.unbind();

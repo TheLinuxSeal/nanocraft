@@ -98,6 +98,8 @@ public final class BlockSpec {
     private void configure(Block b, String stateName, Map<String, String> s) {
         b.setShape(Registries.BLOCK_SHAPE.get(shapeFor(s)))
          .setRenderLayer(layer)
+         .setBaseName(name)
+         .setCullsSameBlock(!name.endsWith("_leaves")) // leaves show their inner faces, like vanilla
          .setHardness(hardness)
          .setEffectiveTool(tool)
          .setSolid(solidFor(s))
