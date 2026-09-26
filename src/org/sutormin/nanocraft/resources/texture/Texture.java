@@ -60,7 +60,8 @@ public class Texture {
                     + paths.size() + " > " + maxLayers);
         }
 
-        stbi_set_flip_vertically_on_load(true);
+        // No flip: block shape UVs put v=0 at the top of the image (Minecraft convention)
+        stbi_set_flip_vertically_on_load(false);
         this.tex = glGenTextures();
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, this.tex);

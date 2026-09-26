@@ -34,10 +34,10 @@ public class BlockDefinitionParser {
     private static final Map<String, List<StatePattern>> patterns = new HashMap<>();
     public static void loadFromIndex(){
         try (InputStream in = Main.class.getResourceAsStream(
-                "/assets/indexes/blkdef.idx")) {
+                "/assets/indexes/def.idx")) {
 
             if (in == null) {
-                throw new RuntimeException("Resource /assets/indexes/blkdef.idx not found");
+                throw new RuntimeException("Resource /assets/indexes/def.idx not found");
             }
 
             String strs = new String(in.readAllBytes(), StandardCharsets.UTF_8);

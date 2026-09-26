@@ -46,8 +46,9 @@ public final class FaceCullCache {
     static {
         BASES[Direction.UP.ordinal()]    = new FaceBasis(0, 1, 0,  0, 0, 1,  1, 0, 0);
         BASES[Direction.DOWN.ordinal()]  = new FaceBasis(0, -1, 0, 1, 0, 0,  0, 0, 1);
-        BASES[Direction.NORTH.ordinal()] = new FaceBasis(0, 0, 1,  1, 0, 0,  0, 1, 0); // +Z
-        BASES[Direction.SOUTH.ordinal()] = new FaceBasis(0, 0, -1, 0, 1, 0,  1, 0, 0); // -Z
+        // Minecraft convention, matching the .shp models: north is -Z, south is +Z
+        BASES[Direction.NORTH.ordinal()] = new FaceBasis(0, 0, -1, 0, 1, 0,  1, 0, 0); // -Z
+        BASES[Direction.SOUTH.ordinal()] = new FaceBasis(0, 0, 1,  1, 0, 0,  0, 1, 0); // +Z
         BASES[Direction.WEST.ordinal()]  = new FaceBasis(-1, 0, 0, 0, 0, 1,  0, 1, 0); // -X
         BASES[Direction.EAST.ordinal()]  = new FaceBasis(1, 0, 0,  0, 1, 0,  0, 0, 1); // +X
     }
