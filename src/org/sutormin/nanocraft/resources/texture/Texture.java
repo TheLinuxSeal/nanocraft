@@ -8,7 +8,9 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
@@ -22,15 +24,42 @@ public class Texture {
     private int tex;
 
     private List<String> paths = new ArrayList<>();
+    // path -> layer; missing files map to the fallback layer so they don't each take a layer
+    private final Map<String, Integer> layers = new HashMap<>();
+    private int fallback = -1;
+    private int missingCount = 0;
+
+    /** Registers the texture used for any path that doesn't exist. Call before addTexture. */
+    public int setFallbackTexture(String path) {
+        fallback = addTexture(path);
+        return fallback;
+    }
 
     public int addTexture(String path){
-        if (paths.contains(path)) return paths.indexOf(path);
+        Integer layer = layers.get(path);
+        if (layer != null) return layer;
+
+        if (fallback >= 0 && Main.class.getClassLoader().getResource(path) == null) {
+            missingCount++;
+            layers.put(path, fallback);
+            return fallback;
+        }
+
         paths.add(path);
+        layers.put(path, paths.size()-1);
         return paths.size()-1;
     }
 
     public void loadTextures() {
         //System.out.println(paths);
+        int maxLayers = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
+        System.out.println("Texture array: " + paths.size() + " layers (max " + maxLayers + "), "
+                + missingCount + " missing textures use the fallback");
+        if (paths.size() > maxLayers) {
+            throw new RuntimeException("Too many textures for one texture array: "
+                    + paths.size() + " > " + maxLayers);
+        }
+
         stbi_set_flip_vertically_on_load(true);
         this.tex = glGenTextures();
 
@@ -97,6 +126,10 @@ public class Texture {
 
                 int w = width.get(0);
                 int h = height.get(0);
+
+                if (w != texSize || h != texSize) {
+                    throw new RuntimeException("Texture is " + w + "x" + h + ", expected " + texSize + "x" + texSize);
+                }
 
                 glTexSubImage3D(
                         GL_TEXTURE_2D_ARRAY,

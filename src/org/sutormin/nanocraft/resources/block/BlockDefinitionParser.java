@@ -79,10 +79,15 @@ public class BlockDefinitionParser {
                         "Block definition '" + name + "' not found and no @default is defined"
                 );
             }
-            String newShape = d.shape.replace("*", name);
+            // * = base block name ("grass_block"), ^ = state tag ("[snowy=true]", or "" if stateless)
+            int bracket = name.indexOf('[');
+            String base = bracket < 0 ? name : name.substring(0, bracket);
+            String state = bracket < 0 ? "" : name.substring(bracket);
+
+            String newShape = d.shape.replace("*", base).replace("^", state);
             String[] newTex = new String[d.tex.length];
             for (int i = 0; i < d.tex.length; i++) {
-                newTex[i] = d.tex[i].replace("*", name);
+                newTex[i] = d.tex[i].replace("*", base).replace("^", state);
             }
             return new BlockDefinition(newShape,newTex);
         }

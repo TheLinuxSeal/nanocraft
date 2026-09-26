@@ -31,7 +31,7 @@ public class BlockDefinitions {
 
     public static void define(Registry<Block> reg) {
         reg.addNew("null");
-        reg.addNew("not_found").setTexture("assets/texture/block/not_found.png");
+        reg.addNew("not_found").setTexture("null");
         System.out.println("Registering Block 0%");
         part0(reg);
         System.out.println("Registering Block 8%");
