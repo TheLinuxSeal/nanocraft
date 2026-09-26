@@ -1,10 +1,11 @@
 package org.sutormin.nanocraft.world;
 
-import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.world.chunk.Chunk;
+import org.sutormin.nanocraft.world.chunk.ChunkLoader;
+import org.sutormin.nanocraft.world.chunk.ChunkPos;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();

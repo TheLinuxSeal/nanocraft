@@ -6,8 +6,8 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.play.player.C2SSetPlayerPosition;
-import org.sutormin.nanocraft.world.Chunk;
-import org.sutormin.nanocraft.world.ChunkPos;
+import org.sutormin.nanocraft.world.chunk.Chunk;
+import org.sutormin.nanocraft.world.chunk.ChunkPos;
 
 public class Camera {
 

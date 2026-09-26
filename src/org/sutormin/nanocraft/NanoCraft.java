@@ -9,11 +9,10 @@ import org.lwjgl.system.MemoryStack;
 import org.sutormin.nanocraft.block.BlockTypes;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.render.Shader;
-import org.sutormin.nanocraft.render.shaders.Frag;
-import org.sutormin.nanocraft.render.shaders.Vert;
 import org.sutormin.nanocraft.resources.Textures;
-import org.sutormin.nanocraft.world.ChunkPos;
+import org.sutormin.nanocraft.world.chunk.ChunkPos;
 import org.sutormin.nanocraft.world.World;
+import org.sutormin.nanocraft.world.render.WorldShaders;
 
 import java.nio.IntBuffer;
 import java.util.List;
@@ -114,7 +113,7 @@ public class NanoCraft {
         Textures.loadTextures();
 
 
-        SHADER = new Shader(Vert.VERTEX_SHADER, Frag.FRAGMENT_SHADER);
+        SHADER = new Shader(WorldShaders.WORLD_VERTEX_SHADER, WorldShaders.WORLD_FRAGMENT_SHADER);
         SHADER.createUniform("uProjection");
         SHADER.createUniform("uView");
         SHADER.createUniform("uChunkOffset");

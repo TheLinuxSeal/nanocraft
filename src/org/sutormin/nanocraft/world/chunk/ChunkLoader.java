@@ -1,7 +1,8 @@
-package org.sutormin.nanocraft.world;
+package org.sutormin.nanocraft.world.chunk;
 
 import org.sutormin.nanocraft.block.BlockTypes;
 import org.sutormin.nanocraft.networking.packets.play.world.chunk.S2CChunkData;
+import org.sutormin.nanocraft.world.BlockStateMapper;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
