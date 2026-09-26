@@ -2,6 +2,7 @@ package org.sutormin.nanocraft.world.chunk;
 
 import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.data.Registries;
+import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.BlockShape;
 import org.sutormin.nanocraft.world.FaceCullCache;
@@ -118,11 +119,11 @@ public class Chunk {
         if (y < 0 || y >= SIZE_Y) return null;
         if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
             id = getBlockInterchunk(x, y, z);
-            if (id == Registries.BLOCK.get("null").getId()) return null; // unloaded chunk -> can't occlude
+            if (id == QuickAccessBlocks.NULL) return null; // unloaded chunk -> can't occlude
         } else {
             id = blocks[getIndex(x, y, z)];
         }
-        if (id == Registries.BLOCK.get("air").getId()) return null;
+        if (id == QuickAccessBlocks.AIR) return null;
 
         Block neighborType = Registries.BLOCK.get(id);
         return neighborType != null ? neighborType.getShape() : null;
@@ -153,6 +154,7 @@ public class Chunk {
         vCount = 0;
         iArray = new int[1024];
         iCount = 0;
+        //System.out.println("buildMesh for " + worldPos + ", blocks[0]=" + (int) blocks[22852]);
 
         int worldOffsetX = worldPos.x() * SIZE_X;
         int worldOffsetZ = worldPos.z() * SIZE_Z;
@@ -161,7 +163,7 @@ public class Chunk {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int z = 0; z < SIZE_Z; z++) {
                     char blockId = blocks[getIndex(x, y, z)];
-                    if (blockId == 0) continue;
+                    if (blockId == QuickAccessBlocks.AIR) continue;
 
                     Block block = Registries.BLOCK.get(blockId);
                     BlockShape shape = block.getShape();
@@ -173,6 +175,10 @@ public class Chunk {
                     List<BlockShape.Face> faces = shape.getFaces();
                     for (int i = 0; i < faces.size(); i++) {
                         BlockShape.Face face = faces.get(i);
+                        if (i >= block.getTextureCount()) {  // or however you can check array length safely
+                            System.err.println("Block " + block.getName() + " (id=" + (int) block.getId() + ") has "
+                                    + faces.size() + " faces but only " + block.getTextureCount() + " textures");
+                        }
                         FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
 
                         // shouldCull=true means "attempt culling": actually
@@ -207,7 +213,7 @@ public class Chunk {
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
 
-        int startIndex = vCount;
+        int startIndex = vCount / 7;
         float[] aos = new float[n];
 
         for (int i = 0; i < n; i++) {
@@ -365,20 +371,20 @@ public class Chunk {
         if (y < 0 || y >= SIZE_Y) return true;
         if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) {
             char neighborBlock = getBlockInterchunk(x, y, z);
-            if (neighborBlock == Registries.BLOCK.get("null").getId()) return true; // unloaded chunk -> treat as transparent
-            return neighborBlock == Registries.BLOCK.get("air").getId();
+            if (neighborBlock == QuickAccessBlocks.NULL) return true; // unloaded chunk -> treat as transparent
+            return neighborBlock == QuickAccessBlocks.AIR;
         }
-        return blocks[getIndex(x, y, z)] == Registries.BLOCK.get("air").getId();
+        return blocks[getIndex(x, y, z)] == QuickAccessBlocks.AIR;
     }
 
     public char getBlockInterchunk(int x, int y, int z) {
         Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
-        if (chunk == null) return (char) Registries.BLOCK.get("null").getId();
+        if (chunk == null) return QuickAccessBlocks.NULL;
         return chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z));
     }
 
     public char getBlockChunkSafe(int x, int y, int z) {
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return (char) Registries.BLOCK.get("null").getId();
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return QuickAccessBlocks.NULL;
         return blocks[getIndex(x, y, z)];
     }
 

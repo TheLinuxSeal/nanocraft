@@ -1,6 +1,7 @@
 package org.sutormin.nanocraft.world;
 
-import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.data.Registries;
+import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.world.chunk.Chunk;
 import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
@@ -100,7 +101,7 @@ public class World {
     public char getBlockAt(int x, int y, int z) {
         ChunkPos chunkPos = getChunkPosFromBlock(x, z);
         Chunk chunk = chunks.get(chunkPos);
-        if (chunk == null) return BlockTypes.AIR;
+        if (chunk == null) return QuickAccessBlocks.NULL;
 
         int localX = Math.floorMod(x, Chunk.SIZE_X);
         int localZ = Math.floorMod(z, Chunk.SIZE_Z);

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.sutormin.nanocraft.world.Direction.opposite;
+
 /**
  * Face geometry helpers and the face-pair cull cache used by {@link Chunk}
  * during meshing.
@@ -39,7 +41,7 @@ public final class FaceCullCache {
 
     public record FaceBasis(int nx, int ny, int nz, int ux, int uy, int uz, int vx, int vy, int vz) {}
 
-    public static FaceBasis basisOf(BlockShape.Direction dir) {
+    public static FaceBasis basisOf(Direction dir) {
         return switch (dir) {
             case UP    -> new FaceBasis(0, 1, 0,  0, 0, 1,  1, 0, 0);
             case DOWN  -> new FaceBasis(0, -1, 0, 1, 0, 0,  0, 0, 1);
@@ -50,16 +52,7 @@ public final class FaceCullCache {
         };
     }
 
-    static BlockShape.Direction opposite(BlockShape.Direction dir) {
-        return switch (dir) {
-            case UP -> BlockShape.Direction.DOWN;
-            case DOWN -> BlockShape.Direction.UP;
-            case NORTH -> BlockShape.Direction.SOUTH;
-            case SOUTH -> BlockShape.Direction.NORTH;
-            case EAST -> BlockShape.Direction.WEST;
-            case WEST -> BlockShape.Direction.EAST;
-        };
-    }
+
 
     // ------------------------------------------------------------------
     // Footprints
@@ -152,7 +145,7 @@ public final class FaceCullCache {
      * non-null neighbor shape.
      */
     public static boolean occludes(BlockShape.Face face, List<BlockShape.Vertex> verts, BlockShape neighborShape) {
-        BlockShape.Direction opposite = opposite(face.dir());
+        Direction opposite = opposite(face.dir());
         List<BlockShape.Vertex> neighborVerts = neighborShape.getVertices();
 
         for (BlockShape.Face candidate : neighborShape.getFaces()) {

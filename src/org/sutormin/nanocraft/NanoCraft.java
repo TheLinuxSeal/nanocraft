@@ -6,10 +6,16 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
-import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.data.Registries;
+import org.sutormin.nanocraft.data.definitions.BlockShapeDefinitions;
+import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.render.Shader;
-import org.sutormin.nanocraft.resources.Textures;
+import org.sutormin.nanocraft.resources.block.BlockDefinitionParser;
+import org.sutormin.nanocraft.resources.block.BlockShapeParser;
+import org.sutormin.nanocraft.resources.texture.Texture;
+import org.sutormin.nanocraft.resources.texture.Textures;
+import org.sutormin.nanocraft.world.BlockStateMapper;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
 import org.sutormin.nanocraft.world.World;
 import org.sutormin.nanocraft.world.render.WorldShaders;
@@ -108,15 +114,29 @@ public class NanoCraft {
             GL11.glViewport(0, 0, pWidth.get(0), pHeight.get(0));
         }
 
-        BlockTypes.define();
 
+
+
+        System.out.println("Loading block definitions!");
+        BlockDefinitionParser.loadFromIndex();
+        System.out.println("Loading block shapes!");
+        BlockShapeParser.loadFromIndex();
+
+        System.out.println("Loading registries!");
+        Registries.defineAll();
+        QuickAccessBlocks.loadFromRegistry();
+
+        System.out.println("Loading blockstate map!");
+        BlockStateMapper.load();
+
+        System.out.println("Loading textures!");
         Textures.loadTextures();
-
 
         SHADER = new Shader(WorldShaders.WORLD_VERTEX_SHADER, WorldShaders.WORLD_FRAGMENT_SHADER);
         SHADER.createUniform("uProjection");
         SHADER.createUniform("uView");
         SHADER.createUniform("uChunkOffset");
+        //SHADER.createUniform("uTexture");
 
         WORLD = new World();
 
@@ -152,6 +172,7 @@ public class NanoCraft {
             SHADER.bind();
             SHADER.setUniform("uProjection", projection);
             SHADER.setUniform("uView", CAMERA.getViewMatrix());
+            //SHADER.setUniform("uTexture", 0);
 
             WORLD.renderChunks();
 

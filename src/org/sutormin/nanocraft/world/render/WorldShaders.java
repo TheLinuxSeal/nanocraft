@@ -57,7 +57,8 @@ public class WorldShaders {
         //float dist = length(FragPosView);
         //float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
         //vec3 finalColor = mix(uFogColor, texColor.rgb * vAO, fogFactor);
-        
+        //FragColor = vec4(TexCoord.xy, 0.0, 1.0);
+        //FragColor = vec4(1.0, 0.0, 1.0, 1.0);
         FragColor = vec4(texColor.rgb * vAO, texColor.a);
     }
   """;

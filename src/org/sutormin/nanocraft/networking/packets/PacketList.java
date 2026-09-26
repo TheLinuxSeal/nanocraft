@@ -19,6 +19,7 @@ import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
 public class PacketList {
   public static S2CPacket getS2CPacket(int id, NetworkPhase phase, Channel channel) {
+    //System.out.println(id);
     if (phase == NetworkPhase.LOGIN && id == 1) return new S2CEncryptionRequest(channel);
     if (phase == NetworkPhase.LOGIN && id == 3) return new S2CSetCompression();
     if (phase == NetworkPhase.LOGIN && id == 2) return new S2CLoginSuccess(channel);

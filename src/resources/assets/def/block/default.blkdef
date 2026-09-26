@@ -1,0 +1,2 @@
+@default full * * * * * *
+#name, model, tex[], and * gets replaced with the name if it is @default or something. and a file can have multiple.

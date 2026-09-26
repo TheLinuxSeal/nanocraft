@@ -101,6 +101,8 @@ public class Mesh {
     }
 
     public void render() {
+        //glDisable(GL_CULL_FACE);
+        //glDisable(GL_DEPTH_TEST);
         glBindVertexArray(vaoId);
         SHADER.setUniform("uChunkOffset", chunkX * 16.0f, chunkZ * 16.0f);
         glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

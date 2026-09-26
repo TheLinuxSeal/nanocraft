@@ -1,6 +1,7 @@
 package org.sutormin.nanocraft.world.chunk;
 
-import org.sutormin.nanocraft.block.BlockTypes;
+import org.sutormin.nanocraft.data.Registries;
+import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.networking.packets.play.world.chunk.S2CChunkData;
 import org.sutormin.nanocraft.world.BlockStateMapper;
 
@@ -178,7 +179,7 @@ public final class ChunkLoader {
         if (states.bitsPerEntry == 0) {
             char type = BlockStateMapper.map(states.palette[0]);
 
-            if (type == BlockTypes.AIR) {
+            if (type == Registries.BLOCK.get("air").getId()) {
                 return;
             }
 
@@ -219,10 +220,10 @@ public final class ChunkLoader {
                         type = mapped[raw];
                     } else {
                         // Out of range means the section was misparsed.
-                        type = BlockTypes.STONE;
+                        type = QuickAccessBlocks.NULL;
                     }
 
-                    if (type != BlockTypes.AIR) {
+                    if (type != QuickAccessBlocks.AIR) {
                         blocks[index(x, baseY + y, z)] = type;
                     }
                 }

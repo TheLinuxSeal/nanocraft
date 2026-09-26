@@ -1,6 +1,6 @@
 package org.sutormin.nanocraft.data;
 
-import org.sutormin.nanocraft.data.definitions.BlockDefinitions;
+import org.sutormin.nanocraft.data.definitions.block.BlockDefinitions;
 import org.sutormin.nanocraft.data.definitions.BlockShapeDefinitions;
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.Block;

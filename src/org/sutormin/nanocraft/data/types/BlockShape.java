@@ -1,20 +1,14 @@
 package org.sutormin.nanocraft.data.types;
 
 import org.sutormin.nanocraft.data.registry.RegistryType;
+import org.sutormin.nanocraft.world.Direction;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class BlockShape extends RegistryType {
     public record Vertex(short x, short y, short z){};
     public record Face(int[] vertices, Direction dir, boolean shouldCull, float[][] uv){};
-    public enum Direction {
-        UP,
-        DOWN,
-        NORTH,
-        SOUTH,
-        EAST,
-        WEST
-    }
     private List<Vertex> vertices = new ArrayList<>();
     private List<Face> faces = new ArrayList<>();
 
