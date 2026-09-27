@@ -152,7 +152,7 @@ tasks.register<JavaExec>("runServer") {
         // kicks players who float for too long in other game modes
         val properties = File(dir, "server.properties")
         val wanted = mapOf("online-mode" to "false", "server-port" to "25565", "white-list" to "false",
-            "gamemode" to "spectator", "allow-flight" to "true")
+            "gamemode" to "spectator", "allow-flight" to "true", "force-gamemode" to "true")
         val lines = if (properties.isFile) properties.readLines().toMutableList() else mutableListOf()
         for ((key, value) in wanted) {
             val i = lines.indexOfFirst { it.startsWith("$key=") }
