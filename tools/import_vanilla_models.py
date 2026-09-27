@@ -14,8 +14,9 @@ and both are added to their index files. Lines for the imported blocks are remov
 files, so re-running the tool replaces its previous output. Blocks vanilla draws as entities (chests,
 signs, banners, heads, ...) have no model geometry and keep their existing shapes, as do liquids.
 
-Faces vanilla tints are written as-is, except redstone dust, whose textures are named
-<texture>_{power}: the pre-colored textures from tools/tinted_textures.py.
+Faces vanilla tints are written as-is, except where the color depends on the state: redstone dust
+(<texture>_{power}) and growing melon/pumpkin stems (<texture>_{age}), the pre-colored textures from
+tools/tinted_textures.py.
 
 Usage:  python3 tools/import_vanilla_models.py path/to/client.jar
 """
@@ -33,6 +34,8 @@ REPO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 ASSETS = os.path.join(REPO, "src", "resources", "assets")
 JAVA = os.path.join(REPO, "src", "org", "sutormin", "nanocraft", "data", "definitions", "block")
 SKIP_FAMILIES = {"full", "liquid", "air"}
+# blocks whose tinted faces use one pre-colored texture per value of a property
+TINT_SUFFIX = {"redstone_wire": "_{power}", "melon_stem": "_{age}", "pumpkin_stem": "_{age}"}
 DIRS = ["down", "up", "north", "south", "west", "east"]
 NORMAL = {"up": (0, 1, 0), "down": (0, -1, 0), "north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0)}
 # Minecraft's corner order for each face (FaceInfo), counter-clockwise seen from outside
@@ -235,7 +238,7 @@ def main():
             state = dict(zip(names, combo))
             faces, random_y = [], False
             for entry, ry in models_for(blockstate, state):
-                faces += faces_for(jar, base, entry, "_{power}" if base == "redstone_wire" else "")
+                faces += faces_for(jar, base, entry, TINT_SUFFIX.get(base, ""))
                 random_y |= ry
             geo = tuple((c, u, d, cull) for c, u, d, cull, _ in faces)
             if geo not in shapes:
