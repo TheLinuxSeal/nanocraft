@@ -54,19 +54,17 @@ the Minecraft EULA: read <https://aka.ms/MinecraftEULA> and, if you agree, set `
 Every start, the task sets these in `mojang/server/server.properties` (other settings are yours to
 change):
 
-| setting        | value       | why                                                              |
-|----------------|-------------|------------------------------------------------------------------|
-| `online-mode`  | `false`     | NanoCraft doesn't log in to Microsoft accounts                   |
-| `server-port`  | `25565`     | the port NanoCraft connects to by default                         |
-| `white-list`   | `false`     | any username can join                                            |
-| `gamemode`     | `spectator` | NanoCraft's camera flies through everything, like spectator mode |
-| `allow-flight` | `true`      | otherwise the server kicks players for floating                   |
+| setting          | value       | why                                                                       |
+|------------------|-------------|---------------------------------------------------------------------------|
+| `online-mode`    | `false`     | NanoCraft doesn't log in to Microsoft accounts                            |
+| `server-port`    | `25565`     | the port NanoCraft connects to by default                                 |
+| `white-list`     | `false`     | any username can join                                                     |
+| `gamemode`       | `spectator` | NanoCraft's camera flies through everything, like spectator mode          |
+| `force-gamemode` | `true`      | everyone joins in spectator, even players who were in another mode before |
+| `allow-flight`   | `true`      | otherwise the server kicks players for floating                           |
 
 Type server commands (`stop`, `time set day`, `gamemode ...`) into the Gradle console. The world is
 saved in `mojang/server/world/`; delete that folder for a new world.
-
-Players who joined before the `gamemode` setting keep their old game mode: run
-`gamemode spectator <name>` in the console if the server kicks you for flying.
 
 ## 3. Run NanoCraft
 
