@@ -170,6 +170,7 @@ public class Camera {
 
     private boolean warnedInvalidPosition = false;
 
+    /** Moves the camera by its velocity; called every frame. Sending happens in {@link #sendPositionIfMoved}. */
     public void tick() {
         position.add(velocity);
         velocity.mul(0.98f);
@@ -182,9 +183,12 @@ public class Camera {
             }
             position.set(lastPosition);
             velocity.zero();
-            return;
         }
-        if (!position.equals(lastPosition)) {
+    }
+
+    /** Sends the position if it changed since the last send; called once per client tick (see NanoCraft.clientTick). */
+    public void sendPositionIfMoved() {
+        if (position.isFinite() && !position.equals(lastPosition)) {
             ByteBuf buf = Unpooled.buffer();
             C2SSetPlayerPosition.make(
                 buf,

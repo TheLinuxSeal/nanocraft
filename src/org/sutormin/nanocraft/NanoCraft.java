@@ -9,7 +9,11 @@ import org.lwjgl.system.MemoryStack;
 import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.definitions.BlockShapeDefinitions;
 import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
+import org.sutormin.nanocraft.networking.packets.play.player.C2SClientTickEnd;
 import org.sutormin.nanocraft.render.Shader;
 import org.sutormin.nanocraft.resources.block.BlockDefinitionParser;
 import org.sutormin.nanocraft.resources.block.BlockShapeParser;
@@ -155,10 +159,19 @@ public class NanoCraft {
         );
 
         long lastTime = System.nanoTime();
+        float clientTickTime = 0.0f;
         while (!glfwWindowShouldClose(window)) {
             long now = System.nanoTime();
             float deltaTime = (now - lastTime) / 1000000000.0f;
             lastTime = now;
+
+            // fixed 20 Hz client ticks for the server, like vanilla, however fast frames are drawn
+            clientTickTime += deltaTime;
+            if (clientTickTime > 0.25f) clientTickTime = CLIENT_TICK; // after a stall, don't send a burst
+            while (clientTickTime >= CLIENT_TICK) {
+                clientTick();
+                clientTickTime -= CLIENT_TICK;
+            }
 
             WORLD.tick();
 
@@ -204,6 +217,20 @@ public class NanoCraft {
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
+    }
+
+    private static final float CLIENT_TICK = 1.0f / 20.0f;
+
+    /**
+     * One client tick: at most one position update, then "tick end". Since 26.3 the server disconnects
+     * clients that send more than one position between two tick ends.
+     */
+    private void clientTick() {
+        if (Networking.networkPhase != NetworkPhase.PLAY) return;
+        CAMERA.sendPositionIfMoved();
+        ByteBuf buf = Unpooled.buffer();
+        C2SClientTickEnd.make(buf);
+        Networking.sendPacket(buf);
     }
 
     private void processInput(float dt) {
