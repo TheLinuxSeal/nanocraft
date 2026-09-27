@@ -43,6 +43,10 @@ public class Options {
     /** Offline-mode UUID, derived from the username the way vanilla servers do. */
     public static UUID PLAYER_UUID = offlineUuid(PLAYER_USERNAME);
     public static byte VIEW_DISTANCE = 10;
+    /**
+     * Chunks per tick the server should send, sent after each chunk batch. Vanilla servers clamp it
+     * to 0.01-64 (they start at 9); vanilla clients send a measured rate instead of a fixed one.
+     */
     public static float RECEIVE_CHUNKS_PER_TICK = 5;
 
     /** Background threads that build chunk meshes. */
@@ -114,6 +118,8 @@ public class Options {
                             "see-through leaves like vanilla's \"fancy\" leaves (false: opaque \"fast\" leaves, quicker)",
                             () -> TRANSPARENT_LEAVES, v -> TRANSPARENT_LEAVES = (Boolean) v))),
             new Section("PERFORMANCE", null, List.of(
+                    decimal("CHUNKS_PER_TICK", "chunks per tick the server should send you (0.01-64); higher loads faster, but costs more per frame",
+                            0.01, 64, () -> RECEIVE_CHUNKS_PER_TICK, v -> RECEIVE_CHUNKS_PER_TICK = ((Double) v).floatValue()),
                     integer("MESH_THREADS", "background threads that build chunk meshes (default: CPU cores - 1, at most 8)",
                             1, 64, () -> MESH_THREADS, v -> MESH_THREADS = (Integer) v),
                     decimal("MESH_UPLOAD_BUDGET_MS", "max milliseconds per frame spent uploading chunk meshes to the GPU",

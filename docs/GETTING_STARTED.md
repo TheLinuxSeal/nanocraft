@@ -114,6 +114,7 @@ PLAYER:
 | `PLAYER.USERNAME`                | `Player`             | your name on the server (3-16 letters, digits or `_`) |
 | `GRAPHICS.VIEW_DISTANCE`         | `10`                 | chunks the server sends around you (2-32)         |
 | `GRAPHICS.TRANSPARENT_LEAVES`    | `false`              | see-through leaves like vanilla's "fancy" leaves (slower); off draws them opaque |
+| `PERFORMANCE.CHUNKS_PER_TICK`    | `5.0`                | chunks per tick the server should send you (0.01-64; the server caps it at 64) |
 | `PERFORMANCE.MESH_THREADS`       | cores - 1 (1-8)      | background threads building chunk meshes          |
 | `PERFORMANCE.MESH_UPLOAD_BUDGET_MS` | `4.0`                | time per frame spent uploading chunks to the GPU  |
 
