@@ -20,25 +20,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *   RECEIVING -> chunks decoded from the current server batch
  *   READY     -> chunks whose batch has been completed and may be rendered
  *
- * Vertical alignment: the vanilla overworld runs from y = -64 to y = 319, and
- * Chunk.SIZE_Y is 384, so section s covers array rows s * 16 to s * 16 + 15
- * with no gaps. Array y is world y plus 64.
+ * Vertical alignment: section s covers array rows s * 16 to s * 16 + 15, from the
+ * dimension's lowest y up, so array y is world y minus Dimension.minY() (the
+ * overworld's -64..319 fills all 384 rows, the Nether and End use the lowest 256).
+ *
+ * Generations: changing dimension calls clear(), which starts a new generation.
+ * Everything queued carries the generation it was received in, and World drops
+ * the old dimension's chunks once it sees a newer one.
  */
 public final class ChunkLoader {
 
     public static final int SECTION_SIZE = 16;
-    //public static final int ENTRIES_PER_SECTION = 4096;
 
     private static final Queue<Pending> RECEIVING = new ConcurrentLinkedQueue<>();
     private static final Queue<Pending> READY = new ConcurrentLinkedQueue<>();
     private static final Queue<ChunkPos> UNLOADS = new ConcurrentLinkedQueue<>();
-    //private static final Queue<ChunkPos> REMESHES = new ConcurrentLinkedQueue<>();
     private static final Queue<BlockChange> BLOCK_CHANGES = new ConcurrentLinkedQueue<>();
+    private static volatile int generation;
 
-    public record Pending(ChunkPos pos, char[] blocks, char[] biomes) {
+    public record Pending(ChunkPos pos, char[] blocks, char[] biomes, int generation) {
     }
 
-    public record BlockChange(int x, int y, int z, char block) {
+    /** y is the chunk array row (world y - Dimension.minY()). */
+    public record BlockChange(int x, int y, int z, char block, int generation) {
     }
 
     private ChunkLoader() {
@@ -53,7 +57,8 @@ public final class ChunkLoader {
         RECEIVING.add(new Pending(
             new ChunkPos(data.chunkX, data.chunkZ),
             toBlocks(data),
-            toBiomes(data)
+            toBiomes(data),
+            generation
         ));
     }
 
@@ -61,12 +66,25 @@ public final class ChunkLoader {
         UNLOADS.add(pos);
     }
 
-    //public static void submitRemesh(ChunkPos pos) {
-    //    REMESHES.add(pos);
-    //}
-
     public static void submitBlockChange(int x, int y, int z, char block) {
-        BLOCK_CHANGES.add(new BlockChange(x, y, z, block));
+        BLOCK_CHANGES.add(new BlockChange(x, y, z, block, generation));
+    }
+
+    /**
+     * Forgets everything queued and starts a new generation, when the player changes dimension.
+     * Network thread, in order with the packets around it.
+     */
+    public static void clear() {
+        generation++;
+        RECEIVING.clear();
+        READY.clear();
+        UNLOADS.clear();
+        BLOCK_CHANGES.clear();
+    }
+
+    /** The current generation; World clears its chunks when this moves past its own. */
+    public static int generation() {
+        return generation;
     }
 
     /**
@@ -120,9 +138,6 @@ public final class ChunkLoader {
         return UNLOADS.poll();
     }
 
-    //public static ChunkPos pollRemesh() {
-    //    return REMESHES.poll();
-    //}
 
     public static BlockChange pollBlockChange() {
         return BLOCK_CHANGES.poll();
@@ -143,9 +158,6 @@ public final class ChunkLoader {
         return UNLOADS.size();
     }
 
-    //public static int remeshCount() {
-    //    return REMESHES.size();
-    //}
 
     public static int blockChangeCount() {
         return BLOCK_CHANGES.size();

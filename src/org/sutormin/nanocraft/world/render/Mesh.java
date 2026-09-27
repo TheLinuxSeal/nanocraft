@@ -170,11 +170,6 @@ public class Mesh {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    /** {@link #prepare} and {@link #upload} in one go. GL thread only. */
-    public void updateMesh(char[] vertices, int charCount, int[] indices, int iCount) {
-        upload(prepare(vertices, charCount, indices, iCount));
-    }
-
     /**
      * Reorders the faces farthest first from the camera (render coordinates), like vanilla does
      * for translucent sections. Only meshes from {@link #prepareSorted}; skipped until the camera has
@@ -216,8 +211,6 @@ public class Mesh {
 
     public void render() {
         if (indexCount == 0) return;
-        //glDisable(GL_CULL_FACE);
-        //glDisable(GL_DEPTH_TEST);
         glBindVertexArray(vaoId);
         SHADER.setUniform("uChunkOffset", chunkX * 16.0f, chunkZ * 16.0f);
         glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);

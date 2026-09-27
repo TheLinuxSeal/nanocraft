@@ -68,7 +68,6 @@ public final class BlockStateMapper {
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                //System.out.println(line);
 
                 if (!line.isEmpty()) {
                     buffer.append(fromName(line));
@@ -91,7 +90,6 @@ public final class BlockStateMapper {
         char[] t = table; // single volatile read, avoids re-reading the field twice below
 
         if (t == null) {
-            //System.out.println("a");
             // No table yet: show terrain as solid stone, keep air as air.
             return stateId == 0 ? QuickAccessBlocks.AIR : QuickAccessBlocks.STONE;
         }
@@ -99,7 +97,6 @@ public final class BlockStateMapper {
         if (stateId < 0 || stateId >= t.length) {
             return QuickAccessBlocks.NOT_FOUND;
         }
-        //System.out.println((int) t[stateId]);
         return t[stateId];
     }
 

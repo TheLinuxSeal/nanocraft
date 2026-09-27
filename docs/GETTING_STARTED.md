@@ -79,6 +79,8 @@ With the server running, in a second terminal:
 This builds a jar with all dependencies (`build/libs/`) and starts it. You can also run
 `org.sutormin.nanocraft.Main` straight from your IDE.
 
+The first start writes `options.txt` (see [Settings](#settings)): set your `username` there.
+
 ### Controls
 
 | key          | action               |
@@ -92,18 +94,20 @@ This builds a jar with all dependencies (`build/libs/`) and starts it. You can a
 
 ### Settings
 
-Settings live in `src/org/sutormin/nanocraft/Options.java` (rebuild after changing them):
+Settings are read from `options.txt` in the working directory (the project folder with `runJar`).
+NanoCraft writes it with the defaults on the first start; it's gitignored, so everyone keeps their own.
+Lines are `key=value`, and `#` starts a comment:
 
-| option                   | default     | meaning                                                  |
-|--------------------------|-------------|----------------------------------------------------------|
-| `SERVER_IP`, `PORT`      | `127.0.0.1`, `25565` | the server to connect to                       |
-| `PLAYER_USERNAME`        |             | your name on the server                                  |
-| `VIEW_DISTANCE`          | `10`        | chunks the server sends around you                       |
-| `MESH_THREADS`           | cores - 1 (1-8) | background threads building chunk meshes             |
-| `MESH_UPLOAD_BUDGET_MS`  | `4.0`       | time per frame spent uploading chunks to the GPU         |
+| key                     | default              | meaning                                         |
+|-------------------------|----------------------|-------------------------------------------------|
+| `server`, `port`        | `127.0.0.1`, `25565` | the server to connect to                        |
+| `username`              | `Player`             | your name on the server (3-16 letters, digits or `_`) |
+| `view_distance`         | `10`                 | chunks the server sends around you (2-32)       |
+| `mesh_threads`          | cores - 1 (1-8)      | background threads building chunk meshes        |
+| `mesh_upload_budget_ms` | `4.0`                | time per frame spent uploading chunks to the GPU |
 
-To join a server on another machine, set `SERVER_IP` to its address; it has to be a 26.3 server in
-offline mode.
+To join a server on another machine, set `server` to its address; it has to be a 26.3 server in
+offline mode. Restart NanoCraft after changing options.
 
 ## Gradle tasks
 
@@ -130,7 +134,7 @@ offline mode.
 | `biomeColors`         | regenerates `data/biome/grass_colors.txt` from vanilla's biomes                             |
 | `generateBlockstates` | regenerates `data/block/blockstates.txt` (block state ids) from the data generator          |
 
-**custom**
+**application**
 
 | task     | does                               |
 |----------|------------------------------------|

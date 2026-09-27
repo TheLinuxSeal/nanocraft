@@ -58,3 +58,6 @@ src/resources/assets/texture/
 
 __pycache__/
 mojang/
+
+# per-player settings (created on first run)
+options.txt

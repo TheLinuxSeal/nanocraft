@@ -2,6 +2,10 @@ package org.sutormin.nanocraft.networking.coders;
 
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+
 /** Reads past network NBT (a nameless root tag, as sent since 1.20.2) without decoding it. */
 public final class NbtSkipper {
     private NbtSkipper() {}
@@ -9,6 +13,26 @@ public final class NbtSkipper {
     public static void skipRoot(ByteBuf buf) {
         int type = buf.readUnsignedByte();
         if (type != 0) skipPayload(buf, type);
+    }
+
+    /**
+     * Reads a root compound, keeping only its top-level int tags (e.g. a dimension type's min_y and
+     * height) and skipping everything else. Empty if the root isn't a compound.
+     */
+    public static Map<String, Integer> readRootInts(ByteBuf buf) {
+        Map<String, Integer> ints = new HashMap<>();
+        int type = buf.readUnsignedByte();
+        if (type != 10) {
+            if (type != 0) skipPayload(buf, type);
+            return ints;
+        }
+        int child;
+        while ((child = buf.readUnsignedByte()) != 0) {
+            String name = buf.readCharSequence(buf.readUnsignedShort(), StandardCharsets.UTF_8).toString();
+            if (child == 3) ints.put(name, buf.readInt());
+            else skipPayload(buf, child);
+        }
+        return ints;
     }
 
     private static void skipPayload(ByteBuf buf, int type) {
@@ -22,7 +46,7 @@ public final class NbtSkipper {
             case 9 -> {                                          // list
                 int elementType = buf.readUnsignedByte();
                 int length = buf.readInt();
-                for (int i = 0; i < length; i++) skipPayload(buf, elementType);
+                if (elementType != 0) for (int i = 0; i < length; i++) skipPayload(buf, elementType);
             }
             case 10 -> {                                         // compound
                 int child;

@@ -51,7 +51,6 @@ public class Texture {
     }
 
     public void loadTextures() {
-        //System.out.println(paths);
         int maxLayers = glGetInteger(GL_MAX_ARRAY_TEXTURE_LAYERS);
         System.out.println("Texture array: " + paths.size() + " layers (max " + maxLayers + "), "
                 + missingCount + " missing textures use the fallback");

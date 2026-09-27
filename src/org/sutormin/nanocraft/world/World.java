@@ -17,6 +17,7 @@ public class World {
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
     private final Set<ChunkPos> dirty = new LinkedHashSet<>();
     private final Map<ChunkPos, List<ChunkLoader.BlockChange>> pendingBlockChanges = new HashMap<>();
+    private int generation; // ChunkLoader generation (dimension) of the loaded chunks
 
     // Meshing runs on worker threads; only captureNeighbors and uploads touch the main thread.
     // A chunk is in `meshing` from submission until its result is taken off `meshed`, so it never
@@ -62,14 +63,28 @@ public class World {
         dirty.add(pos.offset(0, 1));
     }
 
-    private void remesh(ChunkPos pos) {
-        Chunk c = chunks.get(pos);
-        if (c != null) c.buildMesh();
+    /**
+     * Drops every chunk when the player has changed dimension ({@link ChunkLoader#clear}). Anything
+     * queued from an older generation is skipped; anything from a newer one clears first.
+     *
+     * @return false if something from {@code gen} is stale and must be skipped
+     */
+    private boolean syncGeneration(int gen) {
+        if (gen < generation) return false;
+        if (gen > generation) {
+            for (Chunk chunk : chunks.values()) chunk.cleanup();
+            chunks.clear();
+            dirty.clear();
+            pendingBlockChanges.clear();
+            generation = gen;
+        }
+        return true;
     }
 
     public void drainNetworkChunks(int budget) {
         ChunkLoader.Pending p;
         while (budget-- > 0 && (p = ChunkLoader.poll()) != null) {
+            if (!syncGeneration(p.generation())) continue;
             Chunk c = new Chunk(p.pos());
             c.setBlocks(p.blocks());
             c.setBiomes(p.biomes());
@@ -130,17 +145,10 @@ public class World {
         }
     }
 
-    //public void drainRemeshes(int budget) {
-    //    ChunkPos change;
-    //    while (budget-- > 0 && (change = ChunkLoader.pollRemesh()) != null) {
-    //        dirty.add(change);
-    //        //setBlockAt(change.x(), change.y(), change.z(), change.block());
-    //    }
-    //}
-
     public void drainBlockChanges(int budget) {
         ChunkLoader.BlockChange change;
         while (budget-- > 0 && (change = ChunkLoader.pollBlockChange()) != null) {
+            if (!syncGeneration(change.generation())) continue;
             setBlockAt(change.x(), change.y(), change.z(), change.block());
         }
     }
@@ -167,7 +175,7 @@ public class World {
         if (chunk == null) {
             // Queue the block change until the chunk is added to the world
             pendingBlockChanges.computeIfAbsent(chunkPos, k -> new ArrayList<>())
-                .add(new ChunkLoader.BlockChange(x, y, z, block));
+                .add(new ChunkLoader.BlockChange(x, y, z, block, generation));
             return;
         }
 
@@ -221,6 +229,7 @@ public class World {
     }
 
     public void tick(){
+        syncGeneration(ChunkLoader.generation());
         drainNetworkChunks(100);
         drainUnloads(50);
         drainBlockChanges(200);

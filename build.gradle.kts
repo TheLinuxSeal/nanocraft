@@ -49,7 +49,6 @@ tasks.jar {
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
         exclude("META-INF/*.SF")
         exclude("META-INF/*.DSA")
@@ -58,8 +57,8 @@ tasks.jar {
 }
 
 tasks.register<JavaExec>("runJar") {
-    group = "custom"
-    description = "Builds and runs the Nanocraft jar file."
+    group = "application"
+    description = "Builds and runs the NanoCraft jar (settings in options.txt)."
 
     val jarTask = tasks.named<org.gradle.jvm.tasks.Jar>("jar").get()
     dependsOn(jarTask)

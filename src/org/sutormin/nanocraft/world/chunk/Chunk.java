@@ -1,6 +1,7 @@
 package org.sutormin.nanocraft.world.chunk;
 
 import org.sutormin.nanocraft.NanoCraft;
+import org.sutormin.nanocraft.world.Dimension;
 import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.data.types.Block;
@@ -20,8 +21,6 @@ public class Chunk {
     public static final int SIZE_Z = 16;
 
     public static final int SEA_LEVEL = 63;
-    /** Lowest world y; array y is world y minus this. */
-    public static final int MIN_Y = -64;
     /** Biomes are stored per 4x4x4 cell. */
     public static final int BIOME_CELLS_Y = SIZE_Y / 4;
 
@@ -322,9 +321,10 @@ public class Chunk {
      * lookup can land in a neighboring chunk's cell; if that chunk isn't loaded, the nearest cell here.
      */
     private int grassColorAt(int wx, int y, int wz) {
-        BiomeTint.zoom(wx, y + MIN_Y, wz, zoomScratch);
+        int minY = Dimension.minY();
+        BiomeTint.zoom(wx, y + minY, wz, zoomScratch);
         int cellX = zoomScratch[0], cellZ = zoomScratch[2];
-        int cellY = Math.clamp(zoomScratch[1] - MIN_Y / 4, 0, BIOME_CELLS_Y - 1);
+        int cellY = Math.clamp(zoomScratch[1] - minY / 4, 0, BIOME_CELLS_Y - 1);
         int dx = Math.clamp(Math.floorDiv(cellX, 4) - worldPos.x(), -1, 1);
         int dz = Math.clamp(Math.floorDiv(cellZ, 4) - worldPos.z(), -1, 1);
         Chunk chunk = neighbors[(dz + 1) * 3 + (dx + 1)];
@@ -425,15 +425,6 @@ public class Chunk {
             out.pushVertex(layer);
             out.pushVertex(flags);
 
-            /*long packed =
-                    ((long) (gx & 0xFFFL) << 0)
-                            | ((long) (gy & 0xFFFFL) << 12)
-                            | ((long) (gz & 0xFFFL) << 28)
-                            | ((long) (i & 0x3L) << 40)   // UV corner, cycles 0..3 (quad-style atlas mapping)
-                            | ((long) (tex & 0xFFFFL) << 42)
-                            | ((long) (aos[i] & 0x3L) << 58);
-
-            out.pushVertex(packed);*/
         }
 
         if (n == 4) {

@@ -3,12 +3,14 @@ package org.sutormin.nanocraft.networking.packets.play;
 import io.netty.buffer.ByteBuf;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
+import org.sutormin.nanocraft.world.Dimension;
 import org.sutormin.nanocraft.world.biome.BiomeTint;
+import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 
 /**
- * Join game ("login" in play) and respawn packets: only the hashed seed is used, for biome lookups.
- * Both end in the same spawn info (dimension type, dimension name, hashed seed, ...); the join
- * packet has its own fields first.
+ * Join game ("login" in play) and respawn packets: the dimension (for the world height) and the
+ * hashed seed (for biome lookups) are used. Both end in the same spawn info (dimension type,
+ * dimension name, hashed seed, ...); the join packet has its own fields first.
  */
 public class S2CJoinGame implements S2CPacket {
     private final boolean respawn;
@@ -31,8 +33,11 @@ public class S2CJoinGame implements S2CPacket {
             buf.readBoolean();                                // show death screen
             buf.readBoolean();                                // limited crafting
         }
-        VarCoder.readVarInt(buf);                             // dimension type
-        VarCoder.readString(buf);                             // dimension name
+        int dimensionType = VarCoder.readVarInt(buf);
+        String dimensionName = VarCoder.readString(buf);
+        // The server doesn't unload the old dimension's chunks, so drop them all, like vanilla.
+        // Clearing here, on the network thread, keeps it in order with the chunks that follow.
+        if (Dimension.enter(dimensionType, dimensionName)) ChunkLoader.clear();
         BiomeTint.setZoomSeed(buf.readLong());                // hashed seed
     }
 }

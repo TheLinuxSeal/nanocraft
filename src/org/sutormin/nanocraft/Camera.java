@@ -1,5 +1,6 @@
 package org.sutormin.nanocraft;
 
+import org.sutormin.nanocraft.world.Dimension;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.joml.Matrix4f;
@@ -193,7 +194,7 @@ public class Camera {
             C2SSetPlayerPosition.make(
                 buf,
                 position.x,
-                position.y-64,
+                position.y + Dimension.minY(), // render y back to world y
                 position.z,
                 (byte) 0
             );

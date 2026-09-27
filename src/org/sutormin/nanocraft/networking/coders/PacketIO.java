@@ -20,8 +20,6 @@ public class PacketIO {
     }
     
     public static void write(ByteBuf out, int packetId, ByteBuf data){
-        //System.out.println("SENDING ID: "+packetId);
-        //System.out.println(data.readableBytes());
         if (Networking.compressionThreshold >= 0) {
             writeCompressedPacket(
                 out,
@@ -30,7 +28,6 @@ public class PacketIO {
                 Networking.compressionThreshold
             );
         } else {
-            //System.out.println("a");
             writePacket(out, packetId, data);
         }
     }

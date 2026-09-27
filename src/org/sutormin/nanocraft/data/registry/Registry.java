@@ -24,6 +24,7 @@ public class Registry<T extends RegistryType> {
         if (byName.containsKey(newName)) {
             throw new IllegalArgumentException("Duplicate registry name: " + newName);
         }
+        @SuppressWarnings("unchecked") // copy() returns an instance of the same class as old
         T thing = (T) old.copy(byId.size());
         this.byId.add(thing);
         this.byName.put(newName,thing);

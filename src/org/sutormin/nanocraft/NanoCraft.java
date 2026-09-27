@@ -47,8 +47,6 @@ public class NanoCraft {
     private double lastMouseY = height / 2.0;
     private boolean firstMouse = true;
 
-    //private ChunkPos lastCameraChunkPos = null;
-
     public void run() {
         init();
         loop();
@@ -146,7 +144,6 @@ public class NanoCraft {
         SHADER.createUniform("uView");
         SHADER.createUniform("uChunkOffset");
         SHADER.createUniform("uAlphaCutoff");
-        //SHADER.createUniform("uTexture");
 
         WORLD = new World();
 
@@ -175,14 +172,6 @@ public class NanoCraft {
 
             WORLD.tick();
 
-            //ChunkLoader.poll();
-
-            /*if (now - lastLog > 1_000_000_000L) {
-                System.out.printf("camera chunk %s | loaded %d | queued %d%n",
-                        CAMERA.getChunkPos(), WORLD.chunkCount(), ChunkLoader.pendingCount());
-                lastLog = now;
-            }*/
-
             processInput(deltaTime);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -191,7 +180,6 @@ public class NanoCraft {
             SHADER.bind();
             SHADER.setUniform("uProjection", projection);
             SHADER.setUniform("uView", CAMERA.getViewMatrix());
-            //SHADER.setUniform("uTexture", 0);
 
             SHADER.setUniform("uAlphaCutoff", 0.5f);
             WORLD.renderChunks();

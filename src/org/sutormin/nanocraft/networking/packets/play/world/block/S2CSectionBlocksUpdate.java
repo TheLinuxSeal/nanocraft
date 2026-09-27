@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import org.sutormin.nanocraft.networking.coders.VarCoder;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 import org.sutormin.nanocraft.world.BlockStateMapper;
+import org.sutormin.nanocraft.world.Dimension;
 import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 
 /**
@@ -29,8 +30,8 @@ public class S2CSectionBlocksUpdate implements S2CPacket {
       int x = sectionX * 16 + (int) ((entry >> 8) & 15);
       int z = sectionZ * 16 + (int) ((entry >> 4) & 15);
       int y = sectionY * 16 + (int) (entry & 15);
-      // Vanilla y is -64..319; array y is world y + 64 (see ChunkLoader docs).
-      ChunkLoader.submitBlockChange(x, y + 64, z, BlockStateMapper.map(blockStateId));
+      // chunk arrays start at the dimension's lowest y (see ChunkLoader docs)
+      ChunkLoader.submitBlockChange(x, Dimension.toRow(y), z, BlockStateMapper.map(blockStateId));
     }
   }
 }
