@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Translates vanilla block state ids into NanoCraft block types.
  *
- * Vanilla ships one id per block state, so 26.2 has more than 65536 of them.
+ * Vanilla ships one id per block state: 35,723 of them in 26.3.
  * The mapping is version specific and cannot be hardcoded; it is loaded from a
  * generated table of state names, one line per state id in ascending order:
  *

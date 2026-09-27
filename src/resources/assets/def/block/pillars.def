@@ -178,3 +178,15 @@ creaking_heart[axis=y,creaking_heart_state=uprooted] full creaking_heart_top cre
 creaking_heart[axis=z,creaking_heart_state=awake] full creaking_heart_awake creaking_heart_awake creaking_heart_top_awake creaking_heart_top_awake creaking_heart_awake creaking_heart_awake uv=r0,r180,r0,r0,r270,r90
 creaking_heart[axis=z,creaking_heart_state=dormant] full creaking_heart_dormant creaking_heart_dormant creaking_heart_top_dormant creaking_heart_top_dormant creaking_heart_dormant creaking_heart_dormant uv=r0,r180,r0,r0,r270,r90
 creaking_heart[axis=z,creaking_heart_state=uprooted] full creaking_heart creaking_heart creaking_heart_top creaking_heart_top creaking_heart creaking_heart uv=r0,r180,r0,r0,r270,r90
+poplar_log[axis=x] full poplar_log poplar_log poplar_log poplar_log poplar_log_top poplar_log_top uv=r270,r270,r90,r270,r0,r0
+poplar_log[axis=y] full poplar_log_top poplar_log_top poplar_log poplar_log poplar_log poplar_log
+poplar_log[axis=z] full poplar_log poplar_log poplar_log_top poplar_log_top poplar_log poplar_log uv=r0,r180,r0,r0,r270,r90
+stripped_poplar_log[axis=x] full stripped_poplar_log stripped_poplar_log stripped_poplar_log stripped_poplar_log stripped_poplar_log_top stripped_poplar_log_top uv=r270,r270,r90,r270,r0,r0
+stripped_poplar_log[axis=y] full stripped_poplar_log_top stripped_poplar_log_top stripped_poplar_log stripped_poplar_log stripped_poplar_log stripped_poplar_log
+stripped_poplar_log[axis=z] full stripped_poplar_log stripped_poplar_log stripped_poplar_log_top stripped_poplar_log_top stripped_poplar_log stripped_poplar_log uv=r0,r180,r0,r0,r270,r90
+poplar_wood[axis=x] full poplar_log uv=r270,r270,r90,r270,r180,r0
+poplar_wood[axis=y] full poplar_log
+poplar_wood[axis=z] full poplar_log uv=r0,r180,r180,r0,r270,r90
+stripped_poplar_wood[axis=x] full stripped_poplar_log uv=r270,r270,r90,r270,r180,r0
+stripped_poplar_wood[axis=y] full stripped_poplar_log
+stripped_poplar_wood[axis=z] full stripped_poplar_log uv=r0,r180,r180,r0,r270,r90

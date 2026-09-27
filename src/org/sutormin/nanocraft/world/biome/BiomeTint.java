@@ -69,7 +69,9 @@ public final class BiomeTint {
         int[] colors = colorById;
         int color = biomeId >= 0 && biomeId < colors.length ? colors[biomeId] : PLAINS;
         if (color != -1) return color;
-        return SWAMP_NOISE.getValue(worldX * 0.0225, worldZ * 0.0225) < -0.1 ? SWAMP_COLD : SWAMP_WARM;
+        // vanilla (26.3) gets the noise as a float before comparing, so round the same way
+        float noise = (float) SWAMP_NOISE.getValue(worldX * 0.0225, worldZ * 0.0225);
+        return noise < -0.1 ? SWAMP_COLD : SWAMP_WARM;
     }
 
     // ------------------------------------------------------------------

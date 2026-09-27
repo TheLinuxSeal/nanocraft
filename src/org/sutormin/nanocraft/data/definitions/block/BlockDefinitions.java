@@ -8,7 +8,7 @@ import static org.sutormin.nanocraft.data.definitions.block.BlockSpec.block;
 import static org.sutormin.nanocraft.data.types.Block.RenderLayer.*;
 
 /**
- * All 1196 blocks / 32366 block states of Minecraft 26.2.
+ * All 1286 blocks / 35723 block states of Minecraft 26.3.
  * Every state is registered as its own Block, named like "oak_stairs[facing=north,half=top,...]".
  *
  * Split into several methods because a single Java method is limited to 64 KB of bytecode.
@@ -56,6 +56,7 @@ public class BlockDefinitions {
         part10(reg);
         System.out.println("Registering Block 94%");
         part11(reg);
+        part12(reg); // 26.3
         System.out.println("Registering Block 100%");
     }
 
@@ -1289,5 +1290,98 @@ public class BlockDefinitions {
         block("sulfur_spike", "sulfur_spike", THICKNESS, VERTICAL_DIRECTION, WATERLOGGED).hardness(1.5f).tool("pickaxe").layer(CUTOUT).opacity(0).register(reg);  // new in 26.2: hardness/tool/sound estimated
         block("sulfur_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.5f).tool("pickaxe").opacity(0).register(reg);  // new in 26.2: hardness/tool/sound estimated
         block("sulfur_wall", "wall", EAST_WALL, NORTH_WALL, SOUTH_WALL, UP, WATERLOGGED, WEST_WALL).hardness(1.5f).tool("pickaxe").opacity(0).register(reg);  // new in 26.2: hardness/tool/sound estimated
+    }
+
+    private static void part12(Registry<Block> reg) {
+        block("black_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("black_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("black_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("black_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("blue_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("blue_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("blue_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("blue_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("brown_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("brown_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("brown_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("brown_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("cyan_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("cyan_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("cyan_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("cyan_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("gray_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("gray_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("gray_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("gray_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("green_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("green_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("green_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("green_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_blue_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_blue_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_blue_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_blue_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_gray_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_gray_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_gray_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("light_gray_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("lime_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("lime_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("lime_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("lime_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("magenta_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("magenta_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("magenta_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("magenta_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("orange_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("orange_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("orange_poplar_leaves", "full", DISTANCE, PERSISTENT, WATERLOGGED).hardness(0.2f).tool("hoe").sound("grass").layer(CUTOUT).opacity(1).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("orange_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("orange_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("pink_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("pink_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("pink_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("pink_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_button", "button", FACE, HORIZONTAL_FACING, POWERED).hardness(0.5f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_door", "door", HORIZONTAL_FACING, DOUBLE_BLOCK_HALF, HINGE, OPEN, POWERED).hardness(3.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_fence", "fence", EAST, NORTH, SOUTH, WATERLOGGED, WEST).hardness(2.0f).tool("axe").sound("wood").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_fence_gate", "fence_gate", HORIZONTAL_FACING, IN_WALL, OPEN, POWERED).hardness(2.0f).tool("axe").sound("wood").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_hanging_sign", "hanging_sign", ATTACHED, ROTATION, WATERLOGGED).hardness(1.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_log", "full", AXIS).hardness(2.0f).tool("axe").sound("wood").register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_planks", "full").hardness(2.0f).tool("axe").sound("wood").register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_pressure_plate", "pressure_plate", POWERED).hardness(0.5f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_sapling", "cross", STAGE).sound("grass").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_shelf", "shelf", HORIZONTAL_FACING, POWERED, SIDE_CHAIN, WATERLOGGED).hardness(2.0f).tool("axe").sound("wood").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_sign", "sign", ROTATION, WATERLOGGED).hardness(1.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(2.0f).tool("axe").sound("wood").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(2.0f).tool("axe").sound("wood").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_trapdoor", "trapdoor", HORIZONTAL_FACING, HALF, OPEN, POWERED, WATERLOGGED).hardness(3.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_wall_hanging_sign", "wall_hanging_sign", HORIZONTAL_FACING, WATERLOGGED).hardness(1.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_wall_sign", "wall_sign", HORIZONTAL_FACING, WATERLOGGED).hardness(1.0f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("poplar_wood", "full", AXIS).hardness(2.0f).tool("axe").sound("wood").register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("potted_poplar_sapling", "cross").sound("grass").layer(CUTOUT).opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("purple_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("purple_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("purple_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("purple_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_poplar_leaves", "full", DISTANCE, PERSISTENT, WATERLOGGED).hardness(0.2f).tool("hoe").sound("grass").layer(CUTOUT).opacity(1).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_shrub", "cross").sound("grass").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("red_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("shelf_mushroom", "shelf_mushroom", AGE_1, HORIZONTAL_FACING).hardness(0.2f).tool("axe").sound("wood").layer(CUTOUT).opacity(0).noCollision().register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("straw_bed", "bed", HORIZONTAL_FACING, OCCUPIED, PART).hardness(0.2f).layer(CUTOUT).opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("stripped_poplar_log", "full", AXIS).hardness(2.0f).tool("axe").sound("wood").register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("stripped_poplar_wood", "full", AXIS).hardness(2.0f).tool("axe").sound("wood").register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("white_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("white_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("white_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("white_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("yellow_concrete_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("yellow_concrete_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(1.8f).tool("pickaxe").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("yellow_poplar_leaves", "full", DISTANCE, PERSISTENT, WATERLOGGED).hardness(0.2f).tool("hoe").sound("grass").layer(CUTOUT).opacity(1).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("yellow_wool_slab", "slab", SLAB_TYPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
+        block("yellow_wool_stairs", "stairs", HORIZONTAL_FACING, HALF, STAIRS_SHAPE, WATERLOGGED).hardness(0.8f).tool("shears").sound("wool").opacity(0).register(reg);  // new in 26.3: copied from a similar block or estimated
     }
 }

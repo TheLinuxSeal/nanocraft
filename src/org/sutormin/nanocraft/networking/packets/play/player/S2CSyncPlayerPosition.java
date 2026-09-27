@@ -189,12 +189,12 @@ public class S2CSyncPlayerPosition implements S2CPacket {
     /*
      * The client must acknowledge the teleport.
      */
-    sendConfirmTeleportation(teleportId);
+    sendConfirmTeleportation(teleportId, x, y, z, yaw, -pitch); // pitch was negated when read
   }
 
-  private void sendConfirmTeleportation(int teleportId) {
+  private void sendConfirmTeleportation(int teleportId, double x, double y, double z, float yaw, float pitch) {
     ByteBuf buf = channel.alloc().buffer();
-    C2SConfirmTeleport.make(buf,teleportId);
+    C2SConfirmTeleport.make(buf, teleportId, x, y, z, yaw, pitch);
     channel.writeAndFlush(buf);
   }
 

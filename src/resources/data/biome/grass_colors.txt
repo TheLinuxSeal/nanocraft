@@ -7,6 +7,7 @@ minecraft:birch_forest 88bb67
 minecraft:cherry_grove b6db61
 minecraft:cold_ocean 8eb971
 minecraft:crimson_forest bfb755
+minecraft:dappled_forest df6827
 minecraft:dark_forest 507a32
 minecraft:deep_cold_ocean 8eb971
 minecraft:deep_dark 91bd59

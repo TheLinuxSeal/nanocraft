@@ -71,7 +71,7 @@ tasks.register<JavaExec>("runJar") {
 // Minecraft downloads for development (mojang/ is gitignored)
 // ---------------------------------------------------------------------------
 
-val minecraftVersion = "26.2"
+val minecraftVersion = "26.3"
 val mojangDir = layout.projectDirectory.dir("mojang")
 val clientDir = mojangDir.dir("client")
 val serverDir = mojangDir.dir("server")
@@ -108,12 +108,13 @@ val downloadClientJar = tasks.register("downloadClientJar") {
     doLast { downloadMinecraft("client", jar) }
 }
 
-tasks.register<Copy>("downloadClient") {
+tasks.register<Sync>("downloadClient") {
     group = "mojang"
     description = "Downloads the Minecraft $minecraftVersion client jar to mojang/client and extracts its assets there."
     dependsOn(downloadClientJar)
     from(zipTree(clientJar)) { include("assets/**") }
     into(clientDir)
+    preserve { include("*.jar") } // keep the jars; drop assets left over from another version
 }
 
 val downloadServer = tasks.register("downloadServer") {

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * "Chunk Data and Update Light" (S2C, PLAY) for protocol 776 / Minecraft 26.2.
+ * "Chunk Data and Update Light" (S2C, PLAY) for protocol 777 / Minecraft 26.3.
  *
  * Wire layout:
  *   Int    chunkX
@@ -137,8 +137,9 @@ public class S2CChunkData implements S2CPacket {
 
     /**
      * @param maxIndirectBits 8 for block states, 3 for biomes. Above this the
-     *                        container uses the global palette directly, which
-     *                        for 26.2 block states means 17 bits per entry.
+     *                        container uses the global palette directly: for
+     *                        26.3's 35,723 block states that's 16 bits per entry
+     *                        (the packet says how many, so nothing is hardcoded).
      * @param entryCount      4096 for block states, 64 for biomes.
      */
     private static PalettedContainer readPalettedContainer(

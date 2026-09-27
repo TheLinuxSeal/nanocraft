@@ -27,26 +27,26 @@ public class PacketList {
     if (phase == NetworkPhase.LOGIN && id == 2) return new S2CLoginSuccess(channel);
 
     if (phase == NetworkPhase.CONFIG && id == 1) return new S2CIgnorePacket("PluginMessage");
-    if (phase == NetworkPhase.CONFIG && id == 12) return new S2CIgnorePacket("FeatureFlags");
-    if (phase == NetworkPhase.CONFIG && id == 14) return new S2CKnownPacksChallenge(channel);
+    if (phase == NetworkPhase.CONFIG && id == 13) return new S2CIgnorePacket("FeatureFlags");
+    if (phase == NetworkPhase.CONFIG && id == 15) return new S2CKnownPacksChallenge(channel);
     if (phase == NetworkPhase.CONFIG && id == 7) return new S2CRegistryData();
-    if (phase == NetworkPhase.CONFIG && id == 13) return new S2CIgnorePacket("UpdateTags");
+    if (phase == NetworkPhase.CONFIG && id == 14) return new S2CIgnorePacket("UpdateTags");
     if (phase == NetworkPhase.CONFIG && id == 3) return new S2CFinishConfiguration(channel);
 
     if (phase == NetworkPhase.CONFIG && id == 4) return new S2CKeepAlive(channel);
     if (phase == NetworkPhase.CONFIG && id == 5) return new S2CPing(channel);
-    if (phase == NetworkPhase.PLAY && id == 44) return new S2CKeepAlive(channel);
-    if (phase == NetworkPhase.PLAY && id == 61) return new S2CPing(channel);
+    if (phase == NetworkPhase.PLAY && id == 45) return new S2CKeepAlive(channel);
+    if (phase == NetworkPhase.PLAY && id == 62) return new S2CPing(channel);
 
-    if (phase == NetworkPhase.PLAY && id == 45) return new S2CChunkData();
+    if (phase == NetworkPhase.PLAY && id == 46) return new S2CChunkData();
     if (phase == NetworkPhase.PLAY && id == 11) return new S2CChunkBatchFinished(channel);
-    if (phase == NetworkPhase.PLAY && id == 37) return new S2CUnloadChunk();
+    if (phase == NetworkPhase.PLAY && id == 38) return new S2CUnloadChunk();
     if (phase == NetworkPhase.PLAY && id == 8) return new S2CBlockUpdate();
 
 
-    if (phase == NetworkPhase.PLAY && id == 72) return new S2CSyncPlayerPosition(channel);
-    if (phase == NetworkPhase.PLAY && id == 49) return new S2CJoinGame(false);
-    if (phase == NetworkPhase.PLAY && id == 82) return new S2CJoinGame(true);
+    if (phase == NetworkPhase.PLAY && id == 73) return new S2CSyncPlayerPosition(channel);
+    if (phase == NetworkPhase.PLAY && id == 50) return new S2CJoinGame(false);
+    if (phase == NetworkPhase.PLAY && id == 84) return new S2CJoinGame(true);
 
     return null;
   }
