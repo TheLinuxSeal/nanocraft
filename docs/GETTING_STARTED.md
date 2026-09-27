@@ -121,8 +121,10 @@ PLAYER:
 To join a server on another machine, set `SERVER.ADDRESS` to its address; it has to be a 26.3
 server in offline mode.
 
-Missing options keep their defaults; unknown options and values that don't fit (a port of 99999,
-`maybe` for a true/false option) print a warning and are ignored. True/false options take only
+Options that are missing from the file (e.g. ones added in a newer NanoCraft) use their defaults and
+are added to the file, so every option shows up there; the file before is kept as
+`options.yaml.bak`. Unknown options and values that don't fit (a port of 99999, `maybe` for a
+true/false option) print a warning and are ignored; while there are any, the file isn't rewritten. True/false options take only
 `true` or `false` (not `yes`/`no`), so a username like `yes` stays a name.
 
 #### CONFIG_VERSION and migration
@@ -133,8 +135,9 @@ carries your values over to the new one, keeps the old file as a backup (e.g.
 `key=value` file from before `options.yaml` (`CONFIG_VERSION` 1): it's migrated on the first start and
 kept as `options.txt.bak`. A file from a newer NanoCraft is read as far as possible and left alone.
 
-For developers: to change the layout, bump `CONFIG_VERSION` in `Options.java`, change `SECTIONS`,
-and add a step to `MIGRATIONS` that turns the previous version's values into the new ones.
+For developers: adding an option only needs a new entry in `SECTIONS` in `Options.java`; files
+without it get it filled in. To rename, move or remove options, bump `CONFIG_VERSION`, change
+`SECTIONS`, and add a step to `MIGRATIONS` that turns the previous version's values into the new ones.
 
 #### Debug options
 

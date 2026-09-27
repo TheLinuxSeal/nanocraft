@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,8 +33,10 @@ import java.util.function.Supplier;
  *   <li>options.txt: flat {@code key=value} lines with snake_case keys</li>
  *   <li>options.yaml: sections (SERVER, PLAYER, GRAPHICS, PERFORMANCE, DEBUG) with UPPER_CASE keys</li>
  * </ol>
- * To change the layout, bump {@link #CONFIG_VERSION}, change {@link #SECTIONS}, and add a step to
- * {@link #MIGRATIONS} that turns the previous version's values into the new ones.
+ * To change the layout (rename, move or remove options), bump {@link #CONFIG_VERSION}, change
+ * {@link #SECTIONS}, and add a step to {@link #MIGRATIONS} that turns the previous version's values
+ * into the new ones. Adding an option needs no new version: a file without it gets it filled in with
+ * its default ({@link #load}).
  */
 public class Options {
     public static String SERVER_IP = "127.0.0.1";
@@ -174,14 +177,16 @@ public class Options {
     // ------------------------------------------------------------------
 
     /**
-     * Reads the options file. Writes one with the defaults if there's none, and migrates an older one
-     * (including an options.txt next to it, from before options.yaml), keeping the old file as a backup.
+     * Reads the options file. Writes one with the defaults if there's none, migrates an older one
+     * (including an options.txt next to it, from before options.yaml), and fills in options missing from
+     * a current one (added since it was written), keeping the file it replaces as a backup.
      */
     public static void load(Path file) {
         Path legacy = file.resolveSibling("options.txt");
         Path source;
         Map<String, Object> values;
         int version;
+        boolean versionMissing = false;
 
         if (Files.exists(file)) {
             Object root;
@@ -203,6 +208,7 @@ public class Options {
             } else {
                 System.err.println("[Client] " + file + " has no CONFIG_VERSION; reading it as version " + CONFIG_VERSION);
                 version = CONFIG_VERSION;
+                versionMissing = true;
             }
             source = file;
         } else if (Files.exists(legacy)) {
@@ -230,50 +236,84 @@ public class Options {
             values = step.apply(values);
         }
 
-        apply(source, values);
+        Applied applied = apply(source, values);
 
         if (from < CONFIG_VERSION) {
             // keep the old file next to the new one: options.txt.bak, or e.g. options.yaml.v2.bak
             Path backup = source.equals(file)
                     ? file.resolveSibling(file.getFileName() + ".v" + from + ".bak")
                     : source.resolveSibling(source.getFileName() + ".bak");
-            try {
-                Files.move(source, backup, StandardCopyOption.REPLACE_EXISTING);
-                write(file);
-                System.out.println("[Client] Migrated options from " + source + " (CONFIG_VERSION " + from + ") to "
-                        + file + " (CONFIG_VERSION " + CONFIG_VERSION + "); the old file is kept as " + backup);
-            } catch (IOException e) {
-                System.err.println("[Client] Couldn't migrate " + source + ": " + e);
+            replace(source, backup, file, "Migrated options from " + source + " (CONFIG_VERSION " + from + ") to "
+                    + file + " (CONFIG_VERSION " + CONFIG_VERSION + ")");
+        } else if (from == CONFIG_VERSION && (versionMissing || !applied.missing().isEmpty())) {
+            if (applied.problems()) {
+                // someone is editing it: rewriting would replace their bad values with defaults
+                System.err.println("[Client] " + file + " is missing " + missingText(applied.missing(), versionMissing)
+                        + ", but isn't filled in until the problems above are fixed");
+            } else {
+                replace(file, file.resolveSibling(file.getFileName() + ".bak"), file,
+                        "Added " + missingText(applied.missing(), versionMissing) + " to " + file);
             }
         }
     }
 
+    /** Moves {@code old} to {@code backup} and writes the current options to {@code file}. */
+    private static void replace(Path old, Path backup, Path file, String message) {
+        try {
+            Files.move(old, backup, StandardCopyOption.REPLACE_EXISTING);
+            write(file);
+            System.out.println("[Client] " + message + "; the old file is kept as " + backup);
+        } catch (IOException e) {
+            System.err.println("[Client] Couldn't rewrite " + file + ": " + e);
+        }
+    }
+
+    private static String missingText(List<String> missing, boolean versionMissing) {
+        List<String> all = new ArrayList<>(missing);
+        if (versionMissing) all.addFirst("CONFIG_VERSION");
+        return (all.size() == 1 ? "option " : all.size() + " options: ") + String.join(", ", all);
+    }
+
+    /**
+     * What {@link #apply} found: the options missing from the file ("SECTION.KEY"), and whether any
+     * value was bad or any key unknown.
+     */
+    private record Applied(List<String> missing, boolean problems) {}
+
     /** Sets every known option from the values, warning about unknown keys and bad values. */
-    private static void apply(Path file, Map<String, Object> values) {
+    private static Applied apply(Path file, Map<String, Object> values) {
+        List<String> missing = new ArrayList<>();
+        boolean problems = false;
         for (Section section : SECTIONS) {
             Object raw = values.remove(section.name());
-            if (raw == null) continue;
-            if (!(raw instanceof Map<?, ?> map)) {
+            if (raw != null && !(raw instanceof Map<?, ?>)) {
                 System.err.println("[Client] " + file + ": \"" + section.name() + "\" should be a section of settings");
+                problems = true;
                 continue;
             }
-            Map<String, Object> entries = stringKeys(map);
+            Map<String, Object> entries = raw == null ? new LinkedHashMap<>() : stringKeys((Map<?, ?>) raw);
             for (Setting setting : section.settings()) {
-                if (!entries.containsKey(setting.key())) continue; // missing: keeps its default
+                String name = section.name() + "." + setting.key();
+                if (!entries.containsKey(setting.key())) {
+                    missing.add(name); // keeps its default
+                    continue;
+                }
                 Object value = convert(setting, entries.remove(setting.key()));
                 if (value == null) {
-                    System.err.println("[Client] " + file + ": " + section.name() + "." + setting.key() + " "
-                            + describe(setting) + "; keeping the default");
+                    System.err.println("[Client] " + file + ": " + name + " " + describe(setting) + "; keeping the default");
+                    problems = true;
                 } else {
                     setting.set().accept(value);
                 }
             }
             for (String key : entries.keySet()) {
                 System.err.println("[Client] " + file + ": unknown option \"" + section.name() + "." + key + "\"");
+                problems = true;
             }
         }
         for (String key : values.keySet()) {
             System.err.println("[Client] " + file + ": unknown option \"" + key + "\"");
+            problems = true;
         }
 
         if (!PLAYER_USERNAME.matches("[A-Za-z0-9_]{3,16}")) {
@@ -281,6 +321,7 @@ public class Options {
                     + " servers will probably refuse it");
         }
         PLAYER_UUID = offlineUuid(PLAYER_USERNAME);
+        return new Applied(missing, problems);
     }
 
     /**

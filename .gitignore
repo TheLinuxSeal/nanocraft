@@ -61,6 +61,7 @@ mojang/
 
 # per-player settings (created on first run) and backups of migrated ones
 options.yaml
+options.yaml.bak
 options.yaml.*.bak
 options.txt
 options.txt.bak
