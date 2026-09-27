@@ -32,6 +32,7 @@ dependencies {
     runtimeOnly("org.lwjgl:lwjgl-stb:$lwjglVersion:$lwjglNatives")
     implementation("org.joml:joml:1.10.8")
     implementation("io.netty:netty-all:4.2.5.Final")
+    implementation("org.yaml:snakeyaml:2.7")
 }
 
 tasks.withType<JavaCompile> {

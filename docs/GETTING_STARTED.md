@@ -77,7 +77,7 @@ With the server running, in a second terminal:
 This builds a jar with all dependencies (`build/libs/`) and starts it. You can also run
 `org.sutormin.nanocraft.Main` straight from your IDE.
 
-The first start writes `options.txt` (see [Settings](#settings)): set your `username` there.
+The first start writes `options.yaml` (see [Settings](#settings)): set your `username` there.
 
 ### Controls
 
@@ -92,37 +92,61 @@ The first start writes `options.txt` (see [Settings](#settings)): set your `user
 
 ### Settings
 
-Settings are read from `options.txt` in the working directory (the project folder with `runJar`).
-NanoCraft writes it with the defaults on the first start; it's gitignored, so everyone keeps their own.
-Lines are `key=value`, and `#` starts a comment:
+Settings are read from `options.yaml` in the working directory (the project folder with `runJar`).
+NanoCraft writes it with the defaults and a comment for every option on the first start; it's
+gitignored, so everyone keeps their own. Restart NanoCraft after changing it.
 
-| key                     | default              | meaning                                         |
-|-------------------------|----------------------|-------------------------------------------------|
-| `server`, `port`        | `127.0.0.1`, `25565` | the server to connect to                        |
-| `username`              | `Player`             | your name on the server (3-16 letters, digits or `_`) |
-| `view_distance`         | `10`                 | chunks the server sends around you (2-32)       |
-| `mesh_threads`          | cores - 1 (1-8)      | background threads building chunk meshes        |
-| `mesh_upload_budget_ms` | `4.0`                | time per frame spent uploading chunks to the GPU |
-| `transparent_leaves`    | `false`              | see-through leaves like vanilla's "fancy" leaves (slower); off draws them opaque |
+```yaml
+CONFIG_VERSION: 2
 
-To join a server on another machine, set `server` to its address; it has to be a 26.3 server in
-offline mode. Restart NanoCraft after changing options.
+SERVER:
+  ADDRESS: "127.0.0.1"
+  PORT: 25565
 
-Missing keys keep their defaults, so an `options.txt` from an older version still works; add new
-keys to it by hand, or delete it to get a fresh one with every option listed.
+PLAYER:
+  USERNAME: "Player"
+...
+```
+
+| option                           | default              | meaning                                           |
+|----------------------------------|----------------------|---------------------------------------------------|
+| `SERVER.ADDRESS`, `SERVER.PORT`  | `127.0.0.1`, `25565` | the server to connect to                          |
+| `PLAYER.USERNAME`                | `Player`             | your name on the server (3-16 letters, digits or `_`) |
+| `GRAPHICS.VIEW_DISTANCE`         | `10`                 | chunks the server sends around you (2-32)         |
+| `GRAPHICS.TRANSPARENT_LEAVES`    | `false`              | see-through leaves like vanilla's "fancy" leaves (slower); off draws them opaque |
+| `PERFORMANCE.MESH_THREADS`       | cores - 1 (1-8)      | background threads building chunk meshes          |
+| `PERFORMANCE.MESH_UPLOAD_BUDGET_MS` | `4.0`                | time per frame spent uploading chunks to the GPU  |
+
+To join a server on another machine, set `SERVER.ADDRESS` to its address; it has to be a 26.3
+server in offline mode.
+
+Missing options keep their defaults; unknown options and values that don't fit (a port of 99999,
+`maybe` for a true/false option) print a warning and are ignored. True/false options take only
+`true` or `false` (not `yes`/`no`), so a username like `yes` stays a name.
+
+#### CONFIG_VERSION and migration
+
+`CONFIG_VERSION` is the layout of the file. When NanoCraft finds a file from an older layout, it
+carries your values over to the new one, keeps the old file as a backup (e.g.
+`options.yaml.v2.bak`) and writes a fresh `options.yaml`. That includes `options.txt`, the
+`key=value` file from before `options.yaml` (`CONFIG_VERSION` 1): it's migrated on the first start and
+kept as `options.txt.bak`. A file from a newer NanoCraft is read as far as possible and left alone.
+
+For developers: to change the layout, bump `CONFIG_VERSION` in `Options.java`, change `SECTIONS`,
+and add a step to `MIGRATIONS` that turns the previous version's values into the new ones.
 
 #### Debug options
 
-All `true`/`false`, default `false`:
+In the `DEBUG` section; all `true`/`false`, default `false`:
 
-| key                             | does                                                                         |
-|---------------------------------|------------------------------------------------------------------------------|
-| `debug_log_unknown_s2c_packets` | prints each server packet NanoCraft doesn't handle (it's skipped): phase, id, size |
-| `debug_log_known_s2c_packets`   | prints each server packet NanoCraft handles, with its class (chunks make this busy) |
-| `debug_log_c2s_packets`         | prints each packet sent to the server, with its class (20 a second while playing) |
-| `debug_log_missing_textures`    | prints each texture that isn't found, instead of just how many                |
-| `debug_show_fps`                | shows FPS, loaded chunks and your position in the window title               |
-| `debug_wireframe`               | draws the world as wireframe triangles                                       |
+| option                    | does                                                                                |
+|---------------------------|-------------------------------------------------------------------------------------|
+| `LOG_UNKNOWN_S2C_PACKETS` | prints each server packet NanoCraft doesn't handle (it's skipped): phase, id, size |
+| `LOG_KNOWN_S2C_PACKETS`   | prints each server packet NanoCraft handles, with its class (chunks make this busy) |
+| `LOG_C2S_PACKETS`         | prints each packet sent to the server, with its class (20 a second while playing)  |
+| `LOG_MISSING_TEXTURES`    | prints each texture that isn't found, instead of just how many                     |
+| `SHOW_FPS`                | shows FPS, loaded chunks and your position in the window title                     |
+| `WIREFRAME`               | draws the world as wireframe triangles                                              |
 
 Packet logs look like `[S2C] PLAY 0x26 S2CUnloadChunk (8 bytes)`: ids are in hex, as on
 <https://minecraft.wiki/w/Java_Edition_protocol>.

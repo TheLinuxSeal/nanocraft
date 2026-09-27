@@ -59,5 +59,8 @@ src/resources/assets/texture/
 __pycache__/
 mojang/
 
-# per-player settings (created on first run)
+# per-player settings (created on first run) and backups of migrated ones
+options.yaml
+options.yaml.*.bak
 options.txt
+options.txt.bak
