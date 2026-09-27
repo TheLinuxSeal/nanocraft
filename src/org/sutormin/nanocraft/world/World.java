@@ -203,11 +203,11 @@ public class World {
 
     /**
      * Translucent geometry, farthest chunk first so nearer water/glass blends over farther.
-     * Faces inside one chunk aren't sorted, so overlapping translucent faces in the same
-     * chunk can blend in the wrong order from some angles.
+     * Each chunk also sorts its own faces back to front (e.g. water seen through ice).
      */
     public void renderTranslucent() {
         float camX = NanoCraft.CAMERA.getX();
+        float camY = NanoCraft.CAMERA.getY();
         float camZ = NanoCraft.CAMERA.getZ();
         List<Chunk> sorted = new ArrayList<>(chunks.values());
         sorted.sort(Comparator.comparingDouble((Chunk c) -> {
@@ -216,7 +216,7 @@ public class World {
             return dx * dx + dz * dz;
         }).reversed());
         for (Chunk chunk : sorted) {
-            chunk.renderTranslucent();
+            chunk.renderTranslucent(camX, camY, camZ);
         }
     }
 

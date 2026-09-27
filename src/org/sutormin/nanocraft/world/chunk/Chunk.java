@@ -306,7 +306,9 @@ public class Chunk {
             }
         }
 
-        return new MeshData(scratch.solid.prepare(), scratch.translucent.prepare());
+        return new MeshData(scratch.solid.prepare(),
+                Mesh.prepareSorted(scratch.translucent.vertices, scratch.translucent.vCount,
+                        scratch.translucent.indices, scratch.translucent.iCount));
     }
 
     // ------------------------------------------------------------------
@@ -586,8 +588,13 @@ public class Chunk {
         if (mesh != null) mesh.render();
     }
 
-    public void renderTranslucent() {
-        if (translucentMesh != null) translucentMesh.render();
+    /** Draws the translucent faces farthest first from the camera (render coordinates). */
+    public void renderTranslucent(float camX, float camY, float camZ) {
+        if (translucentMesh == null) return;
+        // re-sort after moving a block nearby, less often for faraway chunks
+        float dx = worldPos.x() * SIZE_X + SIZE_X / 2f - camX, dz = worldPos.z() * SIZE_Z + SIZE_Z / 2f - camZ;
+        translucentMesh.sortFor(camX, camY, camZ, Math.max(1f, (float) Math.sqrt(dx * dx + dz * dz) / 16f));
+        translucentMesh.render();
     }
 
     public void cleanup() {
