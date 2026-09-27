@@ -149,7 +149,7 @@ tasks.register<JavaExec>("runServer") {
 
         // offline mode (NanoCraft doesn't log in to Microsoft accounts) on the default port
         val properties = File(dir, "server.properties")
-        val wanted = mapOf("online-mode" to "false", "server-port" to "25565")
+        val wanted = mapOf("online-mode" to "false", "server-port" to "25565", "white-list" to "false")
         val lines = if (properties.isFile) properties.readLines().toMutableList() else mutableListOf()
         for ((key, value) in wanted) {
             val i = lines.indexOfFirst { it.startsWith("$key=") }
