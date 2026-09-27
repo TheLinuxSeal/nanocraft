@@ -57,3 +57,4 @@ datagen/
 src/resources/assets/texture/
 
 __pycache__/
+mojang/
