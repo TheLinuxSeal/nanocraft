@@ -301,7 +301,7 @@ public class Chunk {
                     }
 
                     // waterlogged blocks also sit in a block of still water, like vanilla's fluid state
-                    if (block.isWaterlogged()) addWater(scratch.translucent, wx, wz, x, y, z);
+                    if (block.isWaterlogged()) addWater(scratch.translucent, wx, wz, x, y, z, shape);
                 }
             }
         }
@@ -340,8 +340,13 @@ public class Chunk {
         return Math.max(1, r | (g << 5) | (b << 10));
     }
 
-    /** Emits the water around a waterlogged block, culled like a water source block at that spot. */
-    private void addWater(MeshBuffer out, int wx, int wz, int x, int y, int z) {
+    /**
+     * Emits the water around a waterlogged block, culled like a water source block at that spot. Like
+     * vanilla, sides the block itself completely covers get no water face: it would lie exactly on the
+     * block's own face and flicker against it.
+     */
+    private void addWater(MeshBuffer out, int wx, int wz, int x, int y, int z, BlockShape blockShape) {
+        boolean[] coveredBySelf = FaceCullCache.infoOf(blockShape).fullSide();
         Block water = Registries.BLOCK.get(QuickAccessBlocks.WATER);
         BlockShape shape = water.getShape();
         if (shape == null) return;
@@ -349,6 +354,7 @@ public class Chunk {
         for (int i = 0; i < faces.size(); i++) {
             BlockShape.Face face = faces.get(i);
             FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
+            if (coveredBySelf[face.dir().ordinal()]) continue;
             if (face.shouldCull() && isFaceOccluded(x, y, z, water, shape, i, basis)) continue;
             addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false, 0,
                     FaceCullCache.infoOf(shape).faceTouchesBoundary()[i]);

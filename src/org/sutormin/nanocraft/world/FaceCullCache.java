@@ -139,18 +139,36 @@ public final class FaceCullCache {
     private static ShapeInfo analyze(BlockShape shape) {
         List<BlockShape.Face> faces = shape.getFaces();
         boolean[] touches = new boolean[faces.size()];
-        boolean[] fullSide = new boolean[Direction.values().length];
+        int directions = Direction.values().length;
+        // per side, which 1/16-block cells the shape's faces on that side cover, together: a side made of
+        // several faces (the back of stairs: lower step + upper part) counts as covered like one face
+        boolean[][] covered = new boolean[directions][COVER_CELLS * COVER_CELLS];
 
         for (int i = 0; i < faces.size(); i++) {
             BlockShape.Face face = faces.get(i);
             Footprint fp = computeFootprint(shape.getVertices(), face, basisOf(face.dir()));
             touches[i] = fp.touchesOwnBoundary();
-            if (touches[i] && fp.minA() <= 0 && fp.maxA() >= 128 && fp.minB() <= 0 && fp.maxB() >= 128) {
-                fullSide[face.dir().ordinal()] = true;
+            if (!touches[i]) continue;
+            boolean[] cells = covered[face.dir().ordinal()];
+            for (int a = 0; a < COVER_CELLS; a++) {
+                int ca = a * 128 / COVER_CELLS + 64 / COVER_CELLS; // cell center
+                if (ca < fp.minA() || ca > fp.maxA()) continue;
+                for (int b = 0; b < COVER_CELLS; b++) {
+                    int cb = b * 128 / COVER_CELLS + 64 / COVER_CELLS;
+                    if (cb >= fp.minB() && cb <= fp.maxB()) cells[a * COVER_CELLS + b] = true;
+                }
             }
+        }
+
+        boolean[] fullSide = new boolean[directions];
+        for (int d = 0; d < directions; d++) {
+            fullSide[d] = true;
+            for (boolean cell : covered[d]) if (!cell) { fullSide[d] = false; break; }
         }
         return new ShapeInfo(touches, fullSide);
     }
+
+    private static final int COVER_CELLS = 16;
 
     // ------------------------------------------------------------------
     // Caches

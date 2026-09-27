@@ -184,12 +184,17 @@ public class NanoCraft {
             WORLD.renderChunks();
 
             // Translucent pass: blended over the opaque scene, depth-tested but not written,
-            // so translucent faces don't hide each other
+            // so translucent faces don't hide each other. Pushed slightly back in depth so a solid
+            // face lying in the same plane (the side of waterlogged stairs) always wins instead of
+            // flickering against the water.
             SHADER.setUniform("uAlphaCutoff", 0.004f);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDepthMask(false);
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(1.0f, 1.0f);
             WORLD.renderTranslucent();
+            glDisable(GL_POLYGON_OFFSET_FILL);
             glDepthMask(true);
             glDisable(GL_BLEND);
 
