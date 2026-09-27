@@ -258,7 +258,7 @@ public class BlockDefinitions {
         block("mossy_cobblestone", "full").hardness(2.0f).tool("pickaxe").register(reg);
         block("obsidian", "full").hardness(50.0f).tool("pickaxe").register(reg);
         block("torch", "torch").layer(CUTOUT).opacity(0).light(14).noCollision().register(reg);
-        block("wall_torch", "torch", HORIZONTAL_FACING).layer(CUTOUT).opacity(0).light(14).noCollision().register(reg);
+        block("wall_torch", "wall_torch", HORIZONTAL_FACING).layer(CUTOUT).opacity(0).light(14).noCollision().register(reg);
         block("fire", "fire", AGE_15, EAST, NORTH, SOUTH, UP, WEST).layer(CUTOUT).opacity(0).light(15).noCollision().register(reg);
         block("soul_fire", "fire").layer(CUTOUT).opacity(0).light(10).noCollision().register(reg);
         block("spawner", "full").hardness(5.0f).tool("pickaxe").layer(CUTOUT).opacity(1).register(reg);

@@ -9,11 +9,7 @@ mycelium[snowy=false] full mycelium_top dirt mycelium_side mycelium_side myceliu
 mycelium[snowy=true] full grass_block_top_snowy dirt grass_block_side_snowy grass_block_side_snowy grass_block_side_snowy grass_block_side_snowy
 crimson_nylium full crimson_nylium netherrack crimson_nylium_side crimson_nylium_side crimson_nylium_side crimson_nylium_side
 warped_nylium full warped_nylium netherrack warped_nylium_side warped_nylium_side warped_nylium_side warped_nylium_side
-dirt_path dirt_path dirt_path_top dirt dirt_path_side dirt_path_side dirt_path_side dirt_path_side rotate=random
-farmland[moisture=0|1|2|3|4|5|6] farmland farmland dirt dirt dirt dirt dirt
-farmland[moisture=7] farmland farmland_moist dirt dirt dirt dirt dirt
 snow_block full snow
-snow snow snow
 magma_block full magma
 water liquid water_still
 lava liquid lava_still

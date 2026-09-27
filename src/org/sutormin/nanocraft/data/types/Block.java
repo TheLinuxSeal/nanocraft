@@ -40,6 +40,8 @@ public class Block extends RegistryType {
     private String baseName = null;
     /** Whether faces between two non-opaque blocks of the same kind are hidden (glass, water; not leaves). */
     private boolean cullsSameBlock = true;
+    /** Waterlogged state, or a block that always sits in water (seagrass, kelp, bubble columns). */
+    private boolean waterlogged = false;
     private TextureRotation textureRotation = TextureRotation.NONE;
     /** Explicit per-face texture transforms from a def's uv= option, [variant][face]; null if none. */
     private int[][] uvVariants = null;
@@ -75,6 +77,7 @@ public class Block extends RegistryType {
         b.renderLayer = renderLayer;
         b.baseName = baseName;
         b.cullsSameBlock = cullsSameBlock;
+        b.waterlogged = waterlogged;
         b.textureRotation = textureRotation;
         b.uvVariants = uvVariants;
         b.tintColor = tintColor;
@@ -163,6 +166,15 @@ public class Block extends RegistryType {
     public int[][] getUvVariants() { return uvVariants; }
     public Block setUvVariants(int[][] variants) { this.uvVariants = variants; return this; }
     public Block setTextureRotation(TextureRotation rotation) { this.textureRotation = rotation; return this; }
+
+    public boolean isWaterlogged() { return waterlogged; }
+    public Block setWaterlogged(boolean waterlogged) { this.waterlogged = waterlogged; return this; }
+
+    /** Water itself (any level). */
+    public boolean isWater() { return "water".equals(baseName); }
+
+    /** Whether this block holds water: water, or a waterlogged block. Water faces between two of these are hidden. */
+    public boolean containsWater() { return waterlogged || isWater(); }
 
     public boolean cullsSameBlock() { return cullsSameBlock; }
     public Block setCullsSameBlock(boolean culls) { this.cullsSameBlock = culls; return this; }

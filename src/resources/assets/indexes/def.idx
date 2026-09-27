@@ -10,3 +10,4 @@ def/block/renames.def
 def/block/models.def
 def/block/chests.def
 def/block/rotated.def
+def/block/vanilla.def

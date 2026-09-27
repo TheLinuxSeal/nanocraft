@@ -2,6 +2,7 @@ package org.sutormin.nanocraft.data.definitions.block;
 
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.Block;
+import org.sutormin.nanocraft.data.types.BlockShape;
 import org.sutormin.nanocraft.data.types.Block.RenderLayer;
 import org.sutormin.nanocraft.resources.block.BlockDefinitionParser;
 import org.sutormin.nanocraft.resources.block.BlockShapeParser;
@@ -96,10 +97,15 @@ public final class BlockSpec {
     }
 
     private void configure(Block b, String stateName, Map<String, String> s) {
-        b.setShape(BlockShapeParser.find(shapeFor(s), s))
+        BlockDefinitionParser.BlockDefinition def = layer != RenderLayer.INVISIBLE ? BlockDefinitionParser.get(stateName) : null;
+        // the definition's shape wins if it names one (e.g. an imported vanilla model); otherwise the family's
+        BlockShape shape = def != null && def.shape() != null ? BlockShapeParser.find(def.shape(), s) : null;
+        if (shape == null) shape = BlockShapeParser.find(shapeFor(s), s);
+        b.setShape(shape)
          .setRenderLayer(layer)
          .setBaseName(name)
          .setCullsSameBlock(!name.endsWith("_leaves")) // leaves show their inner faces, like vanilla
+         .setWaterlogged(is(s, "waterlogged") || ALWAYS_IN_WATER.contains(name))
          .setHardness(hardness)
          .setEffectiveTool(tool)
          .setSolid(solidFor(s))
@@ -111,8 +117,7 @@ public final class BlockSpec {
          .setLightOpacity(opacity)
          .setSoundGroup(sound)
          .setDisplayName(displayName(name));
-        if (layer != RenderLayer.INVISIBLE) {
-            BlockDefinitionParser.BlockDefinition def = BlockDefinitionParser.get(stateName);
+        if (def != null) {
             b.setTextures(def.tex());
             b.setTextureRotation(def.rotation());
             b.setUvVariants(def.uvVariants());
@@ -153,6 +158,10 @@ public final class BlockSpec {
     }
 
     private static boolean is(Map<String, String> s, String key) { return "true".equals(s.get(key)); }
+
+    /** Blocks that have no waterlogged property but are always filled with water, like in vanilla. */
+    private static final java.util.Set<String> ALWAYS_IN_WATER =
+            java.util.Set.of("seagrass", "tall_seagrass", "kelp", "kelp_plant", "bubble_column");
 
     private static String displayName(String id) {
         StringBuilder sb = new StringBuilder(id.length());

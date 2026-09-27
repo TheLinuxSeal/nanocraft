@@ -14,7 +14,8 @@ import java.util.Map;
 
 public class BlockDefinitionParser {
     /**
-     * One .def line: {@code <name> <shape> <textures...> [options]}. Options are key=value tokens
+     * One .def line: {@code <name> <shape> <textures...> [options]}. {@code shape} is null for blocks that
+     * fall back to @default (they keep their family's shape). Options are key=value tokens
      * after the textures: {@code rotate=random|random_all|mirror}, or {@code uv=...} (see
      * {@link #parseUvVariants}). {@code uvVariants} is null unless the line has a uv= option.
      */
@@ -186,20 +187,35 @@ public class BlockDefinitionParser {
             }
         }
         if (d == null) d = defs.get(base);
-        if (d == null) d = defs.get("@default");
+        boolean isDefault = false;
+        if (d == null) {
+            d = defs.get("@default");
+            isDefault = true;
+        }
         if (d == null) {
             throw new RuntimeException(
                     "Block definition '" + name + "' not found and no @default is defined"
             );
         }
 
-        String newShape = d.shape.replace("*", base).replace("^", state);
+        // {prop} = that property's value in this state, e.g. redstone_dust_dot_{power}
+        Map<String, String> stateProps = bracket < 0 ? Map.of() : parseState(state);
+        // @default's shape is only a placeholder: blocks without a definition keep their family's shape
+        String newShape = isDefault ? null : fillIn(d.shape, base, state, stateProps);
         String[] newTex = new String[d.tex.length];
         for (int i = 0; i < d.tex.length; i++) {
-            newTex[i] = d.tex[i].replace("*", base).replace("^", state);
+            newTex[i] = fillIn(d.tex[i], base, state, stateProps);
         }
         return new BlockDefinition(newShape, newTex, d.rotation(), d.uvVariants());
     }
+    private static String fillIn(String s, String base, String state, Map<String, String> props) {
+        s = s.replace("*", base).replace("^", state);
+        for (Map.Entry<String, String> e : props.entrySet()) {
+            s = s.replace("{" + e.getKey() + "}", e.getValue());
+        }
+        return s;
+    }
+
     public static String[] getTexture(String name){
         return get(name).tex();
     }

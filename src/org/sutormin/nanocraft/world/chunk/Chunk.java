@@ -176,7 +176,9 @@ public class Chunk {
         if (!FaceCullCache.infoOf(shape).faceTouchesBoundary()[faceIndex]) return false; // skips the neighbor lookup entirely
 
         Block neighbor = getBlockAt(x + basis.nx(), y + basis.ny(), z + basis.nz());
-        if (neighbor == null || !neighbor.hidesFacesOf(block)) return false; // e.g. stone stays visible behind glass
+        if (neighbor == null) return false;
+        if (block.isWater() && neighbor.containsWater()) return true; // no water surface between water and waterlogged blocks
+        if (!neighbor.hidesFacesOf(block)) return false; // e.g. stone stays visible behind glass
         BlockShape neighborShape = neighbor.getShape();
         if (neighborShape == null) return false;
 
@@ -275,11 +277,28 @@ public class Chunk {
                             addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror);
                         }
                     }
+
+                    // waterlogged blocks also sit in a block of still water, like vanilla's fluid state
+                    if (block.isWaterlogged()) addWater(scratch.translucent, wx, wz, x, y, z);
                 }
             }
         }
 
         return new MeshData(scratch.solid.prepare(), scratch.translucent.prepare());
+    }
+
+    /** Emits the water around a waterlogged block, culled like a water source block at that spot. */
+    private void addWater(MeshBuffer out, int wx, int wz, int x, int y, int z) {
+        Block water = Registries.BLOCK.get(QuickAccessBlocks.WATER);
+        BlockShape shape = water.getShape();
+        if (shape == null) return;
+        List<BlockShape.Face> faces = shape.getFaces();
+        for (int i = 0; i < faces.size(); i++) {
+            BlockShape.Face face = faces.get(i);
+            FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
+            if (face.shouldCull() && isFaceOccluded(x, y, z, water, shape, i, basis)) continue;
+            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false);
+        }
     }
 
     /** Uploads data from {@link #buildMeshData} and frees it. Main (GL) thread only. */
