@@ -8,7 +8,7 @@ public class Options {
 
     public static String PLAYER_USERNAME = "TheLinuxSeal";
     public static UUID PLAYER_UUID = UUID.randomUUID();
-    public static byte VIEW_DISTANCE = 2;
+    public static byte VIEW_DISTANCE = 10;
     public static float RECEIVE_CHUNKS_PER_TICK = 5;
 
     /** Background threads that build chunk meshes. */
