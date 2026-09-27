@@ -15,6 +15,7 @@ import org.sutormin.nanocraft.networking.packets.login.S2CSetCompression;
 import io.netty.channel.Channel;
 import org.sutormin.nanocraft.networking.packets.play.player.S2CSyncPlayerPosition;
 import org.sutormin.nanocraft.networking.packets.play.world.block.S2CBlockUpdate;
+import org.sutormin.nanocraft.networking.packets.play.world.block.S2CSectionBlocksUpdate;
 import org.sutormin.nanocraft.networking.packets.play.world.chunk.S2CChunkBatchFinished;
 import org.sutormin.nanocraft.networking.packets.play.world.chunk.S2CChunkData;
 import org.sutormin.nanocraft.networking.packets.play.world.chunk.S2CUnloadChunk;
@@ -45,6 +46,7 @@ public class PacketList {
     if (phase == NetworkPhase.PLAY && id == 11) return new S2CChunkBatchFinished(channel);
     if (phase == NetworkPhase.PLAY && id == 38) return new S2CUnloadChunk();
     if (phase == NetworkPhase.PLAY && id == 8) return new S2CBlockUpdate();
+    if (phase == NetworkPhase.PLAY && id == 86) return new S2CSectionBlocksUpdate();
     if (phase == NetworkPhase.PLAY && id == 32) return new S2CDisconnect(false);
 
 
