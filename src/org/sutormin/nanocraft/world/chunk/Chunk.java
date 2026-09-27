@@ -376,6 +376,7 @@ public class Chunk {
         if (n < 3) return; // not a renderable polygon
 
         int startIndex = out.vCount / 7;
+        float shade = SHADE[face.dir().ordinal()];
         if (aoScratch.length < n) aoScratch = new float[n];
         float[] aos = aoScratch;
 
@@ -397,7 +398,8 @@ public class Chunk {
             }
             char uv = (char) (uv1 * 129 + uv2);
 
-            char ao = (char) Math.floor(aos[i]*65535);
+            // brightness: ambient occlusion times vanilla's per-direction face shading
+            char ao = (char) Math.floor(aos[i] * shade * 65535);
 
             char layer = (char) tex; // texture arrays have at most a few thousand layers
             // bit 0: draw see-through texture pixels with their stored color instead of cutting them out
@@ -452,6 +454,9 @@ public class Chunk {
     // ------------------------------------------------------------------
     // Ambient occlusion
     // ------------------------------------------------------------------
+
+    /** Vanilla's face shading by direction (Direction order: up, down, north, south, east, west). */
+    private static final float[] SHADE = {1.0f, 0.5f, 0.8f, 0.8f, 0.6f, 0.6f};
 
     /*private float getAOValue(byte index) {
         return switch (index) {
