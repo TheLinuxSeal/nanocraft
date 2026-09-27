@@ -103,9 +103,29 @@ Lines are `key=value`, and `#` starts a comment:
 | `view_distance`         | `10`                 | chunks the server sends around you (2-32)       |
 | `mesh_threads`          | cores - 1 (1-8)      | background threads building chunk meshes        |
 | `mesh_upload_budget_ms` | `4.0`                | time per frame spent uploading chunks to the GPU |
+| `transparent_leaves`    | `false`              | see-through leaves like vanilla's "fancy" leaves (slower); off draws them opaque |
 
 To join a server on another machine, set `server` to its address; it has to be a 26.3 server in
 offline mode. Restart NanoCraft after changing options.
+
+Missing keys keep their defaults, so an `options.txt` from an older version still works; add new
+keys to it by hand, or delete it to get a fresh one with every option listed.
+
+#### Debug options
+
+All `true`/`false`, default `false`:
+
+| key                             | does                                                                         |
+|---------------------------------|------------------------------------------------------------------------------|
+| `debug_log_unknown_s2c_packets` | prints each server packet NanoCraft doesn't handle (it's skipped): phase, id, size |
+| `debug_log_known_s2c_packets`   | prints each server packet NanoCraft handles, with its class (chunks make this busy) |
+| `debug_log_c2s_packets`         | prints each packet sent to the server, with its class (20 a second while playing) |
+| `debug_log_missing_textures`    | prints each texture that isn't found, instead of just how many                |
+| `debug_show_fps`                | shows FPS, loaded chunks and your position in the window title               |
+| `debug_wireframe`               | draws the world as wireframe triangles                                       |
+
+Packet logs look like `[S2C] PLAY 0x26 S2CUnloadChunk (8 bytes)`: ids are in hex, as on
+<https://minecraft.wiki/w/Java_Edition_protocol>.
 
 ## Gradle tasks
 

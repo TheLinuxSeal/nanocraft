@@ -3,6 +3,7 @@ package org.sutormin.nanocraft.resources.texture;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.sutormin.nanocraft.Main;
+import org.sutormin.nanocraft.Options;
 
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -41,6 +42,7 @@ public class Texture {
 
         if (fallback >= 0 && Main.class.getClassLoader().getResource(path) == null) {
             missingCount++;
+            if (Options.DEBUG_LOG_MISSING_TEXTURES) System.out.println("[Client] Missing texture: " + path);
             layers.put(path, fallback);
             return fallback;
         }

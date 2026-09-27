@@ -25,6 +25,23 @@ public class Options {
     /** Max time per frame spent uploading finished chunk meshes to the GPU, in milliseconds. */
     public static float MESH_UPLOAD_BUDGET_MS = 4.0f;
 
+    /** See-through leaves, like vanilla's "fancy" leaves; off draws them opaque ("fast"), which is quicker. */
+    public static boolean TRANSPARENT_LEAVES = false;
+
+    // Debugging
+    /** Prints every server packet NanoCraft doesn't handle (they're skipped). */
+    public static boolean DEBUG_LOG_UNKNOWN_S2C_PACKETS = false;
+    /** Prints every server packet NanoCraft handles. Chunk packets make this busy. */
+    public static boolean DEBUG_LOG_KNOWN_S2C_PACKETS = false;
+    /** Prints every packet sent to the server. Positions and tick ends go out 20 times a second. */
+    public static boolean DEBUG_LOG_C2S_PACKETS = false;
+    /** Prints the name of each texture that isn't found (they show the null.png fallback). */
+    public static boolean DEBUG_LOG_MISSING_TEXTURES = false;
+    /** Shows FPS, loaded chunks and position in the window title. */
+    public static boolean DEBUG_SHOW_FPS = false;
+    /** Draws the world as wireframe triangles. */
+    public static boolean DEBUG_WIREFRAME = false;
+
     private static final String DEFAULTS = """
             # NanoCraft options. Lines are key=value; # starts a comment.
 
@@ -40,6 +57,20 @@ public class Options {
             mesh_threads=%d
             # max milliseconds per frame spent uploading chunk meshes to the GPU
             mesh_upload_budget_ms=%s
+            # see-through leaves like vanilla's "fancy" leaves (false: opaque "fast" leaves, quicker)
+            transparent_leaves=false
+
+            # debugging (true/false)
+            # print server packets NanoCraft skips / handles, and packets sent to the server
+            debug_log_unknown_s2c_packets=false
+            debug_log_known_s2c_packets=false
+            debug_log_c2s_packets=false
+            # print each texture that isn't found, instead of just how many
+            debug_log_missing_textures=false
+            # FPS, loaded chunks and position in the window title
+            debug_show_fps=false
+            # draw the world as wireframe
+            debug_wireframe=false
             """;
 
     /** Reads the options file, or writes one with the defaults if there isn't any. */
@@ -86,11 +117,26 @@ public class Options {
                 case "view_distance" -> VIEW_DISTANCE = (byte) Math.clamp(Integer.parseInt(value), 2, 32);
                 case "mesh_threads" -> MESH_THREADS = Math.max(1, Integer.parseInt(value));
                 case "mesh_upload_budget_ms" -> MESH_UPLOAD_BUDGET_MS = Float.parseFloat(value);
+                case "transparent_leaves" -> TRANSPARENT_LEAVES = bool(value);
+                case "debug_log_unknown_s2c_packets" -> DEBUG_LOG_UNKNOWN_S2C_PACKETS = bool(value);
+                case "debug_log_known_s2c_packets" -> DEBUG_LOG_KNOWN_S2C_PACKETS = bool(value);
+                case "debug_log_c2s_packets" -> DEBUG_LOG_C2S_PACKETS = bool(value);
+                case "debug_log_missing_textures" -> DEBUG_LOG_MISSING_TEXTURES = bool(value);
+                case "debug_show_fps" -> DEBUG_SHOW_FPS = bool(value);
+                case "debug_wireframe" -> DEBUG_WIREFRAME = bool(value);
                 default -> System.err.println("[Client] " + file + ": unknown option \"" + key + "\"");
             }
         } catch (NumberFormatException e) {
             System.err.println("[Client] " + file + ": \"" + key + "\" needs a number, not \"" + value + "\"");
+        } catch (IllegalArgumentException e) {
+            System.err.println("[Client] " + file + ": \"" + key + "\" needs true or false, not \"" + value + "\"");
         }
+    }
+
+    private static boolean bool(String value) {
+        if (value.equalsIgnoreCase("true")) return true;
+        if (value.equalsIgnoreCase("false")) return false;
+        throw new IllegalArgumentException(value);
     }
 
     private static UUID offlineUuid(String username) {

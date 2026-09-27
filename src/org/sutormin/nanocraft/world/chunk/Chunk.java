@@ -538,13 +538,14 @@ public class Chunk {
     }
 
     /**
-     * Used for AO while meshing: like vanilla, only opaque full cubes cast ambient occlusion, so glass,
-     * water, plants, fences, walls, slabs, stairs, snow layers and carpets don't darken their neighbors.
+     * Used for AO while meshing: like vanilla, only opaque full cubes (and leaves, even see-through ones)
+     * cast ambient occlusion, so glass, water, plants, fences, walls, slabs, stairs, snow layers and
+     * carpets don't darken their neighbors.
      * NULL (unloaded chunk or never-written air) casts none.
      */
     public boolean castsAmbientOcclusion(int x, int y, int z) {
         Block block = getBlockAt(x, y, z);
-        if (block == null || block.getRenderLayer() != Block.RenderLayer.OPAQUE) return false;
+        if (block == null || (block.getRenderLayer() != Block.RenderLayer.OPAQUE && !block.isLeaves())) return false;
         BlockShape shape = block.getShape();
         return shape != null && FaceCullCache.infoOf(shape).fullCube();
     }

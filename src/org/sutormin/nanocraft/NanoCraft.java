@@ -15,6 +15,7 @@ import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.play.player.C2SClientTickEnd;
 import org.sutormin.nanocraft.render.Shader;
+import org.sutormin.nanocraft.world.Dimension;
 import org.sutormin.nanocraft.resources.block.BlockDefinitionParser;
 import org.sutormin.nanocraft.resources.block.BlockShapeParser;
 import org.sutormin.nanocraft.resources.texture.Texture;
@@ -157,10 +158,22 @@ public class NanoCraft {
 
         long lastTime = System.nanoTime();
         float clientTickTime = 0.0f;
+        long fpsStart = lastTime;
+        int frames = 0;
         while (!glfwWindowShouldClose(window)) {
             long now = System.nanoTime();
             float deltaTime = (now - lastTime) / 1000000000.0f;
             lastTime = now;
+
+            frames++;
+            if (now - fpsStart >= 1_000_000_000L) {
+                if (Options.DEBUG_SHOW_FPS) {
+                    glfwSetWindowTitle(window, String.format("NanoCraft | %d FPS | %d chunks | %.1f %.1f %.1f",
+                            frames, WORLD.chunkCount(), CAMERA.getX(), CAMERA.getY() + Dimension.minY(), CAMERA.getZ()));
+                }
+                frames = 0;
+                fpsStart = now;
+            }
 
             // fixed 20 Hz client ticks for the server, like vanilla, however fast frames are drawn
             clientTickTime += deltaTime;
@@ -181,6 +194,7 @@ public class NanoCraft {
             SHADER.setUniform("uProjection", projection);
             SHADER.setUniform("uView", CAMERA.getViewMatrix());
 
+            if (Options.DEBUG_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             SHADER.setUniform("uAlphaCutoff", 0.5f);
             WORLD.renderChunks();
 
@@ -198,6 +212,7 @@ public class NanoCraft {
             glDisable(GL_POLYGON_OFFSET_FILL);
             glDepthMask(true);
             glDisable(GL_BLEND);
+            if (Options.DEBUG_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
             Textures.BLOCK.unbind();
             SHADER.unbind();

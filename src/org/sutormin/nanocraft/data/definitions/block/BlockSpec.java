@@ -1,5 +1,6 @@
 package org.sutormin.nanocraft.data.definitions.block;
 
+import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.BlockShape;
@@ -102,10 +103,12 @@ public final class BlockSpec {
         BlockShape shape = def != null && def.shape() != null ? BlockShapeParser.find(def.shape(), s) : null;
         if (shape == null) shape = BlockShapeParser.find(shapeFor(s), s);
         b.setShape(shape)
-         // leaves are drawn opaque, like vanilla's "fast" leaves: faster (they hide their neighbors'
-         // faces) and their see-through pixels show the dark color stored under them
-         .setRenderLayer(isLeaves() ? RenderLayer.OPAQUE : layer)
-         .setSolidTexture(isLeaves())
+         // leaves are drawn opaque by default, like vanilla's "fast" leaves: faster (they hide their
+         // neighbors' faces) and their see-through pixels show the dark color stored under them;
+         // the transparent_leaves option cuts them out instead, like "fancy" leaves
+         .setRenderLayer(fastLeaves() ? RenderLayer.OPAQUE : layer)
+         .setSolidTexture(fastLeaves())
+         .setLeaves(isLeaves())
          .setBaseName(name)
          .setWaterlogged(is(s, "waterlogged") || ALWAYS_IN_WATER.contains(name))
          .setHardness(hardness)
@@ -163,6 +166,7 @@ public final class BlockSpec {
     private static boolean is(Map<String, String> s, String key) { return "true".equals(s.get(key)); }
 
     private boolean isLeaves() { return name.endsWith("_leaves"); }
+    private boolean fastLeaves() { return isLeaves() && !Options.TRANSPARENT_LEAVES; }
 
     /** Blocks that have no waterlogged property but are always filled with water, like in vanilla. */
     private static final java.util.Set<String> ALWAYS_IN_WATER =
