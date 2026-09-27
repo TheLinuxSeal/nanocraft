@@ -1,0 +1,172 @@
+# Getting started
+
+How to set up NanoCraft from a fresh clone: generate the textures, run a local Minecraft server and
+connect to it with NanoCraft.
+
+NanoCraft talks to **Minecraft 26.3** servers (protocol 777) in **offline mode**; it doesn't log in to
+Microsoft accounts.
+
+## Requirements
+
+- **Java 25** (the Gradle wrapper runs on it too).
+- **Linux**: the build pulls LWJGL's `natives-linux`. For another OS, change `lwjglNatives` in
+  `build.gradle.kts` (e.g. `natives-windows`, `natives-macos-arm64`).
+- **Python 3 with Pillow** (`pip install pillow`), for the texture and data tools.
+- An internet connection the first time, to download the Minecraft client/server jars from Mojang.
+
+Everything downloaded from Mojang goes into `mojang/`, and all generated textures into
+`src/resources/assets/texture/`. Both are gitignored: Mojang's assets never end up in the repository.
+
+## 1. Generate the textures
+
+A fresh clone has no block textures (only `null.png`, the purple-black "missing texture"). Make them
+from the official client jar:
+
+```sh
+./gradlew copyBlockTextures generateTextures
+```
+
+This:
+
+1. downloads the Minecraft 26.3 client jar to `mojang/client/` (checked against Mojang's SHA-1) and
+   extracts its assets there (`downloadClient`),
+2. copies every vanilla block texture into `src/resources/assets/texture/block/`
+   (`copyBlockTextures`),
+3. writes the textures NanoCraft colors ahead of time (`generateTextures`): leaves, vines, water,
+   ferns, redstone dust per power level, melon/pumpkin stems per age, and block-style chest textures.
+
+Run it again after changing Minecraft version, or whenever textures look wrong or missing. It
+overwrites same-named files in the texture folder.
+
+Blocks whose texture is missing render with `null.png`. At startup the game prints how many textures
+were missing: a big number means step 1 hasn't been run.
+
+## 2. Run a local server
+
+```sh
+./gradlew runServer
+```
+
+The first run downloads the 26.3 server jar to `mojang/server/` and then stops, asking you to accept
+the Minecraft EULA: read <https://aka.ms/MinecraftEULA> and, if you agree, set `eula=true` in
+`mojang/server/eula.txt`, then run `./gradlew runServer` again.
+
+Every start, the task sets these in `mojang/server/server.properties` (other settings are yours to
+change):
+
+| setting        | value       | why                                                              |
+|----------------|-------------|------------------------------------------------------------------|
+| `online-mode`  | `false`     | NanoCraft doesn't log in to Microsoft accounts                   |
+| `server-port`  | `25565`     | the port NanoCraft connects to by default                         |
+| `white-list`   | `false`     | any username can join                                            |
+| `gamemode`     | `spectator` | NanoCraft's camera flies through everything, like spectator mode |
+| `allow-flight` | `true`      | otherwise the server kicks players for floating                   |
+
+Type server commands (`stop`, `time set day`, `gamemode ...`) into the Gradle console. The world is
+saved in `mojang/server/world/`; delete that folder for a new world.
+
+Players who joined before the `gamemode` setting keep their old game mode: run
+`gamemode spectator <name>` in the console if the server kicks you for flying.
+
+## 3. Run NanoCraft
+
+With the server running, in a second terminal:
+
+```sh
+./gradlew runJar
+```
+
+This builds a jar with all dependencies (`build/libs/`) and starts it. You can also run
+`org.sutormin.nanocraft.Main` straight from your IDE.
+
+### Controls
+
+| key          | action               |
+|--------------|----------------------|
+| mouse        | look around          |
+| W A S D      | move                 |
+| Space        | up                   |
+| Left Shift   | down                 |
+| Left Control | faster (hold)        |
+| Escape       | quit                 |
+
+### Settings
+
+Settings live in `src/org/sutormin/nanocraft/Options.java` (rebuild after changing them):
+
+| option                   | default     | meaning                                                  |
+|--------------------------|-------------|----------------------------------------------------------|
+| `SERVER_IP`, `PORT`      | `127.0.0.1`, `25565` | the server to connect to                       |
+| `PLAYER_USERNAME`        |             | your name on the server                                  |
+| `VIEW_DISTANCE`          | `10`        | chunks the server sends around you                       |
+| `MESH_THREADS`           | cores - 1 (1-8) | background threads building chunk meshes             |
+| `MESH_UPLOAD_BUDGET_MS`  | `4.0`       | time per frame spent uploading chunks to the GPU         |
+
+To join a server on another machine, set `SERVER_IP` to its address; it has to be a 26.3 server in
+offline mode.
+
+## Gradle tasks
+
+`./gradlew tasks` lists them all. The NanoCraft-specific ones:
+
+**mojang**
+
+| task               | does                                                                                  |
+|--------------------|---------------------------------------------------------------------------------------|
+| `downloadClient`   | downloads the client jar and extracts its assets to `mojang/client/`                  |
+| `downloadServer`   | downloads the server jar to `mojang/server/`                                          |
+| `runServer`        | runs the server (see above)                                                           |
+| `generateReports`  | runs vanilla's data generator; reports go to `build/mojang/datagen/reports/`          |
+
+**tools** (Python scripts in `tools/`, run on the client jar)
+
+| task                  | does                                                                                        |
+|-----------------------|---------------------------------------------------------------------------------------------|
+| `copyBlockTextures`   | copies vanilla's block textures into `src/resources/assets/texture/block/`                  |
+| `generateTextures`    | runs `chestTextures` and `tintedTextures`                                                   |
+| `chestTextures`       | block-style chest textures from vanilla's chest entity textures                             |
+| `tintedTextures`      | pre-colored foliage, water, stems and redstone textures                                     |
+| `importVanillaModels` | regenerates `model/block/vanilla.shp` and `def/block/vanilla.def` from vanilla block models |
+| `biomeColors`         | regenerates `data/biome/grass_colors.txt` from vanilla's biomes                             |
+| `generateBlockstates` | regenerates `data/block/blockstates.txt` (block state ids) from the data generator          |
+
+**custom**
+
+| task     | does                               |
+|----------|------------------------------------|
+| `runJar` | builds and runs the NanoCraft jar  |
+
+## Updating to a new Minecraft version
+
+1. Set `minecraftVersion` in `build.gradle.kts`.
+2. Update the protocol version and any changed packet ids/layouts in
+   `src/org/sutormin/nanocraft/networking/` (`PacketList.java` maps packet ids to classes).
+3. Regenerate the data: `./gradlew generateBlockstates biomeColors importVanillaModels`.
+4. Add definitions for new blocks in `data/definitions/block/BlockDefinitions.java`.
+5. Regenerate the textures: `./gradlew copyBlockTextures generateTextures`.
+6. Delete `mojang/server/world/` if the old world doesn't load, and run the server and game again.
+
+## How blocks are drawn
+
+All under `src/resources/assets/`:
+
+- **`def/block/*.def`**: which shape and textures each block state uses, one per line:
+
+  ```
+  <name> <shape> <textures...> [options]
+  grass_block[snowy=true] full grass_block_top dirt grass_block_snow grass_block_snow grass_block_snow grass_block_snow
+  ```
+
+  - Full blocks list textures as up, down, north, south, east, west; one texture covers every face.
+  - `name[prop=a|b]` matches every state with those property values, and the most specific match
+    wins. `@default` (in `default.def`) catches blocks nothing else matches.
+  - In texture names, `*` is the block's name, `^` its state tag, and `{prop}` a property's value.
+  - Options: `rotate=random|random_all|mirror` (random texture turns per block), `uv=` (per-face
+    texture transforms), `tint=<faces>|all` (colored by the biome's grass color).
+  - The comments at the top of each file explain what's in it.
+- **`model/block/*.shp`**: block shapes (faces and their vertices), matched by the block's state.
+  `vanilla.shp` is generated from vanilla's models by `importVanillaModels`.
+- **`indexes/def.idx`** and **`indexes/blkmdl.idx`**: which `.def` and `.shp` files get loaded, one
+  path per line (`blkmdl.idx` lines end with `;`). List new files there.
+- **`texture/block/*.png`**: the textures (generated, see step 1). Only the top-left 16x16 pixels of
+  each image are used.
