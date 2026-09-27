@@ -44,5 +44,3 @@ tall_grass[half=upper] double_cross tall_grass_top
 tall_grass[half=lower] double_cross tall_grass_bottom
 large_fern[half=upper] double_cross large_fern_top
 large_fern[half=lower] double_cross large_fern_bottom
-pitcher_plant[half=upper] double_cross pitcher_plant_top
-pitcher_plant[half=lower] double_cross pitcher_plant_bottom

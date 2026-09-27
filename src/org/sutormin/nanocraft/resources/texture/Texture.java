@@ -94,6 +94,7 @@ public class Texture {
         for (int i = 0; i < paths.size(); i++) {
             ByteBuffer image = null;
             ByteBuffer buf = null;
+            ByteBuffer tile = null;
 
             try (MemoryStack stack = stackPush()) {
                 InputStream is = Main.class
@@ -131,8 +132,16 @@ public class Texture {
                 int w = width.get(0);
                 int h = height.get(0);
 
-                if (w != texSize || h != texSize) {
-                    throw new RuntimeException("Texture is " + w + "x" + h + ", expected " + texSize + "x" + texSize);
+                if (w < texSize || h < texSize) {
+                    throw new RuntimeException("Texture is " + w + "x" + h + ", needs at least " + texSize + "x" + texSize);
+                }
+
+                // Only the top-left texSize x texSize is used, e.g. the first frame of an animated strip
+                tile = MemoryUtil.memAlloc(texSize * texSize * 4);
+                for (int row = 0; row < texSize; row++) {
+                    for (int col = 0; col < texSize * 4; col++) {
+                        tile.put(row * texSize * 4 + col, image.get(row * w * 4 + col));
+                    }
                 }
 
                 glTexSubImage3D(
@@ -141,14 +150,14 @@ public class Texture {
                         0,
                         0,
                         i,
-                        w,
-                        h,
+                        texSize,
+                        texSize,
                         1,
                         GL_RGBA,
                         GL_UNSIGNED_BYTE,
-                        image
+                        tile
                 );
-                uploadMipmaps(image, w, i, maxLevel);
+                uploadMipmaps(tile, texSize, i, maxLevel);
 
             } catch (Exception e) {
                 System.err.println(
@@ -163,6 +172,10 @@ public class Texture {
 
                 if (buf != null) {
                     MemoryUtil.memFree(buf);
+                }
+
+                if (tile != null) {
+                    MemoryUtil.memFree(tile);
                 }
             }
         }
