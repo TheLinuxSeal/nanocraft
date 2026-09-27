@@ -8,8 +8,43 @@ import org.sutormin.nanocraft.world.Direction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BlockShapeParser {
+
+    /** A shape named with a state tag, e.g. "stairs[facing=north,half=top,shape=straight]". */
+    private record Variant(Map<String, String[]> props, BlockShape shape) {
+        boolean matches(Map<String, String> state) {
+            for (Map.Entry<String, String[]> e : props.entrySet()) {
+                String value = state.get(e.getKey());
+                if (value == null || !List.of(e.getValue()).contains(value)) return false;
+            }
+            return true;
+        }
+    }
+
+    // family name ("stairs") -> its state variants, in file order
+    private static final Map<String, List<Variant>> variants = new HashMap<>();
+
+    /**
+     * The shape for a block state: the matching variant of {@code family} with the most properties
+     * (ties go to the one defined first), otherwise the shape named just {@code family}, or null.
+     * State properties a variant doesn't mention (e.g. waterlogged) are ignored.
+     */
+    public static BlockShape find(String family, Map<String, String> state) {
+        BlockShape best = null;
+        int bestSize = -1;
+        for (Variant v : variants.getOrDefault(family, List.of())) {
+            if (v.props().size() > bestSize && v.matches(state)) {
+                best = v.shape();
+                bestSize = v.props().size();
+            }
+        }
+        return best != null ? best : Registries.BLOCK_SHAPE.get(family);
+    }
 
     private static final String ROOT = "/assets/";
     private static final String PATH = "/assets/indexes/blkmdl.idx";
@@ -105,6 +140,19 @@ public class BlockShapeParser {
         }
 
         BlockShape shape = Registries.BLOCK_SHAPE.addNew(name);
+
+        int bracket = name.indexOf('[');
+        if (bracket >= 0) {
+            Map<String, String[]> props = new HashMap<>();
+            String inner = name.substring(bracket + 1, name.length() - 1);
+            for (String kv : inner.isEmpty() ? new String[0] : inner.split(",")) {
+                int eq = kv.indexOf('=');
+                if (eq < 0) throw new RuntimeException("Invalid state property '" + kv + "' in shape '" + name + "'");
+                props.put(kv.substring(0, eq), kv.substring(eq + 1).split("\\|"));
+            }
+            variants.computeIfAbsent(name.substring(0, bracket), k -> new ArrayList<>())
+                    .add(new Variant(props, shape));
+        }
 
         parseVertices(shape, sections[1], name);
         parseFaces(shape, sections[2], name);

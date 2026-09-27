@@ -1,10 +1,10 @@
 package org.sutormin.nanocraft.data.definitions.block;
 
-import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.Block.RenderLayer;
 import org.sutormin.nanocraft.resources.block.BlockDefinitionParser;
+import org.sutormin.nanocraft.resources.block.BlockShapeParser;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -96,7 +96,7 @@ public final class BlockSpec {
     }
 
     private void configure(Block b, String stateName, Map<String, String> s) {
-        b.setShape(Registries.BLOCK_SHAPE.get(shapeFor(s)))
+        b.setShape(BlockShapeParser.find(shapeFor(s), s))
          .setRenderLayer(layer)
          .setBaseName(name)
          .setCullsSameBlock(!name.endsWith("_leaves")) // leaves show their inner faces, like vanilla
