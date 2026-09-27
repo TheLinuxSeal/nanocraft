@@ -185,3 +185,37 @@ tasks.register("generateTextures") {
     description = "Runs chestTextures and tintedTextures (overwrites same-named textures in src/resources/assets/texture/block)."
     dependsOn(chestTextures, tintedTextures)
 }
+
+val copyBlockTextures = tasks.register<Copy>("copyBlockTextures") {
+    group = "tools"
+    description = "Copies all vanilla block textures from mojang/client into src/resources/assets/texture/block " +
+            "(overwrites same-named files; run generateTextures afterwards for the colored/chest ones)."
+    dependsOn("downloadClient")
+    from(clientDir.dir("assets/minecraft/textures/block")) { include("*.png") }
+    into(layout.projectDirectory.dir("src/resources/assets/texture/block"))
+}
+// when run together, the generated textures win over the plain vanilla copies
+chestTextures.configure { mustRunAfter(copyBlockTextures) }
+tintedTextures.configure { mustRunAfter(copyBlockTextures) }
+
+val generateReports = tasks.register<JavaExec>("generateReports") {
+    group = "mojang"
+    description = "Runs the vanilla data generator on the server jar, writing its reports (blocks, packets, ...) to build/mojang/datagen/reports."
+    dependsOn(downloadServer)
+    val dir = layout.buildDirectory.dir("mojang").get().asFile
+    workingDir = dir // the server jar unpacks its libraries here
+    classpath(serverJar)
+    mainClass.set("net.minecraft.bundler.Main")
+    systemProperty("bundlerMainClass", "net.minecraft.data.Main")
+    args("--reports", "--output", File(dir, "datagen").absolutePath)
+    outputs.dir(File(dir, "datagen"))
+    doFirst { dir.mkdirs() }
+}
+
+tasks.register<Exec>("generateBlockstates") {
+    group = "tools"
+    description = "Regenerates data/block/blockstates.txt (block state ids) from the vanilla data generator's blocks report."
+    dependsOn(generateReports)
+    workingDir = projectDir
+    commandLine("python3", "tools/blockstates.py", layout.buildDirectory.file("mojang/datagen/reports/blocks.json").get().asFile.absolutePath)
+}

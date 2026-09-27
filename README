@@ -2,6 +2,7 @@ NanoCraft
 A Open Source Minecraft Clone
 
 NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT
+
 About Minecraft's code and assets
 - NanoCraft contains no Mojang code, textures, sounds or other assets.
 - To talk to vanilla servers, the network protocol, block state ids and a few game formulas (biome lookup,
