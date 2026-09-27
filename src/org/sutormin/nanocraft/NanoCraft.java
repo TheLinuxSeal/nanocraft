@@ -18,6 +18,7 @@ import org.sutormin.nanocraft.resources.texture.Textures;
 import org.sutormin.nanocraft.world.BlockStateMapper;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
 import org.sutormin.nanocraft.world.World;
+import org.sutormin.nanocraft.world.biome.BiomeTint;
 import org.sutormin.nanocraft.world.render.WorldShaders;
 
 import java.nio.IntBuffer;
@@ -98,6 +99,7 @@ public class NanoCraft {
 
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL); // overlay faces (grass sides) lie exactly on the face below them
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
         glClearColor(0.623f, 0.734f, 0.785f, 1.0f);
@@ -125,6 +127,9 @@ public class NanoCraft {
         System.out.println("Loading registries!");
         Registries.defineAll();
         QuickAccessBlocks.loadFromRegistry();
+
+        System.out.println("Loading biome colors!");
+        BiomeTint.load();
 
         System.out.println("Loading blockstate map!");
         BlockStateMapper.load();

@@ -7,6 +7,7 @@ import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.BlockShape;
 import org.sutormin.nanocraft.world.Direction;
 import org.sutormin.nanocraft.world.FaceCullCache;
+import org.sutormin.nanocraft.world.biome.BiomeTint;
 import org.sutormin.nanocraft.world.render.Mesh;
 
 import java.util.List;
@@ -19,6 +20,10 @@ public class Chunk {
     public static final int SIZE_Z = 16;
 
     public static final int SEA_LEVEL = 63;
+    /** Lowest world y; array y is world y minus this. */
+    public static final int MIN_Y = -64;
+    /** Biomes are stored per 4x4x4 cell. */
+    public static final int BIOME_CELLS_Y = SIZE_Y / 4;
 
     private final ChunkPos worldPos;
     // 32 bits for: 16b = blockid, 16b = blockstate (redstone level, orientation, etc)
@@ -82,6 +87,18 @@ public class Chunk {
 
     public void setBlocks(char[] blocks) {
         this.blocks = blocks;
+    }
+
+    // biome id per 4x4x4 cell, see getBiome
+    private char[] biomes = new char[BIOME_CELLS_Y * 16];
+
+    public void setBiomes(char[] biomes) {
+        this.biomes = biomes;
+    }
+
+    /** Biome id of a cell: x/z 0..3 within the chunk, y 0..BIOME_CELLS_Y-1 from the bottom of the world. */
+    public int getBiome(int cellX, int cellY, int cellZ) {
+        return biomes[(cellY * 4 + cellZ) * 4 + cellX];
     }
 
     // ------------------------------------------------------------------
@@ -244,6 +261,8 @@ public class Chunk {
                     int variant = rotation == Block.TextureRotation.NONE ? 0 : (hash(x, y, z) >>> 8) & 3;
                     // RANDOM_MIRROR (vanilla stone): bit 0 mirrors every face, bit 1 turns top/bottom 180 degrees
                     boolean mirror = rotation == Block.TextureRotation.RANDOM_MIRROR && (variant & 1) != 0;
+                    // biome grass color for tinted faces, packed as 5-bit RGB (0 = no tint)
+                    int grassTint = block.hasBiomeTint() ? packTint(grassColorAt(wx, y, wz)) : 0;
                     int turns = rotation == Block.TextureRotation.RANDOM_MIRROR ? variant & 2 : variant;
                     List<BlockShape.Vertex> verts = shape.getVertices();
                     List<BlockShape.Face> faces = shape.getFaces();
@@ -271,12 +290,12 @@ public class Chunk {
                         if (uvCodes != null) {
                             int code = i < uvCodes.length ? uvCodes[i] : 0;
                             addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), code & 3, (code & 4) != 0,
-                                    block.hasSolidTexture());
+                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0);
                         } else {
                             boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
                                     || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
                             addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror,
-                                    block.hasSolidTexture());
+                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0);
                         }
                     }
 
@@ -289,6 +308,37 @@ public class Chunk {
         return new MeshData(scratch.solid.prepare(), scratch.translucent.prepare());
     }
 
+    // ------------------------------------------------------------------
+    // Biome tint
+    // ------------------------------------------------------------------
+
+    private final int[] zoomScratch = new int[3];
+
+    /**
+     * Grass color at a block (world x/z, array y), with vanilla's biome lookup at biome blend 0. The
+     * lookup can land in a neighboring chunk's cell; if that chunk isn't loaded, the nearest cell here.
+     */
+    private int grassColorAt(int wx, int y, int wz) {
+        BiomeTint.zoom(wx, y + MIN_Y, wz, zoomScratch);
+        int cellX = zoomScratch[0], cellZ = zoomScratch[2];
+        int cellY = Math.clamp(zoomScratch[1] - MIN_Y / 4, 0, BIOME_CELLS_Y - 1);
+        int dx = Math.clamp(Math.floorDiv(cellX, 4) - worldPos.x(), -1, 1);
+        int dz = Math.clamp(Math.floorDiv(cellZ, 4) - worldPos.z(), -1, 1);
+        Chunk chunk = neighbors[(dz + 1) * 3 + (dx + 1)];
+        int biome = chunk != null
+                ? chunk.getBiome(Math.floorMod(cellX, 4), cellY, Math.floorMod(cellZ, 4))
+                : getBiome(Math.clamp(cellX - worldPos.x() * 4, 0, 3), cellY, Math.clamp(cellZ - worldPos.z() * 4, 0, 3));
+        return BiomeTint.grassColor(biome, wx, wz);
+    }
+
+    /** 0xRRGGBB to 5-bit RGB (red in the low bits), never 0 so it can't read as "no tint". */
+    private static int packTint(int rgb) {
+        int r = Math.round(((rgb >> 16) & 255) * 31 / 255f);
+        int g = Math.round(((rgb >> 8) & 255) * 31 / 255f);
+        int b = Math.round((rgb & 255) * 31 / 255f);
+        return Math.max(1, r | (g << 5) | (b << 10));
+    }
+
     /** Emits the water around a waterlogged block, culled like a water source block at that spot. */
     private void addWater(MeshBuffer out, int wx, int wz, int x, int y, int z) {
         Block water = Registries.BLOCK.get(QuickAccessBlocks.WATER);
@@ -299,7 +349,7 @@ public class Chunk {
             BlockShape.Face face = faces.get(i);
             FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
             if (face.shouldCull() && isFaceOccluded(x, y, z, water, shape, i, basis)) continue;
-            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false);
+            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false, 0);
         }
     }
 
@@ -320,7 +370,7 @@ public class Chunk {
      */
     private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
-                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU, boolean solidTexture) {
+                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU, boolean solidTexture, int tint) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
@@ -351,7 +401,8 @@ public class Chunk {
 
             char layer = (char) tex; // texture arrays have at most a few thousand layers
             // bit 0: draw see-through texture pixels with their stored color instead of cutting them out
-            char flags = (char) (solidTexture ? 1 : 0);
+            // bits 1-15: tint color as 5-bit RGB (0 = untinted)
+            char flags = (char) ((solidTexture ? 1 : 0) | (tint << 1));
 
             out.pushVertex(gx);
             out.pushVertex(gy);

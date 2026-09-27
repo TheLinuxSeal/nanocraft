@@ -17,9 +17,12 @@ public class BlockDefinitionParser {
      * One .def line: {@code <name> <shape> <textures...> [options]}. {@code shape} is null for blocks that
      * fall back to @default (they keep their family's shape). Options are key=value tokens
      * after the textures: {@code rotate=random|random_all|mirror}, or {@code uv=...} (see
-     * {@link #parseUvVariants}). {@code uvVariants} is null unless the line has a uv= option.
+     * {@link #parseUvVariants}), and {@code tint=<face>,<face>,...|all}: faces colored by the biome's
+     * grass color. {@code uvVariants} and {@code tintFaces} are null unless the line has that option;
+     * an empty {@code tintFaces} means every face.
      */
-    public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation, int[][] uvVariants){}
+    public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation, int[][] uvVariants,
+                                  int[] tintFaces){}
 
     /**
      * Parses {@code uv=<t>,<t>,.../<t>,<t>,...}: one transform per face in the shape's face order,
@@ -113,6 +116,7 @@ public class BlockDefinitionParser {
                 List<String> textures = new ArrayList<>();
                 Block.TextureRotation rotation = Block.TextureRotation.NONE;
                 int[][] uvVariants = null;
+                int[] tintFaces = null;
                 for (String token : Arrays.copyOfRange(data, 2, data.length)) {
                     if (!token.contains("=")) {
                         textures.add(token);
@@ -124,6 +128,10 @@ public class BlockDefinitionParser {
                         rotation = Block.TextureRotation.RANDOM_MIRROR;
                     } else if (token.startsWith("uv=")) {
                         uvVariants = parseUvVariants(token.substring(3), str);
+                    } else if (token.startsWith("tint=")) {
+                        String faces = token.substring(5);
+                        tintFaces = faces.equals("all") ? new int[0]
+                                : Arrays.stream(faces.split(",")).mapToInt(Integer::parseInt).toArray();
                     } else {
                         throw new RuntimeException("Unknown option '" + token + "' in " + file + ": " + str);
                     }
@@ -132,7 +140,8 @@ public class BlockDefinitionParser {
                 if (uvVariants != null && rotation != Block.TextureRotation.NONE) {
                     throw new RuntimeException("Use either rotate= or uv=, not both, in " + file + ": " + str);
                 }
-                BlockDefinition def = new BlockDefinition(data[1], textures.toArray(new String[0]), rotation, uvVariants);
+                BlockDefinition def = new BlockDefinition(data[1], textures.toArray(new String[0]), rotation, uvVariants,
+                        tintFaces);
 
                 int bracket = data[0].indexOf('[');
                 if (bracket < 0) {
@@ -206,7 +215,7 @@ public class BlockDefinitionParser {
         for (int i = 0; i < d.tex.length; i++) {
             newTex[i] = fillIn(d.tex[i], base, state, stateProps);
         }
-        return new BlockDefinition(newShape, newTex, d.rotation(), d.uvVariants());
+        return new BlockDefinition(newShape, newTex, d.rotation(), d.uvVariants(), d.tintFaces());
     }
     private static String fillIn(String s, String base, String state, Map<String, String> props) {
         s = s.replace("*", base).replace("^", state);

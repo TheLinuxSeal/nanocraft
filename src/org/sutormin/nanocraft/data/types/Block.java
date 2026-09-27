@@ -45,6 +45,8 @@ public class Block extends RegistryType {
     private TextureRotation textureRotation = TextureRotation.NONE;
     /** Explicit per-face texture transforms from a def's uv= option, [variant][face]; null if none. */
     private int[][] uvVariants = null;
+    /** Faces colored with the biome's grass color, by face index; null if none, empty for every face. */
+    private int[] tintFaces = null;
     private int tintColor = 0xFFFFFF; // e.g. for grass / leaves
 
     // ---- Mining (client predicts break time / crack animation; server validates) ----
@@ -80,6 +82,7 @@ public class Block extends RegistryType {
         b.solidTexture = solidTexture;
         b.textureRotation = textureRotation;
         b.uvVariants = uvVariants;
+        b.tintFaces = tintFaces;
         b.tintColor = tintColor;
         b.hardness = hardness;
         b.effectiveTool = effectiveTool;
@@ -165,6 +168,17 @@ public class Block extends RegistryType {
      */
     public int[][] getUvVariants() { return uvVariants; }
     public Block setUvVariants(int[][] variants) { this.uvVariants = variants; return this; }
+
+    public boolean hasBiomeTint() { return tintFaces != null; }
+    public Block setTintFaces(int[] faces) { this.tintFaces = faces; return this; }
+
+    /** Whether a face (by index in the shape) gets the biome's grass color. */
+    public boolean isFaceTinted(int face) {
+        if (tintFaces == null) return false;
+        if (tintFaces.length == 0) return true;
+        for (int f : tintFaces) if (f == face) return true;
+        return false;
+    }
     public Block setTextureRotation(TextureRotation rotation) { this.textureRotation = rotation; return this; }
 
     public boolean hasSolidTexture() { return solidTexture; }

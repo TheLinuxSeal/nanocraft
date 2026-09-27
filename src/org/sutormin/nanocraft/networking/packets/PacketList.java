@@ -2,6 +2,8 @@ package org.sutormin.nanocraft.networking.packets;
 
 import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.packets.config.S2CFinishConfiguration;
+import org.sutormin.nanocraft.networking.packets.config.S2CRegistryData;
+import org.sutormin.nanocraft.networking.packets.play.S2CJoinGame;
 import org.sutormin.nanocraft.networking.packets.misc.S2CIgnorePacket;
 import org.sutormin.nanocraft.networking.packets.misc.S2CKeepAlive;
 import org.sutormin.nanocraft.networking.packets.config.S2CKnownPacksChallenge;
@@ -27,7 +29,7 @@ public class PacketList {
     if (phase == NetworkPhase.CONFIG && id == 1) return new S2CIgnorePacket("PluginMessage");
     if (phase == NetworkPhase.CONFIG && id == 12) return new S2CIgnorePacket("FeatureFlags");
     if (phase == NetworkPhase.CONFIG && id == 14) return new S2CKnownPacksChallenge(channel);
-    if (phase == NetworkPhase.CONFIG && id == 7) return new S2CIgnorePacket("RegistryData");
+    if (phase == NetworkPhase.CONFIG && id == 7) return new S2CRegistryData();
     if (phase == NetworkPhase.CONFIG && id == 13) return new S2CIgnorePacket("UpdateTags");
     if (phase == NetworkPhase.CONFIG && id == 3) return new S2CFinishConfiguration(channel);
 
@@ -43,6 +45,8 @@ public class PacketList {
 
 
     if (phase == NetworkPhase.PLAY && id == 72) return new S2CSyncPlayerPosition(channel);
+    if (phase == NetworkPhase.PLAY && id == 49) return new S2CJoinGame(false);
+    if (phase == NetworkPhase.PLAY && id == 82) return new S2CJoinGame(true);
 
     return null;
   }

@@ -14,7 +14,8 @@ and both are added to their index files. Lines for the imported blocks are remov
 files, so re-running the tool replaces its previous output. Blocks vanilla draws as entities (chests,
 signs, banners, heads, ...) have no model geometry and keep their existing shapes, as do liquids.
 
-Faces vanilla tints are written as-is, except where the color depends on the state: redstone dust
+Short and tall grass get tint= for the faces vanilla tints, so they take the biome's grass color.
+Other faces vanilla tints are written as-is, except where the color depends on the state: redstone dust
 (<texture>_{power}) and growing melon/pumpkin stems (<texture>_{age}), the pre-colored textures from
 tools/tinted_textures.py.
 
@@ -36,6 +37,8 @@ JAVA = os.path.join(REPO, "src", "org", "sutormin", "nanocraft", "data", "defini
 SKIP_FAMILIES = {"full", "liquid", "air"}
 # blocks whose tinted faces use one pre-colored texture per value of a property
 TINT_SUFFIX = {"redstone_wire": "_{power}", "melon_stem": "_{age}", "pumpkin_stem": "_{age}"}
+# blocks whose tinted faces take the biome's grass color at runtime (def option tint=)
+BIOME_TINTED = {"short_grass", "tall_grass"}
 DIRS = ["down", "up", "north", "south", "west", "east"]
 NORMAL = {"up": (0, 1, 0), "down": (0, -1, 0), "north": (0, 0, -1), "south": (0, 0, 1), "east": (1, 0, 0), "west": (-1, 0, 0)}
 # Minecraft's corner order for each face (FaceInfo), counter-clockwise seen from outside
@@ -160,7 +163,7 @@ def models_for(blockstate, props):
 
 
 def faces_for(jar, base, entry, tinted_suffix):
-    """[(corners, uvs, dir, cull, texture)] for one blockstate model entry, in 0..1 block space."""
+    """[(corners, uvs, dir, cull, texture, tinted)] for one blockstate model entry, in 0..1 block space."""
     textures, elements = jar.model(entry["model"].split("/")[-1])
     xr, yr, uvlock = entry.get("x", 0), entry.get("y", 0), entry.get("uvlock", False)
     out = []
@@ -194,7 +197,7 @@ def faces_for(jar, base, entry, tinted_suffix):
                 uvs = [corner_uv(uv, face.get("rotation", 0), i) for i in range(4)]
             cull = "cullface" in face and not (rot and rot.get("angle", 0))
             out.append((tuple(tuple(c / 16 for c in p) for p in pts), tuple((u / 16, v / 16) for u, v in uvs),
-                        world_dir, cull, tex))
+                        world_dir, cull, tex, "tintindex" in face))
     return out
 
 
@@ -240,12 +243,12 @@ def main():
             for entry, ry in models_for(blockstate, state):
                 faces += faces_for(jar, base, entry, TINT_SUFFIX.get(base, ""))
                 random_y |= ry
-            geo = tuple((c, u, d, cull) for c, u, d, cull, _ in faces)
+            geo = tuple((c, u, d, cull) for c, u, d, cull, _, _ in faces)
             if geo not in shapes:
                 name = "v/empty" if not geo else f"v/{base}_{sum(1 for n in shapes.values() if n.startswith(f'v/{base}_'))}"
                 shapes[geo] = name
                 verts, vidx, fl = [], {}, []
-                for c, u, d, cull, _ in faces:
+                for c, u, d, cull, _, _ in faces:
                     ids = []
                     for p in c:
                         key = tuple(round(x, 5) for x in p)
@@ -257,7 +260,11 @@ def main():
                                    + "|" + " ".join(fl) + ";")
             tex = [f[4] for f in faces]
             if len(set(tex)) == 1: tex = tex[:1]
-            results[combo] = (shapes[geo], tuple(tex), random_y)
+            options = " rotate=random" if random_y else ""
+            if base in BIOME_TINTED and any(f[5] for f in faces):
+                tinted = [i for i, f in enumerate(faces) if f[5]]
+                options += " tint=" + ("all" if len(tinted) == len(faces) else ",".join(map(str, tinted)))
+            results[combo] = (shapes[geo], tuple(tex), options)
         # states without geometry (e.g. a wall with no post and no sides) get an empty shape; a block
         # where every state is empty is drawn as an entity in vanilla and keeps its existing shape
         filled = [r for r in results.values() if r[1]]
@@ -275,8 +282,8 @@ def main():
                     continue
                 break
             if not used:
-                shape, tex, ry = next(iter(results.values()))
-                def_lines[base].append(f"{base} {shape} {' '.join(tex)}" + (" rotate=random" if ry else ""))
+                shape, tex, options = next(iter(results.values()))
+                def_lines[base].append(f"{base} {shape} {' '.join(tex)}{options}")
                 continue
             *outer, last = used
             groups = collections.OrderedDict()
@@ -284,9 +291,9 @@ def main():
                 groups.setdefault(tuple(c[i] for i in outer), collections.OrderedDict()).setdefault(r, [])
                 if c[last] not in groups[tuple(c[i] for i in outer)][r]: groups[tuple(c[i] for i in outer)][r].append(c[last])
             for key, by_result in groups.items():
-                for (shape, tex, ry), vals in by_result.items():
+                for (shape, tex, options), vals in by_result.items():
                     tag = ",".join([f"{names[i]}={v}" for i, v in zip(outer, key)] + [f"{names[last]}={'|'.join(vals)}"])
-                    def_lines[base].append(f"{base}[{tag}] {shape} {' '.join(tex)}" + (" rotate=random" if ry else ""))
+                    def_lines[base].append(f"{base}[{tag}] {shape} {' '.join(tex)}{options}")
             continue
         skipped.append(base)
 

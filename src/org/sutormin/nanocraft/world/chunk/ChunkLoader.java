@@ -35,7 +35,7 @@ public final class ChunkLoader {
     //private static final Queue<ChunkPos> REMESHES = new ConcurrentLinkedQueue<>();
     private static final Queue<BlockChange> BLOCK_CHANGES = new ConcurrentLinkedQueue<>();
 
-    public record Pending(ChunkPos pos, char[] blocks) {
+    public record Pending(ChunkPos pos, char[] blocks, char[] biomes) {
     }
 
     public record BlockChange(int x, int y, int z, char block) {
@@ -52,7 +52,8 @@ public final class ChunkLoader {
     public static void submit(S2CChunkData data) {
         RECEIVING.add(new Pending(
             new ChunkPos(data.chunkX, data.chunkZ),
-            toBlocks(data)
+            toBlocks(data),
+            toBiomes(data)
         ));
     }
 
@@ -167,6 +168,20 @@ public final class ChunkLoader {
         }
 
         return blocks;
+    }
+
+    /** Biome ids per 4x4x4 cell, laid out like {@link Chunk#getBiome}: (cellY * 4 + cellZ) * 4 + cellX. */
+    public static char[] toBiomes(S2CChunkData data) {
+        char[] biomes = new char[Chunk.BIOME_CELLS_Y * 16];
+        int sectionCount = Math.min(data.sections.length, Chunk.SIZE_Y / SECTION_SIZE);
+        for (int s = 0; s < sectionCount; s++) {
+            S2CChunkData.PalettedContainer container = data.sections[s].biomes;
+            if (container == null) continue;
+            for (int i = 0; i < 64; i++) { // vanilla order: (y << 4) | (z << 2) | x
+                biomes[s * 64 + i] = (char) container.get(i);
+            }
+        }
+        return biomes;
     }
 
     private static void writeSection(

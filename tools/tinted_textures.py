@@ -5,8 +5,9 @@ Bakes vanilla's render-time tints into the textures, from a Minecraft client jar
 Vanilla ships some block textures grey and colors them while rendering (by biome, or by redstone power).
 NanoCraft doesn't tint, so this writes pre-colored textures instead:
 
-  - grass, ferns, bushes, petal/wildflower stems: forest grass color (grass_block_side gets its
-    tinted overlay painted on, like vanilla draws it)
+  - ferns, bushes, sugar cane, petal/wildflower stems: forest grass color
+  - grass blocks, short grass and tall grass are colored per biome while rendering, so they get
+    vanilla's grey textures (and grass_block_side its plain version) instead
   - leaves and vines: the foliage color of the biome each tree grows in most (oak: forest,
     jungle and vines: jungle, acacia: savanna, dark oak: dark forest, mangrove: mangrove swamp);
     birch and spruce leaves and lily pads have vanilla's fixed colors
@@ -37,7 +38,7 @@ PLAINS, FOREST, JUNGLE, SAVANNA, DARK_FOREST = (0.8, 0.4), (0.7, 0.8), (0.95, 0.
 
 # block -> (colormap or None, climate or fixed RGB): vanilla's BlockColors, with the chosen biome
 TINTS = {
-    **{b: ("grass", FOREST) for b in ("grass_block", "short_grass", "tall_grass", "fern", "large_fern", "potted_fern",
+    **{b: ("grass", FOREST) for b in ("fern", "large_fern", "potted_fern",
                                        "bush", "pink_petals", "wildflowers", "sugar_cane")},  # darker than plains
     "oak_leaves": ("foliage", FOREST),
     "jungle_leaves": ("foliage", JUNGLE),
@@ -54,6 +55,8 @@ TINTS = {
     "attached_melon_stem": (None, (0xE0, 0xC7, 0x1C)),
     "attached_pumpkin_stem": (None, (0xE0, 0xC7, 0x1C)),
 }
+# tinted per biome at runtime (def option tint=): these keep vanilla's grey textures
+BIOME_TINTED = ["grass_block", "short_grass", "tall_grass"]
 # growing stems are colored by age instead, one texture per age
 STEMS = ["melon_stem", "pumpkin_stem"]
 # fluids are drawn without a block model, so their tinted textures are listed here
@@ -130,13 +133,13 @@ def main():
             if name == "grass_block_side_overlay":
                 continue  # painted onto grass_block_side below
             tint(texture(name), rgb).save(os.path.join(out_dir, f"{name}.png"))
-        if block == "grass_block":
-            # vanilla draws the tinted overlay on top of the side texture
-            side = texture("grass_block_side")
-            side.alpha_composite(tint(texture("grass_block_side_overlay"), rgb))
-            side.save(os.path.join(out_dir, "grass_block_side.png"))
-            names.add("grass_block_side")
         print(f"{block:16} #{int(rgb[0]):02X}{int(rgb[1]):02X}{int(rgb[2]):02X}  {' '.join(sorted(names - {'grass_block_side_overlay'}))}")
+
+    for block in BIOME_TINTED:
+        names = tinted_textures(jar, block) | ({"grass_block_side"} if block == "grass_block" else set())
+        for name in sorted(names):
+            texture(name).save(os.path.join(out_dir, f"{name}.png"))
+        print(f"{block:16} biome tint   {' '.join(sorted(names))} (grey, as in vanilla)")
 
     for block in STEMS:
         for name in sorted(tinted_textures(jar, block)):

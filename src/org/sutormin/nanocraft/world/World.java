@@ -72,6 +72,7 @@ public class World {
         while (budget-- > 0 && (p = ChunkLoader.poll()) != null) {
             Chunk c = new Chunk(p.pos());
             c.setBlocks(p.blocks());
+            c.setBiomes(p.biomes());
             addChunk(p.pos(), c);
         }
     }

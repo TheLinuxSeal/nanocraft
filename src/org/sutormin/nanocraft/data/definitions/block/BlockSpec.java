@@ -123,6 +123,7 @@ public final class BlockSpec {
             b.setTextures(def.tex());
             b.setTextureRotation(def.rotation());
             b.setUvVariants(def.uvVariants());
+            b.setTintFaces(def.tintFaces());
         }
     }
 

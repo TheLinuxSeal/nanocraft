@@ -171,7 +171,7 @@ detector_rail[powered=false,shape=ascending_west] v/powered_rail_3 detector_rail
 detector_rail[powered=false,shape=ascending_north] v/powered_rail_4 detector_rail
 detector_rail[powered=false,shape=ascending_south] v/powered_rail_5 detector_rail
 cobweb v/oak_sapling_0 cobweb
-short_grass v/oak_sapling_0 short_grass
+short_grass v/oak_sapling_0 short_grass tint=all
 fern v/oak_sapling_0 fern
 dead_bush v/oak_sapling_0 dead_bush
 bush v/oak_sapling_0 bush
@@ -4146,8 +4146,8 @@ rose_bush[half=upper] v/oak_sapling_0 rose_bush_top
 rose_bush[half=lower] v/oak_sapling_0 rose_bush_bottom
 peony[half=upper] v/oak_sapling_0 peony_top
 peony[half=lower] v/oak_sapling_0 peony_bottom
-tall_grass[half=upper] v/oak_sapling_0 tall_grass_top
-tall_grass[half=lower] v/oak_sapling_0 tall_grass_bottom
+tall_grass[half=upper] v/oak_sapling_0 tall_grass_top tint=all
+tall_grass[half=lower] v/oak_sapling_0 tall_grass_bottom tint=all
 large_fern[half=upper] v/oak_sapling_0 large_fern_top
 large_fern[half=lower] v/oak_sapling_0 large_fern_bottom
 red_sandstone_stairs[facing=north,half=top,shape=straight] v/oak_stairs_0 red_sandstone_bottom red_sandstone_top red_sandstone red_sandstone red_sandstone red_sandstone red_sandstone_top red_sandstone red_sandstone red_sandstone red_sandstone

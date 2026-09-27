@@ -11,6 +11,7 @@ public class WorldShaders {
     out vec3 FragPosView;
     out float vAO;
     flat out uint vSolid; // 1: no alpha cutout (e.g. opaque "fast" leaves)
+    out vec3 vTint;       // biome color the texture is multiplied by (white = none)
 
     uniform mat4 uProjection;
     uniform mat4 uView;
@@ -32,6 +33,9 @@ public class WorldShaders {
         // texture layer was split into two 16-bit halves
         uint layer = aAoTex.y;
         vSolid = aAoTex.z & 1u;
+        uint tint = aAoTex.z >> 1u; // 5-bit RGB, 0 = untinted
+        vTint = tint == 0u ? vec3(1.0)
+                : vec3(float(tint & 31u), float((tint >> 5u) & 31u), float((tint >> 10u) & 31u)) / 31.0;
 
         TexCoord = vec3(float(u) / 128.0, float(v) / 128.0, float(layer));
 
@@ -45,6 +49,7 @@ public class WorldShaders {
     in vec3 FragPosView;
     in float vAO;
     flat in uint vSolid;
+    in vec3 vTint;
     out vec4 FragColor;
 
     uniform sampler2DArray uTexture;
@@ -69,7 +74,7 @@ public class WorldShaders {
         //FragColor = vec4(TexCoord.xy, 0.0, 1.0);
         //FragColor = vec4(1.0, 0.0, 1.0, 1.0);
         // solid-texture faces are fully opaque (alpha 0 would let a compositing window manager show through)
-        FragColor = vec4(texColor.rgb * vAO, vSolid == 1u ? 1.0 : texColor.a);
+        FragColor = vec4(texColor.rgb * vTint * vAO, vSolid == 1u ? 1.0 : texColor.a);
     }
   """;
 }
