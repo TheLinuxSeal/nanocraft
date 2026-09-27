@@ -242,39 +242,199 @@ yellow_banner banner oak_planks
 yellow_wall_banner wall_banner oak_planks
 zombie_head head soul_sand
 zombie_wall_head wall_head soul_sand
-brown_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=true|false] full brown_mushroom_block
-brown_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=true] full brown_mushroom_block
+// mushroom blocks: a side that's true shows the outside (cap or stem), false shows the pores inside
+brown_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=true] full brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=false] full brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=true] full brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=false] full brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=true] full brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=false] full brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=true] full brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=false] full brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=true] full brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=false] full brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=true] full brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=false] full brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=true] full brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=false] full brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=true] full brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=false] full brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=true] full brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=false] full brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=true] full brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=false] full brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=true] full brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=false] full brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=true] full brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=false] full brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block
+brown_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=true] full brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=false] full brown_mushroom_block mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside brown_mushroom_block brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=true] full brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=false] full brown_mushroom_block mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=true] full brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=false] full brown_mushroom_block mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=true] full brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block
+brown_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=false] full brown_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+brown_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside brown_mushroom_block
 brown_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=true] full red_mushroom_block
+red_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=false] full red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=true] full red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=false] full red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=true] full red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=false] full red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=true] full red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=false] full red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=true] full red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=false] full red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=true] full red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=false] full red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=true] full red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=false] full red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=true] full red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=false] full red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=true] full red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=false] full red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=true] full red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=false] full red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=true] full red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=false] full red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=true] full red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=false] full red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block
+red_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=true] full red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=false] full red_mushroom_block mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside red_mushroom_block red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=true] full red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=false] full red_mushroom_block mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=true] full red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=false] full red_mushroom_block mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=true] full red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=false] full red_mushroom_block mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+red_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside red_mushroom_block
+red_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside
+mushroom_stem[down=true,east=true,north=true,south=true,up=true,west=true] full mushroom_stem
+mushroom_stem[down=true,east=true,north=true,south=true,up=true,west=false] full mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=true,south=false,up=true,west=true] full mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=true,south=false,up=true,west=false] full mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=false,south=true,up=true,west=true] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=false,south=true,up=true,west=false] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=false,south=false,up=true,west=true] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=false,south=false,up=true,west=false] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=true,east=false,north=true,south=true,up=true,west=true] full mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=true,south=true,up=true,west=false] full mushroom_stem mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=true,south=false,up=true,west=true] full mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=true,south=false,up=true,west=false] full mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=false,south=true,up=true,west=true] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=false,south=true,up=true,west=false] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=false,south=false,up=true,west=true] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=false,south=false,up=true,west=false] full mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=true,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=true,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=true,north=true,south=true,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=true,south=true,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=true,south=false,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=true,south=false,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=false,south=true,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=false,south=true,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=false,south=false,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=false,south=false,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=true,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem
+mushroom_stem[down=false,east=true,north=false,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside
+mushroom_stem[down=false,east=false,north=true,south=true,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=true,south=true,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=true,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=true,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=true,south=false,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=true,south=false,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=true,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=true,south=false,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=false,south=true,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=false,south=true,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=false,south=true,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=false,south=true,up=false,west=false] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=false,south=false,up=true,west=true] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=false,south=false,up=true,west=false] full mushroom_stem mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside
+mushroom_stem[down=false,east=false,north=false,south=false,up=false,west=true] full mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_block_inside mushroom_stem
+mushroom_stem[down=false,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside
 chiseled_bookshelf full chiseled_bookshelf_top chiseled_bookshelf_top chiseled_bookshelf_side chiseled_bookshelf_side chiseled_bookshelf_side chiseled_bookshelf_side
 copper_bulb[lit=true,powered=true] full copper_bulb_lit_powered
 copper_bulb[lit=true,powered=false] full copper_bulb_lit
@@ -284,77 +444,11 @@ exposed_copper_bulb[lit=true,powered=true] full exposed_copper_bulb_lit_powered
 exposed_copper_bulb[lit=true,powered=false] full exposed_copper_bulb_lit
 exposed_copper_bulb[lit=false,powered=true] full exposed_copper_bulb_powered
 exposed_copper_bulb[lit=false,powered=false] full exposed_copper_bulb
-mushroom_stem[down=true,east=true,north=true,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=true,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=true,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=true,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=false,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=false,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=false,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=true,north=false,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=true,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=true,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=true,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=true,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=false,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=false,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=false,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=true,east=false,north=false,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=true,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=true,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=true,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=true,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=false,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=false,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=false,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=true,north=false,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=true,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=true,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=true,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=true,south=false,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=false,south=true,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=false,south=true,up=false,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=false,south=false,up=true,west=true|false] full mushroom_stem
-mushroom_stem[down=false,east=false,north=false,south=false,up=false,west=true] full mushroom_stem
-mushroom_stem[down=false,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside
 oxidized_copper_bulb[lit=true,powered=true] full oxidized_copper_bulb_lit_powered
 oxidized_copper_bulb[lit=true,powered=false] full oxidized_copper_bulb_lit
 oxidized_copper_bulb[lit=false,powered=true] full oxidized_copper_bulb_powered
 oxidized_copper_bulb[lit=false,powered=false] full oxidized_copper_bulb
 quartz_block full quartz_block_top quartz_block_top quartz_block_side quartz_block_side quartz_block_side quartz_block_side
-red_mushroom_block[down=true,east=true,north=true,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=true,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=true,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=true,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=false,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=false,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=false,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=true,north=false,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=true,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=true,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=true,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=true,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=false,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=false,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=false,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=true,east=false,north=false,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=true,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=true,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=true,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=true,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=false,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=false,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=false,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=true,north=false,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=true,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=true,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=true,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=true,south=false,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=false,south=true,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=false,south=true,up=false,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=false,south=false,up=true,west=true|false] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=true] full red_mushroom_block
-red_mushroom_block[down=false,east=false,north=false,south=false,up=false,west=false] full mushroom_block_inside
 structure_block[mode=save] full structure_block_save
 structure_block[mode=load] full structure_block_load
 structure_block[mode=corner] full structure_block_corner
