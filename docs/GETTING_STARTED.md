@@ -190,7 +190,7 @@ Packet logs look like `[S2C] PLAY 0x26 S2CUnloadChunk (8 bytes)`: ids are in hex
 
 1. Set `minecraftVersion` in `build.gradle.kts`.
 2. Update the protocol version and any changed packet ids/layouts in
-   `src/org/sutormin/nanocraft/networking/` (`PacketList.java` maps packet ids to classes).
+   `openlwwccs` (`PacketList.java` maps packet ids to classes).
 3. Regenerate the data: `./gradlew generateBlockstates biomeColors importVanillaModels`.
 4. Add definitions for new blocks in `data/definitions/block/BlockDefinitions.java`.
 5. Regenerate the textures: `./gradlew copyBlockTextures generateTextures`.

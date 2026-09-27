@@ -1,8 +1,7 @@
 package org.sutormin.nanocraft.data.types;
 
 import org.sutormin.nanocraft.data.registry.RegistryType;
-import org.sutormin.nanocraft.resources.texture.Texture;
-import org.sutormin.nanocraft.resources.texture.Textures;
+import org.sutormin.nanocraft.render.Textures;
 
 public class Block extends RegistryType {
 

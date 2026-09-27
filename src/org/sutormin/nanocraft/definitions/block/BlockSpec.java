@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.data.definitions.block;
+package org.sutormin.nanocraft.definitions.block;
 
 import org.sutormin.nanocraft.Options;
 import org.sutormin.nanocraft.data.registry.Registry;

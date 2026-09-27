@@ -11,9 +11,11 @@ import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import static org.sutormin.nanocraft.NanoCraft.NETWORKING;
+
 public class PacketIO {
     public static void read(ByteBuf buf, Channel channel){
-        if (Networking.compressionThreshold >= 0) {
+        if (NETWORKING.compressionThreshold >= 0) {
             readCompressedPacket(buf, channel);
         } else {
             readPacket(buf, channel);
@@ -22,15 +24,15 @@ public class PacketIO {
     
     public static void write(ByteBuf out, int packetId, ByteBuf data){
         if (Options.DEBUG_LOG_C2S_PACKETS) {
-            System.out.printf("[C2S] %s 0x%02X %s (%d bytes)%n", Networking.networkPhase, packetId, callerName(),
+            System.out.printf("[C2S] %s 0x%02X %s (%d bytes)%n", NETWORKING.networkPhase, packetId, callerName(),
                     data.readableBytes());
         }
-        if (Networking.compressionThreshold >= 0) {
+        if (NETWORKING.compressionThreshold >= 0) {
             writeCompressedPacket(
                 out,
                 packetId,
                 data,
-                Networking.compressionThreshold
+                    NETWORKING.compressionThreshold
             );
         } else {
             writePacket(out, packetId, data);
@@ -48,16 +50,16 @@ public class PacketIO {
 
     /** Hands a server packet's data (after its id) to the packet class for its id, if there is one. */
     private static void dispatch(int packetId, ByteBuf data, Channel channel) {
-        S2CPacket packet = PacketList.getS2CPacket(packetId, Networking.networkPhase, channel);
+        S2CPacket packet = PacketList.getS2CPacket(packetId, NETWORKING.networkPhase, channel);
         if (packet == null) {
             if (Options.DEBUG_LOG_UNKNOWN_S2C_PACKETS) {
-                System.out.printf("[S2C] %s 0x%02X unknown, skipped (%d bytes)%n", Networking.networkPhase, packetId,
+                System.out.printf("[S2C] %s 0x%02X unknown, skipped (%d bytes)%n", NETWORKING.networkPhase, packetId,
                         data.readableBytes());
             }
             return;
         }
         if (Options.DEBUG_LOG_KNOWN_S2C_PACKETS) {
-            System.out.printf("[S2C] %s 0x%02X %s (%d bytes)%n", Networking.networkPhase, packetId,
+            System.out.printf("[S2C] %s 0x%02X %s (%d bytes)%n", NETWORKING.networkPhase, packetId,
                     packet.getClass().getSimpleName(), data.readableBytes());
         }
         packet.read(data);

@@ -10,6 +10,8 @@ import org.sutormin.nanocraft.networking.packets.play.player.C2SSetPlayerPositio
 import org.sutormin.nanocraft.world.chunk.Chunk;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
 
+import static org.sutormin.nanocraft.NanoCraft.NETWORKING;
+
 public class Camera {
 
     private final Vector3f position = new Vector3f(8.0f, 20.0f, 25.0f);
@@ -199,7 +201,7 @@ public class Camera {
                 (byte) 0
             );
 
-            Networking.sendPacket(buf);
+            NETWORKING.sendPacket(buf);
 
             lastPosition.set(position);
         }

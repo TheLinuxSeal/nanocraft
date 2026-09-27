@@ -2,7 +2,7 @@ package org.sutormin.nanocraft.world;
 
 import org.sutormin.nanocraft.Main;
 import org.sutormin.nanocraft.data.Registries;
-import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
+import org.sutormin.nanocraft.definitions.block.CommonBlocks;
 import org.sutormin.nanocraft.data.types.Block;
 
 import java.io.BufferedReader;
@@ -91,11 +91,11 @@ public final class BlockStateMapper {
 
         if (t == null) {
             // No table yet: show terrain as solid stone, keep air as air.
-            return stateId == 0 ? QuickAccessBlocks.AIR : QuickAccessBlocks.STONE;
+            return stateId == 0 ? CommonBlocks.AIR : CommonBlocks.STONE;
         }
 
         if (stateId < 0 || stateId >= t.length) {
-            return QuickAccessBlocks.NOT_FOUND;
+            return CommonBlocks.NOT_FOUND;
         }
         return t[stateId];
     }

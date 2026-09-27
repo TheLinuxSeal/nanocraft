@@ -1,8 +1,8 @@
-package org.sutormin.nanocraft.data.quickaccess;
+package org.sutormin.nanocraft.definitions.block;
 
 import org.sutormin.nanocraft.data.Registries;
 
-public class QuickAccessBlocks {
+public final class CommonBlocks {
     public static char NULL;
     public static char NOT_FOUND;
     public static char AIR;

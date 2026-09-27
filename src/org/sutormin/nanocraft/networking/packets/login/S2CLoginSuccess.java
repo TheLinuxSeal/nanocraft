@@ -7,6 +7,8 @@ import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.config.C2SClientInformation;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
+import static org.sutormin.nanocraft.NanoCraft.NETWORKING;
+
 public class S2CLoginSuccess implements S2CPacket {
     private final Channel channel;
 
@@ -20,7 +22,7 @@ public class S2CLoginSuccess implements S2CPacket {
         ByteBuf buf2 = channel.alloc().buffer();
         C2SClientInformation.make(buf2);
         channel.writeAndFlush(buf2);
-        Networking.networkPhase = NetworkPhase.CONFIG;
+        NETWORKING.networkPhase = NetworkPhase.CONFIG;
     }
 }
 

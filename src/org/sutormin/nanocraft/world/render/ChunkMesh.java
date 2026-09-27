@@ -8,9 +8,9 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL30.*;
-import static org.sutormin.nanocraft.NanoCraft.SHADER;
+import static org.sutormin.nanocraft.world.World.WORLD_SHADER;
 
-public class Mesh {
+public class ChunkMesh {
     public static final int CHARS_PER_VERTEX = 7;
     private static final int STRIDE = CHARS_PER_VERTEX * Character.BYTES; // 14 bytes
 
@@ -30,7 +30,7 @@ public class Mesh {
     private long[] sortKeys;
     private float sortedX = Float.NaN, sortedY, sortedZ;
 
-    public Mesh() {
+    public ChunkMesh() {
         vaoId = glGenVertexArrays();
         glBindVertexArray(vaoId);
 
@@ -212,7 +212,7 @@ public class Mesh {
     public void render() {
         if (indexCount == 0) return;
         glBindVertexArray(vaoId);
-        SHADER.setUniform("uChunkOffset", chunkX * 16.0f, chunkZ * 16.0f);
+        WORLD_SHADER.setUniform("uChunkOffset", chunkX * 16.0f, chunkZ * 16.0f);
         glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
     }

@@ -1,19 +1,39 @@
 package org.sutormin.nanocraft.world;
 
-import org.sutormin.nanocraft.NanoCraft;
+import org.joml.Matrix4f;
 import org.sutormin.nanocraft.Options;
-import org.sutormin.nanocraft.data.Registries;
-import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
+import org.sutormin.nanocraft.definitions.block.CommonBlocks;
+import org.sutormin.nanocraft.render.Shader;
+import org.sutormin.nanocraft.render.Textures;
 import org.sutormin.nanocraft.world.chunk.Chunk;
 import org.sutormin.nanocraft.world.chunk.ChunkLoader;
 import org.sutormin.nanocraft.world.chunk.ChunkPos;
+import org.sutormin.nanocraft.world.render.WorldShaders;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_FILL;
+import static org.lwjgl.opengl.GL11.GL_FRONT_AND_BACK;
+import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.GL_POLYGON_OFFSET_FILL;
+import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glDepthMask;
+import static org.lwjgl.opengl.GL11.glDisable;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPolygonMode;
+import static org.lwjgl.opengl.GL11.glPolygonOffset;
+import static org.sutormin.nanocraft.NanoCraft.CAMERA;
+
 public class World {
+
+    public static Shader WORLD_SHADER;
+
     private final Map<ChunkPos, Chunk> chunks = new HashMap<>();
     private final Set<ChunkPos> dirty = new LinkedHashSet<>();
     private final Map<ChunkPos, List<ChunkLoader.BlockChange>> pendingBlockChanges = new HashMap<>();
@@ -33,6 +53,14 @@ public class World {
     private record MeshResult(Chunk chunk, Chunk.MeshData data) {}
 
     public World() {
+    }
+
+    public void init(){
+        WORLD_SHADER = new Shader(WorldShaders.WORLD_VERTEX_SHADER,WorldShaders.WORLD_FRAGMENT_SHADER);
+        WORLD_SHADER.createUniform("uProjection");
+        WORLD_SHADER.createUniform("uView");
+        WORLD_SHADER.createUniform("uChunkOffset");
+        WORLD_SHADER.createUniform("uAlphaCutoff");
     }
 
     public void removeChunk(ChunkPos pos) {
@@ -160,7 +188,7 @@ public class World {
     public char getBlockAt(int x, int y, int z) {
         ChunkPos chunkPos = getChunkPosFromBlock(x, z);
         Chunk chunk = chunks.get(chunkPos);
-        if (chunk == null) return QuickAccessBlocks.NULL;
+        if (chunk == null) return CommonBlocks.NULL;
 
         int localX = Math.floorMod(x, Chunk.SIZE_X);
         int localZ = Math.floorMod(z, Chunk.SIZE_Z);
@@ -202,6 +230,38 @@ public class World {
         return new ChunkPos(chunkX, chunkZ);
     }
 
+    public void render(Matrix4f projection){
+        Textures.BLOCK.bind();
+        WORLD_SHADER.bind();
+        WORLD_SHADER.setUniform("uProjection", projection);
+        WORLD_SHADER.setUniform("uView", CAMERA.getViewMatrix());
+
+        if (Options.DEBUG_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+        WORLD_SHADER.setUniform("uAlphaCutoff", 0.5f);
+        renderChunks();
+
+        // Translucent pass: blended over the opaque scene, depth-tested but not written,
+        // so translucent faces don't hide each other. Pushed slightly back in depth so a solid
+        // face lying in the same plane (the side of waterlogged stairs) always wins instead of
+        // flickering against the water.
+        WORLD_SHADER.setUniform("uAlphaCutoff", 0.004f);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glDepthMask(false);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glPolygonOffset(1.0f, 1.0f);
+        renderTranslucent();
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        glDepthMask(true);
+        glDisable(GL_BLEND);
+
+        if (Options.DEBUG_WIREFRAME) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        Textures.BLOCK.unbind();
+        WORLD_SHADER.unbind();
+    }
+
     /** Opaque and cutout geometry. Call before {@link #renderTranslucent}. */
     public void renderChunks() {
         for (Chunk chunk : chunks.values()) {
@@ -214,9 +274,9 @@ public class World {
      * Each chunk also sorts its own faces back to front (e.g. water seen through ice).
      */
     public void renderTranslucent() {
-        float camX = NanoCraft.CAMERA.getX();
-        float camY = NanoCraft.CAMERA.getY();
-        float camZ = NanoCraft.CAMERA.getZ();
+        float camX = CAMERA.getX();
+        float camY = CAMERA.getY();
+        float camZ = CAMERA.getZ();
         List<Chunk> sorted = new ArrayList<>(chunks.values());
         sorted.sort(Comparator.comparingDouble((Chunk c) -> {
             float dx = c.getPos().x() * Chunk.SIZE_X + Chunk.SIZE_X / 2f - camX;
@@ -247,5 +307,6 @@ public class World {
             chunk.cleanup();
         }
         chunks.clear();
+        WORLD_SHADER.cleanup();
     }
 }

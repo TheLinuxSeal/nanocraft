@@ -6,6 +6,8 @@ import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.Networking;
 import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 
+import static org.sutormin.nanocraft.NanoCraft.NETWORKING;
+
 public class S2CFinishConfiguration implements S2CPacket {
     private final Channel channel;
 
@@ -16,6 +18,6 @@ public class S2CFinishConfiguration implements S2CPacket {
         ByteBuf buf = channel.alloc().buffer();
         C2SFinishConfigurationAcknowledged.make(buf);
         channel.writeAndFlush(buf);
-        Networking.networkPhase = NetworkPhase.PLAY;
+        NETWORKING.networkPhase = NetworkPhase.PLAY;
     }
 }

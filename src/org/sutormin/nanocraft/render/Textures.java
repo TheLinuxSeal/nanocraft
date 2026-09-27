@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.resources.texture;
+package org.sutormin.nanocraft.render;
 
 public class Textures {
     public static Texture BLOCK = new Texture();

@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.data.definitions.block;
+package org.sutormin.nanocraft.definitions.block;
 
 /** Every block-state property used by Minecraft 26.3 (26.3 added none). Generated; value order matches vanilla. */
 public final class BlockProperties {

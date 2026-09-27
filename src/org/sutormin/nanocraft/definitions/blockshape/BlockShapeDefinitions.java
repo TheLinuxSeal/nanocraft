@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.data.definitions;
+package org.sutormin.nanocraft.definitions.blockshape;
 
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.BlockShape;

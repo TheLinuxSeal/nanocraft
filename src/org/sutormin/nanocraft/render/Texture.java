@@ -1,4 +1,4 @@
-package org.sutormin.nanocraft.resources.texture;
+package org.sutormin.nanocraft.render;
 
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;

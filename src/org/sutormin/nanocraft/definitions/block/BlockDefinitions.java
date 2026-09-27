@@ -1,10 +1,10 @@
-package org.sutormin.nanocraft.data.definitions.block;
+package org.sutormin.nanocraft.definitions.block;
 
 import org.sutormin.nanocraft.data.registry.Registry;
 import org.sutormin.nanocraft.data.types.Block;
 
-import static org.sutormin.nanocraft.data.definitions.block.BlockProperties.*;
-import static org.sutormin.nanocraft.data.definitions.block.BlockSpec.block;
+import static org.sutormin.nanocraft.definitions.block.BlockProperties.*;
+import static org.sutormin.nanocraft.definitions.block.BlockSpec.block;
 import static org.sutormin.nanocraft.data.types.Block.RenderLayer.*;
 
 /**
@@ -27,7 +27,7 @@ import static org.sutormin.nanocraft.data.types.Block.RenderLayer.*;
  *  spore_blossom, stairs, stonecutter, sulfur_spike, test_instance_block, torch, trapdoor, tripwire, 
  *  tripwire_hook, turtle_egg, vine, wall, wall_banner, wall_hanging_sign, wall_head, wall_sign, wall_torch
  */
-public class BlockDefinitions {
+public final class BlockDefinitions {
 
     public static void define(Registry<Block> reg) {
         reg.addNew("null");

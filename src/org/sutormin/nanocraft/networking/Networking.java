@@ -14,13 +14,13 @@ import org.sutormin.nanocraft.networking.coders.Defragmentor;
 
 public class Networking {
 
-    public static NetworkPhase networkPhase = NetworkPhase.HANDSHAKE;
-    public static int compressionThreshold = -1;
+    public NetworkPhase networkPhase = NetworkPhase.HANDSHAKE;
+    public int compressionThreshold = -1;
 
-    private static EventLoopGroup group;
-    private static Channel channel;
+    private EventLoopGroup group;
+    private Channel channel;
 
-    public static void init() {
+    public  void init() {
         String host = Options.SERVER_IP;
         int port = Options.PORT;
 
@@ -61,10 +61,10 @@ public class Networking {
         });
     }
 
-    private static boolean warnedNotConnected = false;
+    private boolean warnedNotConnected = false;
 
     /** Sends a packet; while not connected it's dropped (logged once) instead of crashing the game loop. */
-    public static void sendPacket(ByteBuf buf) {
+    public  void sendPacket(ByteBuf buf) {
         if (channel == null || !channel.isActive()) {
             buf.release();
             if (!warnedNotConnected) {

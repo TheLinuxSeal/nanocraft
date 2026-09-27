@@ -3,13 +3,13 @@ package org.sutormin.nanocraft.world.chunk;
 import org.sutormin.nanocraft.NanoCraft;
 import org.sutormin.nanocraft.world.Dimension;
 import org.sutormin.nanocraft.data.Registries;
-import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
+import org.sutormin.nanocraft.definitions.block.CommonBlocks;
 import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.BlockShape;
 import org.sutormin.nanocraft.world.Direction;
 import org.sutormin.nanocraft.world.FaceCullCache;
 import org.sutormin.nanocraft.world.biome.BiomeTint;
-import org.sutormin.nanocraft.world.render.Mesh;
+import org.sutormin.nanocraft.world.render.ChunkMesh;
 
 import java.util.List;
 
@@ -29,9 +29,9 @@ public class Chunk {
     private char[] blocks = new char[SIZE_X * SIZE_Y * SIZE_Z];
 
     // Opaque and cutout faces (alpha-tested), drawn first
-    public Mesh mesh;
+    public ChunkMesh mesh;
     // Translucent faces (water, stained glass, ice), blended after all opaque geometry
-    public Mesh translucentMesh;
+    public ChunkMesh translucentMesh;
 
     // The 3x3 chunks around this one (index (dz+1)*3 + (dx+1)), looked up once per
     // buildMesh so neighbor reads at the chunk edges don't hit the world's map.
@@ -56,8 +56,8 @@ public class Chunk {
             indices[iCount++] = i;
         }
 
-        Mesh.Prepared prepare() {
-            return Mesh.prepare(vertices, vCount, indices, iCount);
+        ChunkMesh.Prepared prepare() {
+            return ChunkMesh.prepare(vertices, vCount, indices, iCount);
         }
     }
     private static final class Scratch {
@@ -67,7 +67,7 @@ public class Chunk {
     private static final ThreadLocal<Scratch> SCRATCH = ThreadLocal.withInitial(Scratch::new);
 
     /** Output of {@link #buildMeshData}: one prepared mesh per render pass. */
-    public record MeshData(Mesh.Prepared solid, Mesh.Prepared translucent) {
+    public record MeshData(ChunkMesh.Prepared solid, ChunkMesh.Prepared translucent) {
         public void free() {
             solid.free();
             translucent.free();
@@ -78,9 +78,9 @@ public class Chunk {
 
     public Chunk(ChunkPos worldPos) {
         this.worldPos = worldPos;
-        this.mesh = new Mesh();
+        this.mesh = new ChunkMesh();
         mesh.setPos(this.worldPos.x(), this.worldPos.z());
-        this.translucentMesh = new Mesh();
+        this.translucentMesh = new ChunkMesh();
         translucentMesh.setPos(this.worldPos.x(), this.worldPos.z());
     }
 
@@ -177,7 +177,7 @@ public class Chunk {
         if (y < 0 || y >= SIZE_Y) return null;
         char id = meshBlockAt(x, y, z);
         // NULL: unloaded chunk (can't occlude) or never-written air
-        if (id == QuickAccessBlocks.AIR || id == QuickAccessBlocks.NULL) return null;
+        if (id == CommonBlocks.AIR || id == CommonBlocks.NULL) return null;
         return Registries.BLOCK.get(id);
     }
 
@@ -243,7 +243,7 @@ public class Chunk {
             for (int y = 0; y < SIZE_Y; y++) {
                 for (int x = 0; x < SIZE_X; x++) {
                     char blockId = blocks[getIndex(x, y, z)];
-                    if (blockId == QuickAccessBlocks.AIR || blockId == QuickAccessBlocks.NULL) continue;
+                    if (blockId == CommonBlocks.AIR || blockId == CommonBlocks.NULL) continue;
 
                     Block block = Registries.BLOCK.get(blockId);
                     BlockShape shape = block.getShape();
@@ -306,7 +306,7 @@ public class Chunk {
         }
 
         return new MeshData(scratch.solid.prepare(),
-                Mesh.prepareSorted(scratch.translucent.vertices, scratch.translucent.vCount,
+                ChunkMesh.prepareSorted(scratch.translucent.vertices, scratch.translucent.vCount,
                         scratch.translucent.indices, scratch.translucent.iCount));
     }
 
@@ -349,7 +349,7 @@ public class Chunk {
      */
     private void addWater(MeshBuffer out, int wx, int wz, int x, int y, int z, BlockShape blockShape) {
         boolean[] coveredBySelf = FaceCullCache.infoOf(blockShape).fullSide();
-        Block water = Registries.BLOCK.get(QuickAccessBlocks.WATER);
+        Block water = Registries.BLOCK.get(CommonBlocks.WATER);
         BlockShape shape = water.getShape();
         if (shape == null) return;
         List<BlockShape.Face> faces = shape.getFaces();
@@ -556,18 +556,18 @@ public class Chunk {
         int dx = x < 0 ? -1 : x >= SIZE_X ? 1 : 0;
         int dz = z < 0 ? -1 : z >= SIZE_Z ? 1 : 0;
         Chunk chunk = neighbors[(dz + 1) * 3 + (dx + 1)];
-        if (chunk == null) return QuickAccessBlocks.NULL;
+        if (chunk == null) return CommonBlocks.NULL;
         return chunk.getBlock(x - dx * SIZE_X, y, z - dz * SIZE_Z);
     }
 
     public char getBlockInterchunk(int x, int y, int z) {
         Chunk chunk = NanoCraft.WORLD.getChunk(worldPos.offset(Math.floorDiv(x, SIZE_X), Math.floorDiv(z, SIZE_Z)));
-        if (chunk == null) return QuickAccessBlocks.NULL;
+        if (chunk == null) return CommonBlocks.NULL;
         return chunk.getBlock(Math.floorMod(x, SIZE_X), y, Math.floorMod(z, SIZE_Z));
     }
 
     public char getBlockChunkSafe(int x, int y, int z) {
-        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return QuickAccessBlocks.NULL;
+        if (x < 0 || x >= SIZE_X || z < 0 || z >= SIZE_X) return CommonBlocks.NULL;
         return blocks[getIndex(x, y, z)];
     }
 

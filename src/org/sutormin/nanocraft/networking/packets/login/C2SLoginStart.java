@@ -10,10 +10,12 @@ import org.sutormin.nanocraft.networking.packets.types.C2SPacket;
 
 import java.util.UUID;
 
+import static org.sutormin.nanocraft.NanoCraft.NETWORKING;
+
 public class C2SLoginStart implements C2SPacket {
     public static short ID = 0;
     public static void make(ByteBuf buf, String username, UUID uuid){
-        Networking.networkPhase = NetworkPhase.LOGIN;
+        NETWORKING.networkPhase = NetworkPhase.LOGIN;
         ByteBuf packet = Unpooled.buffer();
         VarCoder.writeString(packet,username);
         packet.writeLong(uuid.getMostSignificantBits());
