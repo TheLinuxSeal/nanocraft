@@ -110,12 +110,12 @@ stripped_crimson_stem[axis=y] full stripped_crimson_stem_top stripped_crimson_st
 stripped_crimson_stem[axis=z] full stripped_crimson_stem stripped_crimson_stem stripped_crimson_stem_top stripped_crimson_stem_top stripped_crimson_stem stripped_crimson_stem
 crimson_hyphae full crimson_stem
 stripped_crimson_hyphae full stripped_crimson_stem
-deepslate[axis=x] full deepslate deepslate deepslate deepslate deepslate_top deepslate_top
-deepslate[axis=y] full deepslate_top deepslate_top deepslate deepslate deepslate deepslate
-deepslate[axis=z] full deepslate deepslate deepslate_top deepslate_top deepslate deepslate
-infested_deepslate[axis=x] full deepslate deepslate deepslate deepslate deepslate_top deepslate_top
-infested_deepslate[axis=y] full deepslate_top deepslate_top deepslate deepslate deepslate deepslate
-infested_deepslate[axis=z] full deepslate deepslate deepslate_top deepslate_top deepslate deepslate
+deepslate[axis=x] full deepslate deepslate deepslate deepslate deepslate_top deepslate_top rotate=mirror
+deepslate[axis=y] full deepslate_top deepslate_top deepslate deepslate deepslate deepslate rotate=mirror
+deepslate[axis=z] full deepslate deepslate deepslate_top deepslate_top deepslate deepslate rotate=mirror
+infested_deepslate[axis=x] full deepslate deepslate deepslate deepslate deepslate_top deepslate_top rotate=mirror
+infested_deepslate[axis=y] full deepslate_top deepslate_top deepslate deepslate deepslate deepslate rotate=mirror
+infested_deepslate[axis=z] full deepslate deepslate deepslate_top deepslate_top deepslate deepslate rotate=mirror
 ochre_froglight[axis=x] full ochre_froglight_side ochre_froglight_side ochre_froglight_side ochre_froglight_side ochre_froglight_top ochre_froglight_top
 ochre_froglight[axis=y] full ochre_froglight_top ochre_froglight_top ochre_froglight_side ochre_froglight_side ochre_froglight_side ochre_froglight_side
 ochre_froglight[axis=z] full ochre_froglight_side ochre_froglight_side ochre_froglight_top ochre_froglight_top ochre_froglight_side ochre_froglight_side

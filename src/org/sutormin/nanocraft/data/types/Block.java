@@ -18,7 +18,12 @@ public class Block extends RegistryType {
         /** Top and bottom faces only, like vanilla's Y rotation; sides stay upright. */
         RANDOM_TOP_BOTTOM,
         /** Every face. */
-        RANDOM_ALL
+        RANDOM_ALL,
+        /**
+         * Like vanilla stone: every face randomly mirrored or not, and top/bottom randomly turned
+         * 0 or 180 degrees. Never a quarter turn.
+         */
+        RANDOM_MIRROR
     }
 
     // ---- Shape & rendering ----

@@ -15,7 +15,7 @@ import java.util.Map;
 public class BlockDefinitionParser {
     /**
      * One .def line: {@code <name> <shape> <textures...> [options]}. Options are key=value tokens
-     * after the textures; the only one so far is {@code rotate=random|random_all}.
+     * after the textures; the only one so far is {@code rotate=random|random_all|mirror}.
      */
     public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation){}
 
@@ -88,6 +88,8 @@ public class BlockDefinitionParser {
                         rotation = Block.TextureRotation.RANDOM_TOP_BOTTOM;
                     } else if (token.equals("rotate=random_all")) {
                         rotation = Block.TextureRotation.RANDOM_ALL;
+                    } else if (token.equals("rotate=mirror")) {
+                        rotation = Block.TextureRotation.RANDOM_MIRROR;
                     } else {
                         throw new RuntimeException("Unknown option '" + token + "' in " + file + ": " + str);
                     }

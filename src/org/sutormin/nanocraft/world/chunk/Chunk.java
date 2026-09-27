@@ -237,7 +237,10 @@ public class Chunk {
                     int wz = worldOffsetZ + z;
                     // quarter turns for randomly rotated textures, from the position within the chunk
                     Block.TextureRotation rotation = block.getTextureRotation();
-                    int turns = rotation == Block.TextureRotation.NONE ? 0 : (hash(x, y, z) >>> 8) & 3;
+                    int variant = rotation == Block.TextureRotation.NONE ? 0 : (hash(x, y, z) >>> 8) & 3;
+                    // RANDOM_MIRROR (vanilla stone): bit 0 mirrors every face, bit 1 turns top/bottom 180 degrees
+                    boolean mirror = rotation == Block.TextureRotation.RANDOM_MIRROR && (variant & 1) != 0;
+                    int turns = rotation == Block.TextureRotation.RANDOM_MIRROR ? variant & 2 : variant;
                     List<BlockShape.Vertex> verts = shape.getVertices();
                     List<BlockShape.Face> faces = shape.getFaces();
                     // one texture means "every face"; otherwise there should be one per face
@@ -263,7 +266,7 @@ public class Chunk {
 
                         boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
                                 || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
-                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0);
+                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror);
                     }
                 }
             }
@@ -289,7 +292,7 @@ public class Chunk {
      */
     private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
-                         BlockShape.Face face, int tex, int uvTurns) {
+                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
@@ -308,6 +311,7 @@ public class Chunk {
 
             int uv1 = Math.round(face.uv()[i][0] * 128.0f);
             int uv2 = Math.round(face.uv()[i][1] * 128.0f);
+            if (mirrorU) uv1 = 128 - uv1; // horizontal flip, like vanilla's cube_mirrored models
             for (int t = 0; t < uvTurns; t++) { // quarter turn around the texture center
                 int turned = 128 - uv2;
                 uv2 = uv1;

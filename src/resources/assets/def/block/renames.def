@@ -5,7 +5,7 @@ redstone_torch[lit=true] torch redstone_torch
 redstone_torch[lit=false] torch redstone_torch_off
 redstone_wall_torch[lit=true] wall_torch redstone_torch
 redstone_wall_torch[lit=false] wall_torch redstone_torch_off
-infested_stone full stone rotate=random
+infested_stone full stone rotate=mirror
 infested_cobblestone full cobblestone
 infested_stone_bricks full stone_bricks
 infested_mossy_stone_bricks full mossy_stone_bricks
