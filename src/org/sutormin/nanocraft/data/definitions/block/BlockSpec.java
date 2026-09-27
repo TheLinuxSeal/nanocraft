@@ -112,7 +112,9 @@ public final class BlockSpec {
          .setSoundGroup(sound)
          .setDisplayName(displayName(name));
         if (layer != RenderLayer.INVISIBLE) {
-            b.setTextures(BlockDefinitionParser.getTexture(stateName));
+            BlockDefinitionParser.BlockDefinition def = BlockDefinitionParser.get(stateName);
+            b.setTextures(def.tex());
+            b.setTextureRotation(def.rotation());
         }
     }
 

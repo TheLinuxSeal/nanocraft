@@ -1,6 +1,7 @@
 package org.sutormin.nanocraft.resources.block;
 
 import org.sutormin.nanocraft.Main;
+import org.sutormin.nanocraft.data.types.Block;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 public class BlockDefinitionParser {
-    public record BlockDefinition(String shape, String[] tex){}
+    /**
+     * One .def line: {@code <name> <shape> <textures...> [options]}. Options are key=value tokens
+     * after the textures; the only one so far is {@code rotate=random|random_all}.
+     */
+    public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation){}
 
     /**
      * A definition for some states of a block, e.g. "oak_door[half=upper]" or "carrots[age=0|1]".
@@ -74,10 +79,21 @@ public class BlockDefinitionParser {
 
                 String[] data = str.split("\\s+");
 
-                BlockDefinition def = new BlockDefinition(
-                        data[1],
-                        Arrays.copyOfRange(data, 2, data.length)
-                );
+                List<String> textures = new ArrayList<>();
+                Block.TextureRotation rotation = Block.TextureRotation.NONE;
+                for (String token : Arrays.copyOfRange(data, 2, data.length)) {
+                    if (!token.contains("=")) {
+                        textures.add(token);
+                    } else if (token.equals("rotate=random")) {
+                        rotation = Block.TextureRotation.RANDOM_TOP_BOTTOM;
+                    } else if (token.equals("rotate=random_all")) {
+                        rotation = Block.TextureRotation.RANDOM_ALL;
+                    } else {
+                        throw new RuntimeException("Unknown option '" + token + "' in " + file + ": " + str);
+                    }
+                }
+
+                BlockDefinition def = new BlockDefinition(data[1], textures.toArray(new String[0]), rotation);
 
                 int bracket = data[0].indexOf('[');
                 if (bracket < 0) {
@@ -144,7 +160,7 @@ public class BlockDefinitionParser {
         for (int i = 0; i < d.tex.length; i++) {
             newTex[i] = d.tex[i].replace("*", base).replace("^", state);
         }
-        return new BlockDefinition(newShape,newTex);
+        return new BlockDefinition(newShape, newTex, d.rotation());
     }
     public static String[] getTexture(String name){
         return get(name).tex();

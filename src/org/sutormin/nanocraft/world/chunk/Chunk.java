@@ -5,6 +5,7 @@ import org.sutormin.nanocraft.data.Registries;
 import org.sutormin.nanocraft.data.quickaccess.QuickAccessBlocks;
 import org.sutormin.nanocraft.data.types.Block;
 import org.sutormin.nanocraft.data.types.BlockShape;
+import org.sutormin.nanocraft.world.Direction;
 import org.sutormin.nanocraft.world.FaceCullCache;
 import org.sutormin.nanocraft.world.render.Mesh;
 
@@ -84,7 +85,7 @@ public class Chunk {
     }
 
     // ------------------------------------------------------------------
-    // Noise (unrelated to meshing, kept as-is)
+    // Noise and position hashing (hash(x, y, z) also picks random texture rotations)
     // ------------------------------------------------------------------
 
     private int hash(int x, int z) {
@@ -234,6 +235,9 @@ public class Chunk {
 
                     int wx = worldOffsetX + x;
                     int wz = worldOffsetZ + z;
+                    // quarter turns for randomly rotated textures, from the position within the chunk
+                    Block.TextureRotation rotation = block.getTextureRotation();
+                    int turns = rotation == Block.TextureRotation.NONE ? 0 : (hash(x, y, z) >>> 8) & 3;
                     List<BlockShape.Vertex> verts = shape.getVertices();
                     List<BlockShape.Face> faces = shape.getFaces();
                     // one texture means "every face"; otherwise there should be one per face
@@ -257,7 +261,9 @@ public class Chunk {
                             continue;
                         }
 
-                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i));
+                        boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
+                                || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
+                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0);
                     }
                 }
             }
@@ -283,7 +289,7 @@ public class Chunk {
      */
     private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
-                         BlockShape.Face face, int tex) {
+                         BlockShape.Face face, int tex, int uvTurns) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
@@ -302,6 +308,11 @@ public class Chunk {
 
             int uv1 = Math.round(face.uv()[i][0] * 128.0f);
             int uv2 = Math.round(face.uv()[i][1] * 128.0f);
+            for (int t = 0; t < uvTurns; t++) { // quarter turn around the texture center
+                int turned = 128 - uv2;
+                uv2 = uv1;
+                uv1 = turned;
+            }
             char uv = (char) (uv1 * 129 + uv2);
 
             char ao = (char) Math.floor(aos[i]*65535);

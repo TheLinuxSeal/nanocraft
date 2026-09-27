@@ -9,6 +9,18 @@ public class Block extends RegistryType {
     /** Which render pass the block belongs to. */
     public enum RenderLayer { OPAQUE, CUTOUT, TRANSLUCENT, INVISIBLE }
 
+    /**
+     * Random quarter-turn texture rotation, picked per block from its position within the chunk
+     * (like vanilla's randomly rotated dirt, sand and grass tops).
+     */
+    public enum TextureRotation {
+        NONE,
+        /** Top and bottom faces only, like vanilla's Y rotation; sides stay upright. */
+        RANDOM_TOP_BOTTOM,
+        /** Every face. */
+        RANDOM_ALL
+    }
+
     // ---- Shape & rendering ----
     private BlockShape shape;
     /**
@@ -23,6 +35,7 @@ public class Block extends RegistryType {
     private String baseName = null;
     /** Whether faces between two non-opaque blocks of the same kind are hidden (glass, water; not leaves). */
     private boolean cullsSameBlock = true;
+    private TextureRotation textureRotation = TextureRotation.NONE;
     private int tintColor = 0xFFFFFF; // e.g. for grass / leaves
 
     // ---- Mining (client predicts break time / crack animation; server validates) ----
@@ -55,6 +68,7 @@ public class Block extends RegistryType {
         b.renderLayer = renderLayer;
         b.baseName = baseName;
         b.cullsSameBlock = cullsSameBlock;
+        b.textureRotation = textureRotation;
         b.tintColor = tintColor;
         b.hardness = hardness;
         b.effectiveTool = effectiveTool;
@@ -131,6 +145,9 @@ public class Block extends RegistryType {
 
     public String getBaseName() { return baseName; }
     public Block setBaseName(String baseName) { this.baseName = baseName; return this; }
+
+    public TextureRotation getTextureRotation() { return textureRotation; }
+    public Block setTextureRotation(TextureRotation rotation) { this.textureRotation = rotation; return this; }
 
     public boolean cullsSameBlock() { return cullsSameBlock; }
     public Block setCullsSameBlock(boolean culls) { this.cullsSameBlock = culls; return this; }
