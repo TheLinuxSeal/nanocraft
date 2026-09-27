@@ -4,6 +4,7 @@ import org.sutormin.nanocraft.networking.NetworkPhase;
 import org.sutormin.nanocraft.networking.packets.config.S2CFinishConfiguration;
 import org.sutormin.nanocraft.networking.packets.config.S2CRegistryData;
 import org.sutormin.nanocraft.networking.packets.play.S2CJoinGame;
+import org.sutormin.nanocraft.networking.packets.misc.S2CDisconnect;
 import org.sutormin.nanocraft.networking.packets.misc.S2CIgnorePacket;
 import org.sutormin.nanocraft.networking.packets.misc.S2CKeepAlive;
 import org.sutormin.nanocraft.networking.packets.config.S2CKnownPacksChallenge;
@@ -22,11 +23,13 @@ import org.sutormin.nanocraft.networking.packets.types.S2CPacket;
 public class PacketList {
   public static S2CPacket getS2CPacket(int id, NetworkPhase phase, Channel channel) {
     //System.out.println(id);
+    if (phase == NetworkPhase.LOGIN && id == 0) return new S2CDisconnect(true);
     if (phase == NetworkPhase.LOGIN && id == 1) return new S2CEncryptionRequest(channel);
     if (phase == NetworkPhase.LOGIN && id == 3) return new S2CSetCompression();
     if (phase == NetworkPhase.LOGIN && id == 2) return new S2CLoginSuccess(channel);
 
     if (phase == NetworkPhase.CONFIG && id == 1) return new S2CIgnorePacket("PluginMessage");
+    if (phase == NetworkPhase.CONFIG && id == 2) return new S2CDisconnect(false);
     if (phase == NetworkPhase.CONFIG && id == 13) return new S2CIgnorePacket("FeatureFlags");
     if (phase == NetworkPhase.CONFIG && id == 15) return new S2CKnownPacksChallenge(channel);
     if (phase == NetworkPhase.CONFIG && id == 7) return new S2CRegistryData();
@@ -42,6 +45,7 @@ public class PacketList {
     if (phase == NetworkPhase.PLAY && id == 11) return new S2CChunkBatchFinished(channel);
     if (phase == NetworkPhase.PLAY && id == 38) return new S2CUnloadChunk();
     if (phase == NetworkPhase.PLAY && id == 8) return new S2CBlockUpdate();
+    if (phase == NetworkPhase.PLAY && id == 32) return new S2CDisconnect(false);
 
 
     if (phase == NetworkPhase.PLAY && id == 73) return new S2CSyncPlayerPosition(channel);

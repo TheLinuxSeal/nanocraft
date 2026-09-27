@@ -128,7 +128,7 @@ val downloadServer = tasks.register("downloadServer") {
 
 tasks.register<JavaExec>("runServer") {
     group = "mojang"
-    description = "Runs the Minecraft $minecraftVersion server in mojang/server, offline mode, port 25565."
+    description = "Runs the Minecraft $minecraftVersion server in mojang/server, offline mode, port 25565, flying allowed."
     dependsOn(downloadServer)
     workingDir = serverDir.asFile
     classpath(serverJar)
@@ -147,9 +147,12 @@ tasks.register<JavaExec>("runServer") {
                     "set eula=true in ${eula.relativeTo(projectDir)}, then run this task again.")
         }
 
-        // offline mode (NanoCraft doesn't log in to Microsoft accounts) on the default port
+        // offline mode (NanoCraft doesn't log in to Microsoft accounts) on the default port, no whitelist,
+        // new players in spectator mode, and flying allowed: NanoCraft's camera flies, and the server
+        // kicks players who float for too long in other game modes
         val properties = File(dir, "server.properties")
-        val wanted = mapOf("online-mode" to "false", "server-port" to "25565", "white-list" to "false", "gamemode" to "spectator")
+        val wanted = mapOf("online-mode" to "false", "server-port" to "25565", "white-list" to "false",
+            "gamemode" to "spectator", "allow-flight" to "true")
         val lines = if (properties.isFile) properties.readLines().toMutableList() else mutableListOf()
         for ((key, value) in wanted) {
             val i = lines.indexOfFirst { it.startsWith("$key=") }

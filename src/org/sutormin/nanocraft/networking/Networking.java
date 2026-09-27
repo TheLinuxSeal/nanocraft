@@ -61,9 +61,17 @@ public class Networking {
         });
     }
 
+    private static boolean warnedNotConnected = false;
+
+    /** Sends a packet; while not connected it's dropped (logged once) instead of crashing the game loop. */
     public static void sendPacket(ByteBuf buf) {
         if (channel == null || !channel.isActive()) {
-            throw new IllegalStateException("Not connected");
+            buf.release();
+            if (!warnedNotConnected) {
+                warnedNotConnected = true;
+                System.err.println("[Client] Not connected to a server; packets are dropped");
+            }
+            return;
         }
 
         channel.writeAndFlush(buf);
