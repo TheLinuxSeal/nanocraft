@@ -23,8 +23,10 @@ public class Mesh {
     private int chunkZ;
 
     // back-to-front sorting, for translucent meshes only (see sortFor)
-    private int[] indices;    // CPU copy of the index buffer, rewritten in sorted order
-    private float[] centers;  // x, y, z of each triangle's centroid, chunk-local blocks
+    private int[] indices;    // the index buffer as built: each face's triangles together
+    private int[] faceStart;  // where each face's indices start in indices, plus the end
+    private float[] centers;  // x, y, z of each face's center, chunk-local blocks
+    private int[] sorted;     // indices in the current draw order
     private long[] sortKeys;
     private float sortedX = Float.NaN, sortedY, sortedZ;
 
@@ -54,9 +56,10 @@ public class Mesh {
      * Vertex and index data copied into native buffers, ready for {@link #upload}.
      * Preparing needs no GL context, so it can run on a worker thread.
      */
-    public record Prepared(ByteBuffer vertices, IntBuffer indices, int indexCount, int[] sortIndices, float[] centers) {
+    public record Prepared(ByteBuffer vertices, IntBuffer indices, int indexCount,
+                           int[] sortIndices, int[] faceStart, float[] centers) {
         Prepared(ByteBuffer vertices, IntBuffer indices, int indexCount) {
-            this(vertices, indices, indexCount, null, null);
+            this(vertices, indices, indexCount, null, null, null);
         }
 
         /** Frees the native buffers; {@link #upload} does this for you. */
@@ -97,23 +100,48 @@ public class Mesh {
     }
 
     /**
-     * Like {@link #prepare}, but also keeps what {@link #sortFor} needs to draw the triangles back
-     * to front. For blended (translucent) meshes: their faces don't write depth, so the draw order
-     * decides which one ends up in front.
+     * Like {@link #prepare}, but also keeps what {@link #sortFor} needs to draw the faces back to
+     * front. For blended (translucent) meshes: their faces don't write depth, so the draw order
+     * decides which one ends up in front. Whole faces are sorted by their center, like vanilla sorts
+     * quads: sorting single triangles can put half of a face in front of a neighbor and half behind.
      */
     public static Prepared prepareSorted(char[] vertices, int charCount, int[] indices, int iCount) {
         Prepared p = prepare(vertices, charCount, indices, iCount);
         if (p.indexCount() == 0) return p;
-        float[] centers = new float[iCount];  // 3 floats per triangle = 1 per index
-        for (int k = 0; k < iCount; k++) {
-            int v = indices[k] * CHARS_PER_VERTEX;
-            int c = k / 3 * 3;
-            centers[c] += vertices[v];
-            centers[c + 1] += vertices[v + 1];
-            centers[c + 2] += vertices[v + 2];
+
+        // A face's triangles only use that face's vertices, which come right after the previous
+        // face's, so a triangle starts a new face when all its vertices are past the current one's.
+        int[] starts = new int[iCount / 3 + 1];
+        int[] firstVertex = new int[iCount / 3 + 1];
+        int faces = 0, lastVertex = -1;
+        for (int k = 0; k < iCount; k += 3) {
+            int lo = Math.min(indices[k], Math.min(indices[k + 1], indices[k + 2]));
+            int hi = Math.max(indices[k], Math.max(indices[k + 1], indices[k + 2]));
+            if (lo > lastVertex) {
+                starts[faces] = k;
+                firstVertex[faces++] = lo;
+            }
+            lastVertex = Math.max(lastVertex, hi);
         }
-        for (int c = 0; c < centers.length; c++) centers[c] /= 3 * 128f; // positions are 1/128 block
-        return new Prepared(p.vertices(), p.indices(), iCount, Arrays.copyOf(indices, iCount), centers);
+        starts[faces] = iCount;
+        firstVertex[faces] = charCount / CHARS_PER_VERTEX;
+
+        float[] centers = new float[faces * 3];
+        for (int f = 0; f < faces; f++) {
+            int n = firstVertex[f + 1] - firstVertex[f];
+            float x = 0, y = 0, z = 0;
+            for (int v = firstVertex[f] * CHARS_PER_VERTEX; v < firstVertex[f + 1] * CHARS_PER_VERTEX; v += CHARS_PER_VERTEX) {
+                x += vertices[v];
+                y += vertices[v + 1];
+                z += vertices[v + 2];
+            }
+            float scale = 1f / (n * 128f); // positions are 1/128 block
+            centers[f * 3] = x * scale;
+            centers[f * 3 + 1] = y * scale;
+            centers[f * 3 + 2] = z * scale;
+        }
+        return new Prepared(p.vertices(), p.indices(), iCount, Arrays.copyOf(indices, iCount),
+                Arrays.copyOf(starts, faces + 1), centers);
     }
 
     /** Uploads prepared data and frees its buffers. GL thread only. */
@@ -121,8 +149,10 @@ public class Mesh {
         generated = true;
         indexCount = data.indexCount();
         indices = data.sortIndices();
+        faceStart = data.faceStart();
         centers = data.centers();
-        sortKeys = indices == null ? null : new long[indexCount / 3];
+        sorted = indices == null ? null : new int[indexCount];
+        sortKeys = indices == null ? null : new long[faceStart.length - 1];
         sortedX = Float.NaN; // sort before the first draw
         if (indexCount == 0) return;
 
@@ -146,7 +176,7 @@ public class Mesh {
     }
 
     /**
-     * Reorders the triangles farthest first from the camera (render coordinates), like vanilla does
+     * Reorders the faces farthest first from the camera (render coordinates), like vanilla does
      * for translucent sections. Only meshes from {@link #prepareSorted}; skipped until the camera has
      * moved {@code minMove} blocks since the last sort. GL thread only.
      */
@@ -159,24 +189,23 @@ public class Mesh {
         sortedZ = camZ;
 
         float lx = camX - chunkX * 16f, lz = camZ - chunkZ * 16f;
-        int triangles = indexCount / 3;
-        int[] old = Arrays.copyOf(indices, indexCount);
-        for (int t = 0; t < triangles; t++) {
-            float dx = centers[t * 3] - lx, dy = centers[t * 3 + 1] - camY, dz = centers[t * 3 + 2] - lz;
+        int faces = sortKeys.length;
+        for (int f = 0; f < faces; f++) {
+            float dx = centers[f * 3] - lx, dy = centers[f * 3 + 1] - camY, dz = centers[f * 3 + 2] - lz;
             // distance bits of a positive float sort like the float; negated for farthest first
-            sortKeys[t] = ((long) ~Float.floatToRawIntBits(dx * dx + dy * dy + dz * dz) << 32) | t;
+            sortKeys[f] = ((long) ~Float.floatToRawIntBits(dx * dx + dy * dy + dz * dz) << 32) | f;
         }
-        Arrays.sort(sortKeys, 0, triangles);
-        for (int t = 0; t < triangles; t++) {
-            int from = (int) sortKeys[t] * 3;
-            System.arraycopy(old, from, indices, t * 3, 3);
-            sortKeys[t] = from; // reused below to move the centers along with their triangles
+        Arrays.sort(sortKeys);
+        int k = 0;
+        for (long key : sortKeys) {
+            int f = (int) key;
+            int n = faceStart[f + 1] - faceStart[f];
+            System.arraycopy(indices, faceStart[f], sorted, k, n);
+            k += n;
         }
-        float[] oldCenters = Arrays.copyOf(centers, centers.length);
-        for (int t = 0; t < triangles; t++) System.arraycopy(oldCenters, (int) sortKeys[t], centers, t * 3, 3);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboId);
-        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sorted);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
