@@ -189,7 +189,12 @@ public class S2CSyncPlayerPosition implements S2CPacket {
     /*
      * The client must acknowledge the teleport.
      */
-    sendConfirmTeleportation(teleportId, x, y, z, yaw, -pitch); // pitch was negated when read
+    // pitch was negated when read; never send non-finite values (the server disconnects for those)
+    boolean finite = Double.isFinite(x) && Double.isFinite(y) && Double.isFinite(z) && Float.isFinite(yaw) && Float.isFinite(pitch);
+    if (!finite) System.err.println("[Client] Teleport resolved to invalid values; confirming the camera's position instead");
+    sendConfirmTeleportation(teleportId,
+        finite ? x : camera.getX(), finite ? y : camera.getY() - 64, finite ? z : camera.getZ(),
+        finite ? yaw : 0f, finite ? -pitch : 0f);
   }
 
   private void sendConfirmTeleportation(int teleportId, double x, double y, double z, float yaw, float pitch) {

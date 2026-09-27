@@ -118,7 +118,8 @@ public class Camera {
 
     public void setRotation(float yaw, float pitch) {
         this.yaw = yaw;
-        this.pitch = pitch;
+        // same limit as the mouse: at exactly +-90 the right vector has no length and would become NaN
+        this.pitch = Math.max(-89.0f, Math.min(89.0f, pitch));
 
         updateFront();
     }
@@ -167,9 +168,22 @@ public class Camera {
         return velocity.z;
     }
 
+    private boolean warnedInvalidPosition = false;
+
     public void tick() {
         position.add(velocity);
         velocity.mul(0.98f);
+        // the server disconnects players who send NaN/infinite coordinates ("Invalid move player packet")
+        if (!position.isFinite()) {
+            if (!warnedInvalidPosition) {
+                warnedInvalidPosition = true;
+                System.err.println("[Client] Camera position became invalid (" + position + ", velocity "
+                        + velocity + ", yaw " + yaw + ", pitch " + pitch + "); restoring the last good one");
+            }
+            position.set(lastPosition);
+            velocity.zero();
+            return;
+        }
         if (!position.equals(lastPosition)) {
             ByteBuf buf = Unpooled.buffer();
             C2SSetPlayerPosition.make(
