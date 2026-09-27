@@ -118,7 +118,13 @@ public final class FaceCullCache {
     // footprint, so the face-pair cache below is only needed otherwise.
     // ------------------------------------------------------------------
 
-    public record ShapeInfo(boolean[] faceTouchesBoundary, boolean[] fullSide) {}
+    public record ShapeInfo(boolean[] faceTouchesBoundary, boolean[] fullSide) {
+        /** Covers all six sides completely: a full cube. */
+        public boolean fullCube() {
+            for (boolean side : fullSide) if (!side) return false;
+            return true;
+        }
+    }
 
     public static ShapeInfo infoOf(BlockShape shape) {
         ShapeInfo info = shape.getCullInfo();

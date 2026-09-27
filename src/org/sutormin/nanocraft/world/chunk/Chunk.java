@@ -263,6 +263,7 @@ public class Chunk {
                     boolean mirror = rotation == Block.TextureRotation.RANDOM_MIRROR && (variant & 1) != 0;
                     // biome grass color for tinted faces, packed as 5-bit RGB (0 = no tint)
                     int grassTint = block.hasBiomeTint() ? packTint(grassColorAt(wx, y, wz)) : 0;
+                    boolean[] boundary = FaceCullCache.infoOf(shape).faceTouchesBoundary();
                     int turns = rotation == Block.TextureRotation.RANDOM_MIRROR ? variant & 2 : variant;
                     List<BlockShape.Vertex> verts = shape.getVertices();
                     List<BlockShape.Face> faces = shape.getFaces();
@@ -290,12 +291,12 @@ public class Chunk {
                         if (uvCodes != null) {
                             int code = i < uvCodes.length ? uvCodes[i] : 0;
                             addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), code & 3, (code & 4) != 0,
-                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0);
+                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0, boundary[i]);
                         } else {
                             boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
                                     || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
                             addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror,
-                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0);
+                                    block.hasSolidTexture(), block.isFaceTinted(i) ? grassTint : 0, boundary[i]);
                         }
                     }
 
@@ -349,7 +350,8 @@ public class Chunk {
             BlockShape.Face face = faces.get(i);
             FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
             if (face.shouldCull() && isFaceOccluded(x, y, z, water, shape, i, basis)) continue;
-            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false, 0);
+            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false, 0,
+                    FaceCullCache.infoOf(shape).faceTouchesBoundary()[i]);
         }
     }
 
@@ -370,7 +372,8 @@ public class Chunk {
      */
     private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
-                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU, boolean solidTexture, int tint) {
+                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU, boolean solidTexture, int tint,
+                         boolean onBoundary) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
@@ -382,7 +385,7 @@ public class Chunk {
 
         for (int i = 0; i < n; i++) {
             BlockShape.Vertex v = verts.get(indices[i]);
-            aos[i] = vertexAO(lx, ly, lz, basis, v);
+            aos[i] = vertexAO(lx, ly, lz, basis, v, onBoundary);
 
             char gx = (char) (((wx & 15) << 7) + v.x());
             char gy = (char) ((wy << 7) + v.y());
@@ -494,8 +497,12 @@ public class Chunk {
      * purposes, and vice versa; a vertex sitting exactly on the midpoint
      * doesn't get an extra diagonal/edge sample in that axis.
      */
-    private float vertexAO(int x, int y, int z, FaceCullCache.FaceBasis basis, BlockShape.Vertex v) {
-        int nx = x + basis.nx(), ny = y + basis.ny(), nz = z + basis.nz();
+    private float vertexAO(int x, int y, int z, FaceCullCache.FaceBasis basis, BlockShape.Vertex v, boolean onBoundary) {
+        // like vanilla: a face on the block's edge samples the layer of blocks in front of it, a face
+        // inside the block (a snow layer's top, a slab seen from inside) the block's own layer
+        int nx = onBoundary ? x + basis.nx() : x;
+        int ny = onBoundary ? y + basis.ny() : y;
+        int nz = onBoundary ? z + basis.nz() : z;
 
         int uCoord = v.x() * basis.ux() + v.y() * basis.uy() + v.z() * basis.uz();
         int vCoord = v.x() * basis.vx() + v.y() * basis.vy() + v.z() * basis.vz();
@@ -503,11 +510,11 @@ public class Chunk {
         int du = Integer.compare(uCoord, 64);
         int dv = Integer.compare(vCoord, 64);
 
-        boolean side1 = du != 0 && !isTransparent(
+        boolean side1 = du != 0 && castsAmbientOcclusion(
                 nx + du * basis.ux(), ny + du * basis.uy(), nz + du * basis.uz());
-        boolean side2 = dv != 0 && !isTransparent(
+        boolean side2 = dv != 0 && castsAmbientOcclusion(
                 nx + dv * basis.vx(), ny + dv * basis.vy(), nz + dv * basis.vz());
-        boolean corner = du != 0 && dv != 0 && !isTransparent(
+        boolean corner = du != 0 && dv != 0 && castsAmbientOcclusion(
                 nx + du * basis.ux() + dv * basis.vx(),
                 ny + du * basis.uy() + dv * basis.vy(),
                 nz + du * basis.uz() + dv * basis.vz());
@@ -532,13 +539,15 @@ public class Chunk {
     }
 
     /**
-     * Used for AO while meshing: only opaque blocks cast ambient occlusion, so glass, water,
-     * leaves and plants don't darken their neighbors. NULL (unloaded chunk or never-written air)
-     * counts as transparent.
+     * Used for AO while meshing: like vanilla, only opaque full cubes cast ambient occlusion, so glass,
+     * water, plants, fences, walls, slabs, stairs, snow layers and carpets don't darken their neighbors.
+     * NULL (unloaded chunk or never-written air) casts none.
      */
-    public boolean isTransparent(int x, int y, int z) {
+    public boolean castsAmbientOcclusion(int x, int y, int z) {
         Block block = getBlockAt(x, y, z);
-        return block == null || block.getRenderLayer() != Block.RenderLayer.OPAQUE;
+        if (block == null || block.getRenderLayer() != Block.RenderLayer.OPAQUE) return false;
+        BlockShape shape = block.getShape();
+        return shape != null && FaceCullCache.infoOf(shape).fullCube();
     }
 
     /** Block at chunk-local (x,y,z), reaching up to one chunk over via the neighbors cached by buildMesh. */
