@@ -115,6 +115,7 @@ public final class BlockSpec {
             BlockDefinitionParser.BlockDefinition def = BlockDefinitionParser.get(stateName);
             b.setTextures(def.tex());
             b.setTextureRotation(def.rotation());
+            b.setUvVariants(def.uvVariants());
         }
     }
 

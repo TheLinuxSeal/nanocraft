@@ -41,6 +41,8 @@ public class Block extends RegistryType {
     /** Whether faces between two non-opaque blocks of the same kind are hidden (glass, water; not leaves). */
     private boolean cullsSameBlock = true;
     private TextureRotation textureRotation = TextureRotation.NONE;
+    /** Explicit per-face texture transforms from a def's uv= option, [variant][face]; null if none. */
+    private int[][] uvVariants = null;
     private int tintColor = 0xFFFFFF; // e.g. for grass / leaves
 
     // ---- Mining (client predicts break time / crack animation; server validates) ----
@@ -74,6 +76,7 @@ public class Block extends RegistryType {
         b.baseName = baseName;
         b.cullsSameBlock = cullsSameBlock;
         b.textureRotation = textureRotation;
+        b.uvVariants = uvVariants;
         b.tintColor = tintColor;
         b.hardness = hardness;
         b.effectiveTool = effectiveTool;
@@ -152,6 +155,13 @@ public class Block extends RegistryType {
     public Block setBaseName(String baseName) { this.baseName = baseName; return this; }
 
     public TextureRotation getTextureRotation() { return textureRotation; }
+
+    /**
+     * Per-face texture transforms, [variant][face]: bit 2 = mirror, bits 0-1 = quarter turns.
+     * One variant is picked per block from its position within the chunk. Null if the def has no uv=.
+     */
+    public int[][] getUvVariants() { return uvVariants; }
+    public Block setUvVariants(int[][] variants) { this.uvVariants = variants; return this; }
     public Block setTextureRotation(TextureRotation rotation) { this.textureRotation = rotation; return this; }
 
     public boolean cullsSameBlock() { return cullsSameBlock; }

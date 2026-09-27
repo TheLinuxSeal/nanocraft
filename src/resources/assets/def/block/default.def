@@ -5,4 +5,6 @@
 // options go after the textures: rotate=random turns the top and bottom textures randomly per block
 // (from its position within the chunk), rotate=random_all turns every face, rotate=mirror randomly
 // mirrors every face and turns top/bottom 0 or 180 degrees (like vanilla stone)
+// uv=<t>,<t>,... sets a transform per face (same order as the textures), with / between variants picked
+// at random per block; a transform is r0/r90/r180/r270, prefixed with m to mirror first (e.g. deepslate)
 @default full *

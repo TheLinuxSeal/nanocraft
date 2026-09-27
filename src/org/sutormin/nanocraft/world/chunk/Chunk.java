@@ -237,6 +237,8 @@ public class Chunk {
                     int wz = worldOffsetZ + z;
                     // quarter turns for randomly rotated textures, from the position within the chunk
                     Block.TextureRotation rotation = block.getTextureRotation();
+                    int[][] uvVariants = block.getUvVariants();
+                    int[] uvCodes = uvVariants == null ? null : uvVariants[((hash(x, y, z) >>> 8) & 0xFFFF) % uvVariants.length];
                     int variant = rotation == Block.TextureRotation.NONE ? 0 : (hash(x, y, z) >>> 8) & 3;
                     // RANDOM_MIRROR (vanilla stone): bit 0 mirrors every face, bit 1 turns top/bottom 180 degrees
                     boolean mirror = rotation == Block.TextureRotation.RANDOM_MIRROR && (variant & 1) != 0;
@@ -264,9 +266,14 @@ public class Chunk {
                             continue;
                         }
 
-                        boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
-                                || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
-                        addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror);
+                        if (uvCodes != null) {
+                            int code = i < uvCodes.length ? uvCodes[i] : 0;
+                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), code & 3, (code & 4) != 0);
+                        } else {
+                            boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
+                                    || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
+                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror);
+                        }
                     }
                 }
             }

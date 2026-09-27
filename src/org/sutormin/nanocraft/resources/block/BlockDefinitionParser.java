@@ -15,9 +15,39 @@ import java.util.Map;
 public class BlockDefinitionParser {
     /**
      * One .def line: {@code <name> <shape> <textures...> [options]}. Options are key=value tokens
-     * after the textures; the only one so far is {@code rotate=random|random_all|mirror}.
+     * after the textures: {@code rotate=random|random_all|mirror}, or {@code uv=...} (see
+     * {@link #parseUvVariants}). {@code uvVariants} is null unless the line has a uv= option.
      */
-    public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation){}
+    public record BlockDefinition(String shape, String[] tex, Block.TextureRotation rotation, int[][] uvVariants){}
+
+    /**
+     * Parses {@code uv=<t>,<t>,.../<t>,<t>,...}: one transform per face in the shape's face order,
+     * with {@code /} separating variants that are picked at random per block. A transform is
+     * r0, r90, r180 or r270 (turn the texture), optionally prefixed with m (mirror it first).
+     * Returned as [variant][face] codes: bit 2 = mirror, bits 0-1 = quarter turns.
+     */
+    private static int[][] parseUvVariants(String value, String line) {
+        String[] variants = value.split("/");
+        int[][] out = new int[variants.length][];
+        for (int v = 0; v < variants.length; v++) {
+            String[] faces = variants[v].split(",");
+            out[v] = new int[faces.length];
+            for (int f = 0; f < faces.length; f++) {
+                String t = faces[f];
+                boolean mirror = t.startsWith("m");
+                String turn = mirror ? t.substring(1) : t;
+                int turns = switch (turn) {
+                    case "r0" -> 0;
+                    case "r90" -> 1;
+                    case "r180" -> 2;
+                    case "r270" -> 3;
+                    default -> throw new RuntimeException("Invalid uv transform '" + t + "' in: " + line);
+                };
+                out[v][f] = (mirror ? 4 : 0) | turns;
+            }
+        }
+        return out;
+    }
 
     /**
      * A definition for some states of a block, e.g. "oak_door[half=upper]" or "carrots[age=0|1]".
@@ -81,6 +111,7 @@ public class BlockDefinitionParser {
 
                 List<String> textures = new ArrayList<>();
                 Block.TextureRotation rotation = Block.TextureRotation.NONE;
+                int[][] uvVariants = null;
                 for (String token : Arrays.copyOfRange(data, 2, data.length)) {
                     if (!token.contains("=")) {
                         textures.add(token);
@@ -90,12 +121,17 @@ public class BlockDefinitionParser {
                         rotation = Block.TextureRotation.RANDOM_ALL;
                     } else if (token.equals("rotate=mirror")) {
                         rotation = Block.TextureRotation.RANDOM_MIRROR;
+                    } else if (token.startsWith("uv=")) {
+                        uvVariants = parseUvVariants(token.substring(3), str);
                     } else {
                         throw new RuntimeException("Unknown option '" + token + "' in " + file + ": " + str);
                     }
                 }
 
-                BlockDefinition def = new BlockDefinition(data[1], textures.toArray(new String[0]), rotation);
+                if (uvVariants != null && rotation != Block.TextureRotation.NONE) {
+                    throw new RuntimeException("Use either rotate= or uv=, not both, in " + file + ": " + str);
+                }
+                BlockDefinition def = new BlockDefinition(data[1], textures.toArray(new String[0]), rotation, uvVariants);
 
                 int bracket = data[0].indexOf('[');
                 if (bracket < 0) {
@@ -162,7 +198,7 @@ public class BlockDefinitionParser {
         for (int i = 0; i < d.tex.length; i++) {
             newTex[i] = d.tex[i].replace("*", base).replace("^", state);
         }
-        return new BlockDefinition(newShape, newTex, d.rotation());
+        return new BlockDefinition(newShape, newTex, d.rotation(), d.uvVariants());
     }
     public static String[] getTexture(String name){
         return get(name).tex();
