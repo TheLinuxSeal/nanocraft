@@ -28,6 +28,8 @@ public final class Dimension {
             "minecraft:overworld_caves", new Type("minecraft:overworld_caves", -64, 384),
             "minecraft:the_nether", new Type("minecraft:the_nether", 0, 256),
             "minecraft:the_end", new Type("minecraft:the_end", 0, 256));
+            //"minecraft:the_sift", new Type("minecraft:the_sift",0,256)); // THE SIFT (UPCOMING);
+
     private static final Type DEFAULT = VANILLA.get("minecraft:overworld");
 
     private static volatile List<Type> types = List.of();
