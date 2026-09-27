@@ -260,9 +260,10 @@ public class S2CChunkData implements S2CPacket {
         }
     }
 
+    /** Since 26.3 a light mask is a byte array (VarInt length + bytes); before, it was an array of longs. */
     private static void skipBitSet(ByteBuf buf) {
-        int longCount = VarCoder.readVarInt(buf);
-        skipBounded(buf, longCount * 8);
+        int byteCount = VarCoder.readVarInt(buf);
+        skipBounded(buf, byteCount);
     }
 
     private static void skipLightArrays(ByteBuf buf) {
