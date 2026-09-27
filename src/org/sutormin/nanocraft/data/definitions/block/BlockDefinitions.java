@@ -32,32 +32,19 @@ public class BlockDefinitions {
     public static void define(Registry<Block> reg) {
         reg.addNew("null");
         reg.addNew("not_found").setTexture("null");
-        System.out.println("Registering Block 0%");
         part0(reg);
-        System.out.println("Registering Block 8%");
         part1(reg);
-        System.out.println("Registering Block 17%");
         part2(reg);
-        System.out.println("Registering Block 25%");
         part3(reg);
-        System.out.println("Registering Block 34%");
         part4(reg);
-        System.out.println("Registering Block 42%");
         part5(reg);
-        System.out.println("Registering Block 51%");
         part6(reg);
-        System.out.println("Registering Block 59%");
         part7(reg);
-        System.out.println("Registering Block 68%");
         part8(reg);
-        System.out.println("Registering Block 77%");
         part9(reg);
-        System.out.println("Registering Block 85%");
         part10(reg);
-        System.out.println("Registering Block 94%");
         part11(reg);
         part12(reg); // 26.3
-        System.out.println("Registering Block 100%");
     }
 
     private static void part0(Registry<Block> reg) {

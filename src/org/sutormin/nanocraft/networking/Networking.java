@@ -53,9 +53,9 @@ public class Networking {
             if (future.isSuccess()) {
                 channel = ((io.netty.channel.ChannelFuture) future).channel();
 
-                System.out.println("Connected!");
+                System.out.println("Connected to "+Options.SERVER_IP+", port "+Options.PORT);
             } else {
-                System.err.println("Connection failed");
+                System.err.println("Connection failed to "+Options.SERVER_IP+", port "+Options.PORT);
                 future.cause().printStackTrace();
             }
         });

@@ -11,7 +11,9 @@ public class Registries {
     public static Registry<BlockShape> BLOCK_SHAPE = new Registry<BlockShape>(BlockShape::new);
 
     public static void defineAll(){
+        System.out.println("Registering blocks!");
         BlockDefinitions.define(Registries.BLOCK);
+        System.out.println("Registering block shapes!");
         BlockShapeDefinitions.define(Registries.BLOCK_SHAPE);
     }
 }
