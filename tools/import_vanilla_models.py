@@ -15,7 +15,7 @@ files, so re-running the tool replaces its previous output. Blocks vanilla draws
 signs, banners, heads, ...) have no model geometry and keep their existing shapes, as do liquids.
 
 Faces vanilla tints are written as-is, except redstone dust, whose textures are named
-<texture>_{power}: the pre-colored textures from tools/redstone_textures.py.
+<texture>_{power}: the pre-colored textures from tools/tinted_textures.py.
 
 Usage:  python3 tools/import_vanilla_models.py path/to/client.jar
 """
