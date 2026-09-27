@@ -34,7 +34,7 @@ public class Mesh {
         glVertexAttribIPointer(0, 4, GL_UNSIGNED_SHORT, STRIDE, 0L);
         glEnableVertexAttribArray(0);
 
-        // attribute 1: ao, texL, texH (chars 4-6, byte offset 8)
+        // attribute 1: ao, texture layer, flags (chars 4-6, byte offset 8)
         glVertexAttribIPointer(1, 3, GL_UNSIGNED_SHORT, STRIDE, 4L * Character.BYTES);
         glEnableVertexAttribArray(1);
 

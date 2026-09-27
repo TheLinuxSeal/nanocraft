@@ -270,11 +270,13 @@ public class Chunk {
 
                         if (uvCodes != null) {
                             int code = i < uvCodes.length ? uvCodes[i] : 0;
-                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), code & 3, (code & 4) != 0);
+                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), code & 3, (code & 4) != 0,
+                                    block.hasSolidTexture());
                         } else {
                             boolean rotates = rotation == Block.TextureRotation.RANDOM_ALL
                                     || face.dir() == Direction.UP || face.dir() == Direction.DOWN;
-                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror);
+                            addFace(out, wx, y, wz, x, y, z, basis, verts, face, block.getTexture(i), rotates ? turns : 0, mirror,
+                                    block.hasSolidTexture());
                         }
                     }
 
@@ -297,7 +299,7 @@ public class Chunk {
             BlockShape.Face face = faces.get(i);
             FaceCullCache.FaceBasis basis = FaceCullCache.basisOf(face.dir());
             if (face.shouldCull() && isFaceOccluded(x, y, z, water, shape, i, basis)) continue;
-            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false);
+            addFace(out, wx, y, wz, x, y, z, basis, shape.getVertices(), face, water.getTexture(i), 0, false, false);
         }
     }
 
@@ -318,7 +320,7 @@ public class Chunk {
      */
     private void addFace(MeshBuffer out, int wx, int wy, int wz, int lx, int ly, int lz,
                          FaceCullCache.FaceBasis basis, List<BlockShape.Vertex> verts,
-                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU) {
+                         BlockShape.Face face, int tex, int uvTurns, boolean mirrorU, boolean solidTexture) {
         int[] indices = face.vertices();
         int n = indices.length;
         if (n < 3) return; // not a renderable polygon
@@ -347,16 +349,17 @@ public class Chunk {
 
             char ao = (char) Math.floor(aos[i]*65535);
 
-            char texH = (char) (tex >>> 16);
-            char texL = (char) (tex & 0xFFFF);
+            char layer = (char) tex; // texture arrays have at most a few thousand layers
+            // bit 0: draw see-through texture pixels with their stored color instead of cutting them out
+            char flags = (char) (solidTexture ? 1 : 0);
 
             out.pushVertex(gx);
             out.pushVertex(gy);
             out.pushVertex(gz);
             out.pushVertex(uv);
             out.pushVertex(ao);
-            out.pushVertex(texL);
-            out.pushVertex(texH);
+            out.pushVertex(layer);
+            out.pushVertex(flags);
 
             /*long packed =
                     ((long) (gx & 0xFFFL) << 0)

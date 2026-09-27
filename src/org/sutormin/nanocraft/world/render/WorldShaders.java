@@ -5,11 +5,12 @@ public class WorldShaders {
     #version 330 core
 
     layout (location = 0) in uvec4 aPosUv;  // gx, gy, gz, uv
-    layout (location = 1) in uvec3 aAoTex;  // ao, texL, texH
+    layout (location = 1) in uvec3 aAoTex;  // ao, texture layer, flags
 
     out vec3 TexCoord;
     out vec3 FragPosView;
     out float vAO;
+    flat out uint vSolid; // 1: no alpha cutout (e.g. opaque "fast" leaves)
 
     uniform mat4 uProjection;
     uniform mat4 uView;
@@ -29,7 +30,8 @@ public class WorldShaders {
         uint v = aPosUv.w % 129u;
 
         // texture layer was split into two 16-bit halves
-        uint layer = aAoTex.y | (aAoTex.z << 16u);
+        uint layer = aAoTex.y;
+        vSolid = aAoTex.z & 1u;
 
         TexCoord = vec3(float(u) / 128.0, float(v) / 128.0, float(layer));
 
@@ -42,6 +44,7 @@ public class WorldShaders {
     in vec3 TexCoord;
     in vec3 FragPosView;
     in float vAO;
+    flat in uint vSolid;
     out vec4 FragColor;
 
     uniform sampler2DArray uTexture;
@@ -55,7 +58,8 @@ public class WorldShaders {
     void main() {
         // Alpha test on the full-size texture, not the mipmap: averaged alpha in small mips
         // would make leaves and glass frames thin out and vanish with distance.
-        if (textureLod(uTexture, TexCoord, 0.0).a < uAlphaCutoff) discard;
+        // Solid-texture faces keep every pixel: see-through ones show their stored color.
+        if (vSolid == 0u && textureLod(uTexture, TexCoord, 0.0).a < uAlphaCutoff) discard;
         vec4 texColor = texture(uTexture, TexCoord);
 
         // fog (optional)
@@ -64,7 +68,8 @@ public class WorldShaders {
         //vec3 finalColor = mix(uFogColor, texColor.rgb * vAO, fogFactor);
         //FragColor = vec4(TexCoord.xy, 0.0, 1.0);
         //FragColor = vec4(1.0, 0.0, 1.0, 1.0);
-        FragColor = vec4(texColor.rgb * vAO, texColor.a);
+        // solid-texture faces are fully opaque (alpha 0 would let a compositing window manager show through)
+        FragColor = vec4(texColor.rgb * vAO, vSolid == 1u ? 1.0 : texColor.a);
     }
   """;
 }
